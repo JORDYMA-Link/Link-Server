@@ -52,9 +52,9 @@ jobs:
           mkdir -p deploy
           ls build/libs
           cp build/libs/*-SNAPSHOT.jar deploy/application.jar
-          cp Procfile ./deploy/Procfile
-          cp -r .ebextensions deploy/.ebextensions
-          cp -r .platform deploy/.platform
+          if test -e Procile ; then cp Procfile ./deploy/Procfile ; fi
+          if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
+          if test -d .platform ; cp -r .platform deploy/.platform ; fi
           cd deploy && zip -r deploy.zip .
 
         # Beanstalk Deploy 플러그인 사용
