@@ -50,11 +50,10 @@ jobs:
       - name: Generate deployment package
         run: |
           mkdir -p deploy
-          ls build/libs
           cp build/libs/*-SNAPSHOT.jar deploy/application.jar
-          if test -e Procile ; then cp Procfile ./deploy/Procfile ; fi
+          if test -e Procfile ; then cp Procfile ./deploy/Procfile ; fi
           if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
-          if test -d .platform ; cp -r .platform deploy/.platform ; fi
+          if test -d .platform ; then cp -r .platform deploy/.platform ; fi
           cd deploy && zip -r deploy.zip .
 
         # Beanstalk Deploy 플러그인 사용
