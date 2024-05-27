@@ -3,7 +3,7 @@ name: DIB CD
 # develop 브랜치 push 시
 on:
   push:
-    branches: [ dev, feat/github-action ]
+    branches: [ dev ]
 
 jobs:
   build:
