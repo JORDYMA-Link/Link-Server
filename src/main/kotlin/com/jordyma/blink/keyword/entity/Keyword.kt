@@ -1,0 +1,14 @@
+package com.jordyma.blink.keyword.entity
+
+import com.jordyma.blink.common.entity.BaseTimeEntity
+import com.jordyma.blink.feed.entity.Feed
+import jakarta.persistence.*
+
+@Entity
+class Keyword(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long,
+    @ManyToOne @JoinColumn(name = "feed_id")
+    val feed: Feed,
+    val keyword: String,
+): BaseTimeEntity()
