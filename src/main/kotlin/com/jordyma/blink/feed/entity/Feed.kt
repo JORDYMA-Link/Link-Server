@@ -2,6 +2,7 @@ package com.jordyma.blink.feed.entity
 
 import com.jordyma.blink.common.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -9,12 +10,13 @@ import java.time.LocalDateTime
 class Feed(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: Long,
     @Column(length = 200)
     val summary: String,
     @Column(length = 100)
     val title: String,
     val source: String,
+    val sourceUrl: String,
     @Column(length = 200)
     var memo: String = "",
     val thumbnailImage: String,
@@ -22,5 +24,5 @@ class Feed(
     @Column(columnDefinition = "BIT")
     val isMarked: Boolean,
     @ManyToOne @JoinColumn(name = "folder_id")
-    val folder: Folder
+    val folder: Folder,
 ): BaseTimeEntity()
