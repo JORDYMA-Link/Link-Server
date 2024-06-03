@@ -1,6 +1,6 @@
 package com.jordyma.blink.auth.jwt.util
 
-import com.jordyma.blink.User.User
+import com.jordyma.blink.User.entity.User
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
@@ -21,7 +21,7 @@ import java.util.*
 @Component
 class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
 
-    @Value("{jwt.secret}")
+    @Value("\${jwt.secret}")
     private val jwtSecret: String? = null
 
     private val AUTHORIZATION_HEADER: String = "Authorization"
@@ -82,7 +82,7 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         }
     }
 
-    fun verifySignature(idToken: String?, kid: String?, aud: String?, iss: String?, nonce: String) {
+    fun verifySignature(idToken: String?, kid: String?, aud: String?, iss: String?, nonce: String?) {
         val keyListResponse: OpenKeyListResponse = kakaoAuthApi.getKakaoOpenKeyAddress()
 
 

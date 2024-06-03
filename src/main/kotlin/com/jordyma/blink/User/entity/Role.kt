@@ -1,4 +1,4 @@
-package com.jordyma.blink.User
+package com.jordyma.blink.User.entity
 
 import org.springframework.security.core.GrantedAuthority
 

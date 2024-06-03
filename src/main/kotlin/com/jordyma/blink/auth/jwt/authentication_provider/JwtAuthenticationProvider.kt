@@ -17,6 +17,7 @@ class JwtAuthenticationProvider(private val jwtTokenUtil: JwtTokenUtil, private 
         if (authentication.principal == null || !jwtTokenUtil.isValidToken(authentication.principal.toString())) {
             // TODO 예외 처리 추가
 //            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw Exception("Token verification exception")
         }
         val userDetails: UserDetails = userAccountService.loadUserByUsername(authentication.principal as String)
         return UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)

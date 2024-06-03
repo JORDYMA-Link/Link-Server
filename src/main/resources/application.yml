@@ -33,7 +33,7 @@ open-api:
 
 # jwt
 jwt:
-  secret: testtesttest
+  secret: 6d4e339f9edbdb307a097b40ed97422fb50cb785a65ef714fca970e07fd1532c2e033a2e3644cbb8e2aa0c6a516e7a857521fa93f0eac31d6c8fd39eea779481
 
 # s3
 #cloud:

@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import java.io.IOException
+import java.util.*
 
 
 class JwtAuthenticationFilter(private val authenticationManager: AuthenticationManager, private val permitUrls: Array<String>): OncePerRequestFilter() {
@@ -23,7 +24,7 @@ class JwtAuthenticationFilter(private val authenticationManager: AuthenticationM
     ) {
         val token = getToken(request)
         val authentication: Authentication = UsernamePasswordAuthenticationToken(token, "")
-        val authenticatedAuthentication: Authentication = authenticationManager!!.authenticate(authentication)
+        val authenticatedAuthentication: Authentication = authenticationManager.authenticate(authentication)
         if (authenticatedAuthentication.isAuthenticated) {
             SecurityContextHolder.getContext().authentication = authenticatedAuthentication
             filterChain.doFilter(request, response)
@@ -45,7 +46,12 @@ class JwtAuthenticationFilter(private val authenticationManager: AuthenticationM
 
     private fun isPermitUrl(path: String): Boolean {
         val antPathMatcher = AntPathMatcher()
+        return Arrays.stream(this.permitUrls).anyMatch { permitUrl ->
+            antPathMatcher.match(
+                permitUrl,
+                path
+            )
+        }
 
-        return this.permitUrls.any { permitUrl -> antPathMatcher.match(permitUrl, path) }
     }
 }
