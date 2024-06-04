@@ -9,12 +9,4 @@ object CommonUtil {
     fun parseTokenFromBearer(bearerToken: String?): String? {
         return bearerToken?.substring(BEARER_PREFIX.length)
     }
-
-    fun round(value: Double?, precision: Int): Double? {
-        if (value == null) {
-            return null
-        }
-        val scale = 10.0.pow(precision.toDouble())
-        return Math.round(value * scale).toDouble() / scale
-    }
 }

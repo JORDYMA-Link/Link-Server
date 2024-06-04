@@ -11,14 +11,4 @@ data class TokenResponseDto (
 
 //    @Schema(description = "리프레시 토큰")
     val refreshToken: String,
-
-//    companion object {
-//        fun of(accessToken: String?, refreshToken: String?): TokenResponseDto {
-//            val tokenResponseDto = TokenResponseDto()
-//            tokenResponseDto.accessToken = accessToken
-//            tokenResponseDto.refreshToken = refreshToken
-//
-//            return tokenResponseDto
-//        }
-//    }
     )

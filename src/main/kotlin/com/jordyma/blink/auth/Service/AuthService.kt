@@ -41,10 +41,9 @@ class AuthService(
         jwtTokenUtil.verifySignature(idToken, kid, aud, iss, kakaoLoginRequestDto.nonce)
 
         val nickname: String = claims.body.get("nickname", String::class.java)
-        val picture: String = claims.body.get("picture", String::class.java)
-        val socialUserId: String = claims.body.subject
+        val socialUserId: String = claims.body.get("sub", String::class.java)
 
-        val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname, picture)
+        val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
 
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
@@ -54,7 +53,7 @@ class AuthService(
         return TokenResponseDto(accessToken, refreshToken);
     }
 
-    private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String, picture: String): User {
+    private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
         return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
             ?: userRepository.save(User.of(nickname, SocialType.KAKAO, socialUserId, Role.USER))
     }

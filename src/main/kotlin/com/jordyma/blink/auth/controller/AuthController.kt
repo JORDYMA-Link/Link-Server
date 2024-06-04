@@ -24,7 +24,7 @@ class AuthController(
         return ResponseEntity.ok(authService.kakaoLogin(kakaoLoginRequestDto))
     }
 
-    @PostMapping("/regenerated-token")
+    @PostMapping("/regenerate-token")
 //    @Operation(summary = "토큰 재발급 API", description = "기존 토큰을 입력받아 새로운 토큰을 발급")
     fun regeneratedToken(
        /*  @Schema(hidden = true) */ @RequestHeader("Authorization") authorizationHeader: String?

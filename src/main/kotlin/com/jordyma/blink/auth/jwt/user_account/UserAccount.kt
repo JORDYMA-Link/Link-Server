@@ -4,7 +4,7 @@ import com.jordyma.blink.User.entity.Role
 import org.springframework.security.core.userdetails.User
 
 
-class UserAccount(userId: Long?, profileUrl: String?, nickName: String?, role: Role?) :
+class UserAccount(userId: Long?, nickName: String?, role: Role?) :
     User(userId.toString(), "", object : ArrayList<Role?>() {
         init {
             add(role)
@@ -13,9 +13,9 @@ class UserAccount(userId: Long?, profileUrl: String?, nickName: String?, role: R
 
     var userId: Long? = null
 
-    var profileUrl: String? = null
-
     var nickName: String? = null
+
+    val role: Role? = null
 }
 
 
