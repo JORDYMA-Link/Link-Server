@@ -1,4 +1,4 @@
-name: DIB CD
+name: Blink CD
 
 # develop 브랜치 push 시
 on:
