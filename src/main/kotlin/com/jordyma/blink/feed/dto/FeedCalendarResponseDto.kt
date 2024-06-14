@@ -1,20 +1,14 @@
 package com.jordyma.blink.feed.dto
 
 
-data class FeedDateResponseDto(
-    val date: String,
-    val count: Int,
-    val feedsInFolderList: List<FeedsInFolder>,
-)
-
-data class FeedsInFolder(
-    val folderId: Long,
-    val folderName: String,
-    val folderCount: Int,
-    val feedList: List<FeedItem>
+data class FeedCalendarResponseDto(
+    val isArchived: Boolean,
+    val list: List<FeedItem>
 )
 
 data class FeedItem(
+    val folderId: Long,
+    val folderName: String,
     val feedId: Long,
     val title: String,
     val summary: String,

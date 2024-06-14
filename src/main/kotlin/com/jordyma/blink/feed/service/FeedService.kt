@@ -2,50 +2,59 @@ package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.common.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.common.error.exception.BadRequestException
-import com.jordyma.blink.common.util.DateTimeUtils
-import com.jordyma.blink.feed.dto.FeedDateResponseDto
+import com.jordyma.blink.common.util.rangeTo
+import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedItem
-import com.jordyma.blink.feed.dto.FeedsInFolder
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.entity.User
 import jakarta.transaction.Transactional
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 
 @Service
 class FeedService constructor(
     @Autowired private val feedRepository: FeedRepository,
     @Autowired private val keywordRepository: KeywordRepository,
 ) {
+
     @Transactional
-    fun getFeedsByDate(date: LocalDate, user: User): FeedDateResponseDto {
-        val feeds = feedRepository.findFeedFolderDtoByUserAndDate(user.id, date)
-        val groupedFeeds = feeds.groupBy { it.folderId }
-        val feedsInFolderList = groupedFeeds.map { (folderId, feedsInFolder) ->
-            FeedsInFolder(
-                folderId = folderId,
-                folderName = feedsInFolder.first().folderName,
-                folderCount = feedsInFolder.size,
-                feedList = feedsInFolder.map {
-                    FeedItem(
-                        feedId = it.feed.id,
-                        title = it.feed.title,
-                        summary = it.feed.summary,
-                        source = it.feed.source,
-                        sourceUrl = it.feed.sourceUrl,
-                        isMarked = it.feed.isMarked,
-                        keywords = getKeywordsByFeedId(it.feed.id)
-                    )
-                }
+    fun getFeedsByMonth(user: User, yrMonth: String): Map<String, FeedCalendarResponseDto> {
+        val yearMonth = YearMonth.parse(yrMonth, DateTimeFormatter.ofPattern("yyyy-MM"))
+        val startOfMonth = yearMonth.atDay(1).atStartOfDay()
+        val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
+
+        val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user.id, startOfMonth, endOfMonth)
+        val feedsByDate = feeds.groupBy { it.feed.createdAt?.toLocalDate() }
+
+        val response = mutableMapOf<String, FeedCalendarResponseDto>()
+
+        for (date in startOfMonth.toLocalDate().rangeTo(endOfMonth.toLocalDate())) {
+            val feedItems = feedsByDate[date]?.map { feedFolderDto ->
+                FeedItem(
+                    folderId = feedFolderDto.folderId,
+                    folderName = feedFolderDto.folderName,
+                    feedId = feedFolderDto.feed.id,
+                    title = feedFolderDto.feed.title,
+                    summary = feedFolderDto.feed.summary,
+                    source = feedFolderDto.feed.source,
+                    sourceUrl = feedFolderDto.feed.url,
+                    isMarked = feedFolderDto.feed.isMarked,
+                    keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수
+                )
+            } ?: emptyList()
+
+            val isArchived = feedItems.isNotEmpty()
+
+            response[date.toString()] = FeedCalendarResponseDto(
+                isArchived = isArchived,
+                list = feedItems
             )
         }
-        return FeedDateResponseDto(
-            date = DateTimeUtils.localDateToString(date),
-            count = feeds.size,
-            feedsInFolderList = feedsInFolderList
-        )
+
+        return response
     }
 
     private fun getKeywordsByFeedId(feedId: Long): List<String> {
