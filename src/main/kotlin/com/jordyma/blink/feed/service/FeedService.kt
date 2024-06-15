@@ -1,8 +1,8 @@
 package com.jordyma.blink.feed.service
 
-import com.jordyma.blink.common.error.KEYWORDS_NOT_FOUND
-import com.jordyma.blink.common.error.exception.BadRequestException
-import com.jordyma.blink.common.util.rangeTo
+import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
+import com.jordyma.blink.global.error.exception.BadRequestException
+import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedItem
 import com.jordyma.blink.feed.repository.FeedRepository

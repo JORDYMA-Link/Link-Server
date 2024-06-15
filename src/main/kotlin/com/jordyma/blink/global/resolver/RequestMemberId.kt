@@ -1,4 +1,4 @@
-package com.jordyma.blink.common.resolver
+package com.jordyma.blink.global.resolver
 
 @Target(AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)

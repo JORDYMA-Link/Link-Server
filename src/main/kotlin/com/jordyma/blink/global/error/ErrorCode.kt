@@ -1,4 +1,4 @@
-package com.jordyma.blink.common.error
+package com.jordyma.blink.global.error
 
 
 data class ErrorCode(

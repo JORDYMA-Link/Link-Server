@@ -1,10 +1,8 @@
 package com.jordyma.blink.feed.entity
 
-import com.jordyma.blink.common.entity.BaseTimeEntity
+import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 class Feed(

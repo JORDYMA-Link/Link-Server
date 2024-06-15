@@ -1,4 +1,4 @@
-package com.jordyma.blink.common.util
+package com.jordyma.blink.global.util
 
 import java.time.LocalDate
 

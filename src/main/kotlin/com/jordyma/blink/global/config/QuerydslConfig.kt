@@ -1,4 +1,4 @@
-package com.jordyma.blink.common.config
+package com.jordyma.blink.global.config
 
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager

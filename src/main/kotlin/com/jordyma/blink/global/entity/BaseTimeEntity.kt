@@ -1,4 +1,4 @@
-package com.jordyma.blink.common.entity
+package com.jordyma.blink.global.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
