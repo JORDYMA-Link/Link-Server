@@ -1,12 +1,14 @@
-package com.jordyma.blink.auth.Service
-import com.jordyma.blink.User.entity.Role
-import com.jordyma.blink.User.entity.SocialType
-import com.jordyma.blink.User.entity.User
-import com.jordyma.blink.User.repository.UserRepository
+package com.jordyma.blink.auth.service
+import com.jordyma.blink.user.entity.SocialType
+import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
+import com.jordyma.blink.global.http.api.KakaoAuthApi
+import com.jordyma.blink.global.http.request.GetKakaoTokenRequestDto
+import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
 import com.jordyma.blink.user_refresh_token.repository.UserRefreshTokenRepository
 import io.jsonwebtoken.Claims
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.URLEncoder
 
 @Service
 @Transactional(readOnly = true)
@@ -23,14 +26,21 @@ import org.springframework.transaction.annotation.Transactional
 class AuthService(
     private val jwtTokenUtil: JwtTokenUtil,
     private val userRepository: UserRepository,
+    private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository
 ) {
 
     @Value("\${kakao.auth.jwt.aud}")
-    var aud: String? = null
+    val aud: String? = null
 
     @Value("\${kakao.auth.jwt.iss}")
-    var iss: String? = null
+    val iss: String? = null
+
+    @Value("\${kakao.auth.jwt.client-id}")
+    lateinit var kakaoClientId: String
+
+    @Value("\${kakao.auth.jwt.redirect-uri}")
+    lateinit var kakaoRedirectUri: String
 
     @Transactional
     fun kakaoLogin(kakaoLoginRequestDto: KakaoLoginRequestDto): TokenResponseDto {
@@ -79,6 +89,32 @@ class AuthService(
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
 
         userRefreshToken.updateRefreshToken(refreshToken)
+
+        return TokenResponseDto(accessToken, refreshToken)
+    }
+
+    @Transactional
+    fun kakaoLoginWeb(code: String): TokenResponseDto {
+        val encodedReirectUri =  URLEncoder.encode(this.kakaoRedirectUri, "UTF-8");
+        val getKakaoTokenRequestDto = GetKakaoTokenRequestDto(
+            client_id = this.kakaoClientId,
+            redirect_uri = encodedReirectUri,
+            code = code)
+        val tokenResponse = kakaoAuthApi.getKakaoToken(getKakaoTokenRequestDto)
+        val idToken = tokenResponse.id_token
+        val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
+        val kid: String = claims.header.get("kid").toString()
+        jwtTokenUtil.verifySignature(idToken, kid, aud, iss, null)
+
+        val nickname: String = claims.body.get("nickname", String::class.java)
+        val socialUserId: String = claims.body.get("sub", String::class.java)
+
+        val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
+
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
+
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
 
         return TokenResponseDto(accessToken, refreshToken)
     }

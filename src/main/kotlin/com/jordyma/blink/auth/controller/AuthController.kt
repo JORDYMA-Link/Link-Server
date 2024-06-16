@@ -1,5 +1,5 @@
 package com.jordyma.blink.auth.controller
-import com.jordyma.blink.auth.Service.AuthService
+import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.global.util.CommonUtil
@@ -34,5 +34,12 @@ class AuthController(
         val tokenResponseDto: TokenResponseDto = authService.regenerateToken(token)
 
         return ResponseEntity.ok(tokenResponseDto)
+    }
+
+    @GetMapping("/kakao-login-web/callback")
+    fun kakaoLoginWeb(
+        @RequestParam("code") code: String
+    ): ResponseEntity<TokenResponseDto> {
+        return ResponseEntity.ok(authService.kakaoLoginWeb(code))
     }
 }

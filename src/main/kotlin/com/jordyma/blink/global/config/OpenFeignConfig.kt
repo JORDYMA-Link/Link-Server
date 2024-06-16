@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class OpenApiConfig {
 
     @Value("\${open-api.kakao.open-key-url}")
-    lateinit var kakaoOpenKeyUrl: String;
+    lateinit var kakaoOpenKeyUrl: String
 
     private fun myConnectionProvider(): ConnectionProvider {
         return ConnectionProvider

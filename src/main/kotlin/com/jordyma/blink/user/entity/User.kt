@@ -1,4 +1,4 @@
-package com.jordyma.blink.User.entity
+package com.jordyma.blink.user.entity
 
 import jakarta.persistence.*
 import lombok.Getter

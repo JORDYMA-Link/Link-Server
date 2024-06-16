@@ -1,6 +1,6 @@
 package com.jordyma.blink.user_refresh_token.entity
 
-import com.jordyma.blink.User.entity.User
+import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
 import lombok.AccessLevel
 import lombok.Getter

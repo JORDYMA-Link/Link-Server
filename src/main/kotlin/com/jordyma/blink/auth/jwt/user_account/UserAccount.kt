@@ -1,6 +1,6 @@
 package com.jordyma.blink.auth.jwt.user_account
 
-import com.jordyma.blink.User.entity.Role
+import com.jordyma.blink.user.entity.Role
 import org.springframework.security.core.userdetails.User
 
 

@@ -20,6 +20,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/v3/api-docs/**",
             "/location/**",
             "/auth/kakao-login",
+            "/auth/kakao-login-web/callback",
             "/error")
 
     @Bean

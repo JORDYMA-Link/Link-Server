@@ -1,7 +1,7 @@
-package com.jordyma.blink.User.repository
+package com.jordyma.blink.user.repository
 
-import com.jordyma.blink.User.entity.SocialType
-import com.jordyma.blink.User.entity.User
+import com.jordyma.blink.user.entity.SocialType
+import com.jordyma.blink.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
