@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/feeds")
+@RequestMapping("/api/feeds")
 class FeedController @Autowired constructor(
     private val feedService: FeedService,
     private val userService: UserService

@@ -29,7 +29,7 @@ class CustomFeedRepositoryImpl @Autowired constructor(
                     FeedFolderVo::class.java,
                     folder.id,
                     folder.name,
-                    feed.id
+                    feed
                 )
             )
             .from(feed)
