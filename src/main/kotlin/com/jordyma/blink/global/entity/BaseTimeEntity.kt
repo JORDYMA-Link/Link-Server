@@ -1,8 +1,6 @@
 package com.jordyma.blink.global.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.EntityListeners
-import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.*
 import lombok.Getter
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
@@ -16,15 +14,18 @@ open class BaseTimeEntity {
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     var createdAt: LocalDateTime? = null
         private set
 
     @LastModifiedDate
     @Column(name = "updated_at")
+    @Temporal(TemporalType.TIMESTAMP)
     var updatedAt: LocalDateTime? = null
         private set
 
     @Column(name = "deleted_at")
+    @Temporal(TemporalType.TIMESTAMP)
     var deletedAt: LocalDateTime? = null
         private set
 }
