@@ -18,6 +18,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
+            "/v3/api-docs",
             "/location/**",
             "/auth/kakao-login",
             "/auth/kakao-login-web/callback",
@@ -25,7 +26,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
 
     @Bean
     fun filterChain(http: HttpSecurity) = http
-            .httpBasic(Customizer.withDefaults())
+            .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .cors(Customizer.withDefaults())
             .csrf { it.disable()}
