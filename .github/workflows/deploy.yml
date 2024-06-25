@@ -1,0 +1,70 @@
+name: Blink CD
+
+# develop 브랜치 push 시
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # JDK 세팅
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: 'adopt'
+
+      #gradle 캐싱
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # gradlew 권한
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
+      # 테스트를 제외한 프로젝트 빌드
+      - name: Build With Gradle
+        run: ./gradlew build -x test
+
+      # version 라벨링용
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00" # 한국 시간
+
+      # 배포용
+      - name: Generate deployment package
+        run: |
+          mkdir -p deploy
+          cp build/libs/*-SNAPSHOT.jar deploy/application.jar
+          if test -e Procfile ; then cp Procfile ./deploy/Procfile ; fi
+          if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
+          if test -d .platform ; then cp -r .platform deploy/.platform ; fi
+          cd deploy && zip -r deploy.zip .
+
+        # Beanstalk Deploy 플러그인 사용
+      - name: Beanstalk Deploy
+        uses: einaregilsson/beanstalk-deploy@v14
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: link-server-test
+          environment_name: Link-server-test-env
+          version_label: Link-${{steps.current-time.outputs.formattedTime}}
+          region: ap-northeast-2
+          deployment_package: deploy/deploy.zip
+          wait_for_environment_recovery: 900
