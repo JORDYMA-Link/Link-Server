@@ -6,6 +6,8 @@ import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
+import com.jordyma.blink.global.exception.ApplicationException
+import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.request.GetKakaoTokenRequestDto
 import com.jordyma.blink.user.entity.Role
@@ -74,17 +76,14 @@ class AuthService(
         val tokenType: TokenType = TokenType.valueOf(claims!!.body["type", String::class.java])
 
         if (tokenType !== TokenType.REFRESH_TOKEN) {
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
-            throw Exception("TOKEN_VERIFICATION_EXCEPTION")
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바른 토큰 타입이 아닙니다.")
         }
 
         val userRefreshToken: UserRefreshToken = userRefreshTokenRepository.findByRefreshToken(token)
-//            .orElseThrow { ApplicationException(ErrorCode.TOKEN_NOT_FOUND) }
-            ?: throw Exception("TOKEN_NOT_FOUND")
+            ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.")
         val subject = claims.body.subject
         val user: User = userRepository.findById(subject.toLong())
-//            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND_EXCEPTION) }
-            .orElseThrow { Exception("NOT_FOUND_EXCEPTION") }
+            .orElseThrow { ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.") }
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
 

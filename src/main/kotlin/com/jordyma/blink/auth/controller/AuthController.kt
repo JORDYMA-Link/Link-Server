@@ -3,6 +3,7 @@ import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.global.util.CommonUtil
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import lombok.RequiredArgsConstructor
@@ -19,7 +20,7 @@ class AuthController(
 ) {
 
     @PostMapping("/kakao-login")
-    @Schema(name = "카카오 로그인 API", description = "카카오 idtoken을 입력받아 소셜 로그인을 진행")
+    @Operation(summary = "카카오 로그인 API", description = "카카오 idtoken을 입력받아 소셜 로그인을 진행")
     fun kakaoLogin(
         @Validated @RequestBody kakaoLoginRequestDto: KakaoLoginRequestDto
     ): ResponseEntity<TokenResponseDto> {
@@ -27,7 +28,7 @@ class AuthController(
     }
 
     @PostMapping("/regenerate-token")
-    @Schema(name = "토큰 재발급 API", description = "기존 리프레시 토큰을 입력받아 새로운 토큰을 발급")
+    @Operation(summary = "토큰 재발급 API", description = "기존 리프레시 토큰을 입력받아 새로운 토큰을 발급")
     fun regeneratedToken(
        @Schema(hidden = true) @RequestHeader("Authorization") authorizationHeader: String?
     ): ResponseEntity<TokenResponseDto> {

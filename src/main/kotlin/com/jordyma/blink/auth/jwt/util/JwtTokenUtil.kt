@@ -3,6 +3,8 @@ package com.jordyma.blink.auth.jwt.util
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.auth.jwt.enums.TokenType
+import com.jordyma.blink.global.exception.ApplicationException
+import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import io.jsonwebtoken.*
 import org.springframework.beans.factory.annotation.Value
@@ -72,13 +74,9 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
                 .build()
                 .parseClaimsJwt(jwtWithoutSignature)
         } catch (e: ExpiredJwtException) {
-                // TODO 인증 필터 구현 후 커스텀 예외로 전환
-                throw e;
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.")
         } catch (e: MalformedJwtException) {
-            // TODO 인증 필터 구현 후 커스텀 예외로 전환
-            throw e;
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "malformed token")
         }
     }
 
@@ -104,15 +102,12 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
                 .parseClaimsJws(idToken)
 
             if (nonce != claims.body.get("nonce", String::class.java)) {
-                // TODO throw exception
-//                throw ApplicationException(ErrorCode.NONCE_NOT_MATCHED)
+                throw ApplicationException(ErrorCode.NONCE_NOT_MATCHED, "nonce가 일치하지 않습니다.")
             }
         } catch (e: NoSuchAlgorithmException) {
-            // TODO throw exception
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
         } catch (e: InvalidKeySpecException) {
-            // TODO throw exception
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
         }
     }
 
@@ -123,17 +118,12 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
                 .build()
                 .parseClaimsJws(token)
         } catch (e: ExpiredJwtException) {
-            // TODO throw exception
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
         } catch (e: MalformedJwtException) {
-            // TODO throw exception
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
         } catch (e: SignatureException) {
-            // TODO throw exception
-//            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION)
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
         }
-
-        return null;
     }
 
     fun isValidToken(token: String?): Boolean {
