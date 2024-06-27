@@ -7,7 +7,7 @@ import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedItemDto
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.keyword.repository.KeywordRepository
-import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.dto.UserInfoDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.YearMonth
@@ -20,7 +20,7 @@ class FeedService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getFeedsByMonth(user: User, yrMonth: String): Map<String, FeedCalendarResponseDto> {
+    fun getFeedsByMonth(user: UserInfoDto, yrMonth: String): Map<String, FeedCalendarResponseDto> {
         val yearMonth = YearMonth.parse(yrMonth, DateTimeFormatter.ofPattern("yyyy-MM"))
         val startOfMonth = yearMonth.atDay(1).atStartOfDay()
         val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
