@@ -4,11 +4,10 @@ import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedItem
+import com.jordyma.blink.feed.dto.FeedItemDto
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.entity.User
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.YearMonth
@@ -33,7 +32,7 @@ class FeedService(
 
         for (date in startOfMonth.toLocalDate().rangeTo(endOfMonth.toLocalDate())) {
             val feedItems = feedsByDate[date]?.map { feedFolderDto ->
-                FeedItem(
+                FeedItemDto(
                     folderId = feedFolderDto.folderId,
                     folderName = feedFolderDto.folderName,
                     feedId = feedFolderDto.feed.id,

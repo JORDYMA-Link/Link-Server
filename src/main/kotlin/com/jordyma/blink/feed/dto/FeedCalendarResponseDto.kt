@@ -3,10 +3,10 @@ package com.jordyma.blink.feed.dto
 
 data class FeedCalendarResponseDto(
     val isArchived: Boolean,
-    val list: List<FeedItem>
+    val list: List<FeedItemDto>
 )
 
-data class FeedItem(
+data class FeedItemDto(
     val folderId: Long,
     val folderName: String,
     val feedId: Long,
