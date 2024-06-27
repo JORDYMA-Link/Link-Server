@@ -16,7 +16,7 @@ class UserService(
         val user = userRepository.findById(userId).orElseThrow { BadRequestException(USER_NOT_FOUND) }
         return UserInfoDto(
             id = user.id,
-            email = user.email
+            name = user.nickname
         )
     }
 }

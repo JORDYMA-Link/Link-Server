@@ -1,23 +1,42 @@
 package com.jordyma.blink.user.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
+import jakarta.persistence.*
+import lombok.Getter
+import java.time.LocalDateTime
 
+
+@Getter
 @Entity(name = "Member")
-class User(
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+class User: BaseTimeEntity() {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    var id: Long? = null
 
-    @Column(length = 50)
-    val email: String,
+    @Column(name = "nickname")
+    var nickname: String? = null
 
-    @Column(length = 50)
-    val socialType: String,
+    @Column(name = "social_type")
+    @Enumerated(EnumType.STRING)
+    var socialType: SocialType? = null
 
-    @Column(length = 50)
-    val socialId: String,
-): BaseTimeEntity()
+    @Column(name = "social_user_id")
+    var socialUserId: String? = null
+
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    var role: Role? = null
+
+    companion object {
+        fun of(nickname: String, socialType: SocialType, socialUserId: String, role: Role): User {
+            val user = User()
+            user.nickname = nickname
+            user.socialType = socialType
+            user.socialUserId = socialUserId
+            user.role = role
+            return user
+        }
+    }
+
+}
