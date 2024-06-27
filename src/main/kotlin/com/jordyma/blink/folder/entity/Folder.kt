@@ -9,7 +9,7 @@ class Folder(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @ManyToOne @JoinColumn(name = "user_id")
+    @ManyToOne @JoinColumn(name = "member_id")
     val user: User,
 
     @Column(length = 50)
