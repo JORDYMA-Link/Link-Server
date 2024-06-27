@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class FolderService @Autowired constructor(
+class FolderService(
     private val folderRepository: FolderRepository
-){
+) {
 }

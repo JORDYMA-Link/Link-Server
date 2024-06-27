@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/feeds")
-class FeedController @Autowired constructor(
+class FeedController(
     private val feedService: FeedService,
     private val userService: UserService
 ) {

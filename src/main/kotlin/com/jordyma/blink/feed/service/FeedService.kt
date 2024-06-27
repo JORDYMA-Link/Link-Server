@@ -15,9 +15,9 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 @Service
-class FeedService constructor(
-    @Autowired private val feedRepository: FeedRepository,
-    @Autowired private val keywordRepository: KeywordRepository,
+class FeedService(
+    private val feedRepository: FeedRepository,
+    private val keywordRepository: KeywordRepository,
 ) {
 
     @Transactional(readOnly = true)

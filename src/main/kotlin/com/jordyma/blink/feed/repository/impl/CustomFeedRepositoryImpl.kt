@@ -12,7 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Repository
-class CustomFeedRepositoryImpl @Autowired constructor(
+class CustomFeedRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomFeedRepository {
     override fun findFeedFolderDtoByUserIdAndBetweenDate(

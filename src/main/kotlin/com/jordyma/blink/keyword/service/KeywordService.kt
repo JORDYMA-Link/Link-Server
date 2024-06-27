@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class KeywordService @Autowired constructor(
+class KeywordService(
     private val keywordRepository: KeywordRepository
 ){
 }
