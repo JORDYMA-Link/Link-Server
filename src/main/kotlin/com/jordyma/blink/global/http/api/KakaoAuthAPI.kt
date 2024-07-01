@@ -17,8 +17,9 @@ interface KakaoAuthApi {
     @GetExchange("/.well-known/jwks.json")
     fun getKakaoOpenKeyAddress(): OpenKeyListResponse
 
-    @PostExchange("/oauth/token", contentType ="application/x-www-form-urlencoded;charset=utf-8")
+    @PostExchange("/oauth/token", contentType = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     fun getKakaoToken(
-        @RequestParam client_id: String, @RequestParam redirect_uri: String, @RequestParam code: String
+        @RequestParam client_id: String, @RequestParam redirect_uri: String, @RequestParam code: String,
+        @RequestParam grant_type: String = "authorization_code",
     ): GetKakaoTokenResponseDto
 }

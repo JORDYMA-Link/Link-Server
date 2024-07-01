@@ -102,12 +102,14 @@ class AuthService(
 
     @Transactional
     fun kakaoLoginWeb(code: String): TokenResponseDto {
-        val encodedRedirectUri = URLEncoder.encode(this.kakaoRedirectUri, "UTF-8")
-        val tokenResponse = kakaoAuthApi.getKakaoToken(this.kakaoClientId, encodedRedirectUri, code)
+
+        val redirectUri = this.kakaoRedirectUri
+        val tokenResponse = kakaoAuthApi.getKakaoToken(this.kakaoClientId, redirectUri, code)
+
         val idToken = tokenResponse.id_token
         val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
         val kid: String = claims.header.get("kid").toString()
-        jwtTokenUtil.verifySignature(idToken, kid, aud, iss, null)
+        jwtTokenUtil.verifySignature(idToken, kid, this.kakaoClientId, iss, null)
 
         val nickname: String = claims.body.get("nickname", String::class.java)
         val socialUserId: String = claims.body.get("sub", String::class.java)
