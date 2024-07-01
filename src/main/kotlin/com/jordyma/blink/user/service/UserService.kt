@@ -1,7 +1,9 @@
 package com.jordyma.blink.user.service
 
+import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
+import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -15,7 +17,7 @@ class UserService(
     fun find(userId: Long): UserInfoDto {
         val user = userRepository.findById(userId).orElseThrow { BadRequestException(USER_NOT_FOUND) }
         return UserInfoDto(
-            id = user.id,
+            id = user.id ?: throw IdRequiredException(ID_NOT_FOUND),
             name = user.nickname
         )
     }
