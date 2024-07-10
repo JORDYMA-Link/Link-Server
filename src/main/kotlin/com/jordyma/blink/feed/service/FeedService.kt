@@ -1,5 +1,7 @@
 package com.jordyma.blink.feed.service
 
+import FeedDetailDto
+import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
@@ -20,7 +22,7 @@ class FeedService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getFeedsByMonth(user: UserInfoDto, yrMonth: String): Map<String, FeedCalendarResponseDto> {
+    fun getFeedsByMonth(user: UserInfoDto, yrMonth: String): FeedCalendarResponseDto {
         val yearMonth = YearMonth.parse(yrMonth, DateTimeFormatter.ofPattern("yyyy-MM"))
         val startOfMonth = yearMonth.atDay(1).atStartOfDay()
         val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
@@ -28,7 +30,7 @@ class FeedService(
         val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user.id, startOfMonth, endOfMonth)
         val feedsByDate = feeds.groupBy { it.feed.createdAt?.toLocalDate() }
 
-        val response = mutableMapOf<String, FeedCalendarResponseDto>()
+        val response = mutableMapOf<String, FeedCalendarListDto>()
 
         for (date in startOfMonth.toLocalDate().rangeTo(endOfMonth.toLocalDate())) {
             val feedItems = feedsByDate[date]?.map { feedFolderDto ->
@@ -47,13 +49,13 @@ class FeedService(
 
             val isArchived = feedItems.isNotEmpty()
 
-            response[date.toString()] = FeedCalendarResponseDto(
+            response[date.toString()] = FeedCalendarListDto(
                 isArchived = isArchived,
                 list = feedItems
             )
         }
 
-        return response
+        return FeedCalendarResponseDto(response)
     }
 
     private fun getKeywordsByFeedId(feedId: Long): List<String> {
