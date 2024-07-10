@@ -1,4 +1,5 @@
 package com.jordyma.blink.auth.controller
+import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
@@ -27,10 +28,18 @@ class AuthController(
         return ResponseEntity.ok(authService.kakaoLogin(kakaoLoginRequestDto))
     }
 
+    @PostMapping("/apple-login")
+    @Operation(summary = "애플 로그인 API", description = "애플 idtoken을 입력받아 소셜 로그인을 진행")
+    fun appleLogin(
+        @Validated @RequestBody appleLoginRequestDto: AppleLoginRequestDto
+    ): ResponseEntity<TokenResponseDto> {
+        return ResponseEntity.ok(authService.appleLogin(appleLoginRequestDto))
+    }
+
     @PostMapping("/regenerate-token")
     @Operation(summary = "토큰 재발급 API", description = "기존 리프레시 토큰을 입력받아 새로운 토큰을 발급")
     fun regeneratedToken(
-       @Schema(hidden = true) @RequestHeader("Authorization") authorizationHeader: String?
+        @Schema(hidden = true) @RequestHeader("Authorization") authorizationHeader: String?
     ): ResponseEntity<TokenResponseDto> {
         val token: String? = CommonUtil.parseTokenFromBearer(authorizationHeader)
 

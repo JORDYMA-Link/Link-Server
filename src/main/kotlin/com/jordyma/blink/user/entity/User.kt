@@ -33,7 +33,6 @@ class User {
     @Column(name = "updated_at")
     var updatedAt: LocalDateTime? = null;
 
-
     @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null;
 
