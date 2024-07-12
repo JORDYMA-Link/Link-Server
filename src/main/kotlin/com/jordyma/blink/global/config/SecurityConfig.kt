@@ -25,6 +25,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/location/**",
             "/auth/kakao-login",
             "/auth/kakao-login-web/callback",
+            "/api/**",
             "/error",
             // 다른 기능 완성되기 전 임시로 모두 허용
             "/**"

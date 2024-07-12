@@ -1,53 +1,26 @@
 package com.jordyma.blink.user.entity
 
+import com.jordyma.blink.global.entity.BaseTimeEntity
 import jakarta.persistence.*
-import lombok.Getter
-import java.time.LocalDateTime
 
-
-@Getter
-@Entity
-class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    var id: Long? = null;
-
+@Entity(name = "Member")
+class User(
     @Column(name = "nickname")
-    var nickname: String? = null;
+    var nickname: String = "",
 
     @Column(name = "social_type")
     @Enumerated(EnumType.STRING)
-    var socialType: SocialType? = null;
+    val socialType: SocialType? = null,
 
     @Column(name = "social_user_id")
-    var socialUserId: String? = null
+    val socialUserId: String? = null,
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     var role: Role? = null
 
-    @Column(name = "created_at")
-    var createdAt: LocalDateTime? = null;
-
-    @Column(name = "updated_at")
-    var updatedAt: LocalDateTime? = null;
-
-
-    @Column(name = "deleted_at")
-    var deletedAt: LocalDateTime? = null;
-
-    companion object {
-        fun of(nickname: String, socialType: SocialType, socialUserId: String, role: Role): User {
-            val user = User()
-            user.nickname = nickname
-            user.socialType = socialType
-            user.socialUserId = socialUserId
-            user.role = role
-            user.createdAt = LocalDateTime.now()
-            user.updatedAt = LocalDateTime.now()
-            return user
-        }
-    }
-
+): BaseTimeEntity()  {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long? = null
 }
