@@ -1,8 +1,8 @@
 package com.jordyma.blink.feed.controller
 
-import FeedDetailDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
+import com.jordyma.blink.feed.dto.FeedDetailDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
@@ -31,4 +31,16 @@ class FeedController(
         val response = feedService.getFeedsByMonth(user = userDto, yrMonth = yearMonth)
         return ResponseEntity.ok(response)
     }
+
+    @Operation(summary = "피드 상세 조회 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id의 상세 정보를 반환해줍니다.")
+    @GetMapping("/{feedId}")
+    fun getFeedDetail(
+        @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
+        @RequestUserId userId: Long
+    ): ResponseEntity<FeedDetailDto> {
+        val userDto: UserInfoDto = userService.find(userId)
+        val feedDetailDto = feedService.getFeedDetail(user = userDto, feedId = feedId)
+        return ResponseEntity.ok(feedDetailDto)
+    }
+
 }
