@@ -9,7 +9,8 @@ class Keyword(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
 
-    @ManyToOne @JoinColumn(name = "feed_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feed_id")
     val feed: Feed,
 
     @Column(length = 20)

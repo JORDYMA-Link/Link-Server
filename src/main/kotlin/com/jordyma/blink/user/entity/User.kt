@@ -3,16 +3,16 @@ package com.jordyma.blink.user.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import jakarta.persistence.*
 
-@Entity(name = "Member")
+@Entity(name = "user")
 class User(
     @Column(name = "nickname")
     var nickname: String = "",
 
-    @Column(name = "social_type")
+    @Column(name = "socialType")
     @Enumerated(EnumType.STRING)
     val socialType: SocialType? = null,
 
-    @Column(name = "social_user_id")
+    @Column(name = "socialUserId")
     val socialUserId: String? = null,
 
     @Column(name = "role")

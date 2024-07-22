@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(description = "피드 아이템 DTO")
 data class FeedDto(
     @Schema(description = "폴더 ID")
-    val folderId: Long,
+    val folderId: Long?,
 
     @Schema(description = "폴더 이름")
     val folderName: String,

@@ -6,5 +6,5 @@ import io.swagger.v3.oas.annotations.media.Schema
 class UpdateFolderRequestDto {
 
     @Schema(description = "폴더 이름")
-    val folderName: String = ""
+    val name: String = ""
 }

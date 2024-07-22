@@ -14,15 +14,15 @@ import java.time.LocalDateTime
 @EntityListeners(AuditingEntityListener::class)
 open class BaseTimeEntity(
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "createdAt", updatable = false)
     val createdAt: LocalDateTime? = null
 ) {
     @LastModifiedDate
-    @Column(name = "updated_at")
+    @Column(name = "updatedAt")
     var updatedAt: LocalDateTime? = null
         protected set
 
-    @Column(name = "deleted_at")
+    @Column(name = "deletedAt")
     var deletedAt: LocalDateTime? = null
         protected set
 

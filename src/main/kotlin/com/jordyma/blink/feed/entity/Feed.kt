@@ -2,6 +2,7 @@ package com.jordyma.blink.feed.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
 
 @Entity
@@ -36,4 +37,7 @@ class Feed(
 
     @ManyToOne @JoinColumn(name = "folder_id")
     val folder: Folder,
+
+    @OneToMany(mappedBy = "feed")
+    val keywords: List<Keyword>,
 ): BaseTimeEntity()

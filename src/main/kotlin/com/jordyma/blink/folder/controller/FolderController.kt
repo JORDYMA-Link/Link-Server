@@ -2,10 +2,7 @@ package com.jordyma.blink.folder.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.folder.dto.CreateFolderRequestDto
-import com.jordyma.blink.folder.dto.FolderDto
-import com.jordyma.blink.folder.dto.GetFolderListResponseDto
-import com.jordyma.blink.folder.dto.UpdateFolderRequestDto
+import com.jordyma.blink.folder.dto.*
 import com.jordyma.blink.folder.service.FolderService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
@@ -21,7 +18,7 @@ class FolderController(private val folderService: FolderService) {
     fun getFolders(
         @AuthenticationPrincipal userAccount: UserAccount,
     ): ResponseEntity<GetFolderListResponseDto> {
-        val response = folderService.getFolders(user = userAccount)
+        val response = folderService.getFolders(userAccount = userAccount)
         return ResponseEntity.ok(response)
     }
 
@@ -40,7 +37,7 @@ class FolderController(private val folderService: FolderService) {
     fun getFeedsByFolder(
         @PathVariable("folderId") folderId: Long,
         @AuthenticationPrincipal userAccount: UserAccount,
-    ): ResponseEntity<FeedCalendarResponseDto> {
+    ): ResponseEntity<GetFeedsByFolderRequestDto> {
         val response = folderService.getFeedsByFolder(userAccount = userAccount, folderId = folderId)
         return ResponseEntity.ok(response)
     }
