@@ -44,7 +44,7 @@ class FeedService(
                     feedId = feedFolderDto.feed.id ?: throw IdRequiredException(ID_NOT_FOUND),
                     title = feedFolderDto.feed.title,
                     summary = feedFolderDto.feed.summary,
-                    source = feedFolderDto.feed.platform,
+                    platform = feedFolderDto.feed.platform,
                     sourceUrl = feedFolderDto.feed.url,
                     isMarked = feedFolderDto.feed.isMarked,
                     keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수
