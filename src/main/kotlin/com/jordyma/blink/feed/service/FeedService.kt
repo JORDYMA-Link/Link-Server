@@ -1,10 +1,8 @@
 package com.jordyma.blink.feed.service
 
-import com.jordyma.blink.feed.dto.FeedCalendarListDto
+import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.global.util.rangeTo
-import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedDetailDto
-import com.jordyma.blink.feed.dto.FeedItemDto
+import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
@@ -75,7 +73,8 @@ class FeedService(
             summary = feedDetail.summary,
             keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
             folderName = feedDetail.folderName,
-            memo = feedDetail.memo
+            memo = feedDetail.memo,
+            isMarked = feedDetail.isMarked
         )
     }
 

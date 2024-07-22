@@ -9,5 +9,6 @@ data class FeedDetailVo(
     val date: LocalDateTime,
     val summary: String,
     val folderName: String,
-    val memo: String
+    val memo: String,
+    val isMarked: Boolean
 )

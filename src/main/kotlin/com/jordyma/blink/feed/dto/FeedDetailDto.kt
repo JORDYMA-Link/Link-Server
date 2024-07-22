@@ -11,5 +11,6 @@ data class FeedDetailDto(
     val summary: String,
     val keywords: List<String>,
     val folderName: String,
-    val memo: String
+    val memo: String,
+    val isMarked: Boolean
 )
