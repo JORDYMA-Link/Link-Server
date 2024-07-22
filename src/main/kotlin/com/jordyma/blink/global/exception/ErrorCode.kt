@@ -7,6 +7,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
     // Common
     SHOULD_NOT_NULL("C000", HttpStatus.NOT_FOUND),
     NOT_FOUND("C001", HttpStatus.NOT_FOUND),
+    FORBIDDEN("C002", HttpStatus.FORBIDDEN),
 
     // Authentication
     UNAUTHORIZED("A000", HttpStatus.UNAUTHORIZED),

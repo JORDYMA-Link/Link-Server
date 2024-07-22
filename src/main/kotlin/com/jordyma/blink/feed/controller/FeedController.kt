@@ -9,6 +9,7 @@ import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -43,4 +44,14 @@ class FeedController(
         return ResponseEntity.ok(feedDetailDto)
     }
 
+    @Operation(summary = "피드 삭제 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id를 삭제합니다.")
+    @DeleteMapping("/{feedId}")
+    fun deleteFeed(
+        @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
+        @RequestUserId userId: Long
+    ): ResponseEntity<Unit> {
+        val userDto: UserInfoDto = userService.find(userId)
+        feedService.deleteFeed(user = userDto, feedId = feedId)
+        return ResponseEntity.noContent().build()
+    }
 }

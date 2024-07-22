@@ -6,10 +6,6 @@ import jakarta.persistence.*
 
 @Entity
 class Feed(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
-
     @Column(length = 200)
     val summary: String,
 
@@ -36,4 +32,8 @@ class Feed(
 
     @ManyToOne @JoinColumn(name = "folder_id")
     val folder: Folder,
-): BaseTimeEntity()
+): BaseTimeEntity() {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long? = null
+}

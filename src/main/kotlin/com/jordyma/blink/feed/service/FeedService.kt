@@ -6,6 +6,8 @@ import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
 import com.jordyma.blink.feed.dto.FeedItemDto
 import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.global.error.ID_NOT_FOUND
+import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
@@ -13,6 +15,7 @@ import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
@@ -38,7 +41,7 @@ class FeedService(
                 FeedItemDto(
                     folderId = feedFolderDto.folderId,
                     folderName = feedFolderDto.folderName,
-                    feedId = feedFolderDto.feed.id,
+                    feedId = feedFolderDto.feed.id ?: throw IdRequiredException(ID_NOT_FOUND),
                     title = feedFolderDto.feed.title,
                     summary = feedFolderDto.feed.summary,
                     source = feedFolderDto.feed.platform,
@@ -86,4 +89,14 @@ class FeedService(
     }
 
 
+    @Transactional
+    fun deleteFeed(user: UserInfoDto, feedId: Long) {
+        val feed = feedRepository.findById(feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.folder.user.id != user.id) {
+            throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 삭제할 권한이 없습니다", Throwable())
+        }
+        feed.modifyDeletedDate(LocalDateTime.now())
+        feedRepository.save(feed)
+    }
 }
