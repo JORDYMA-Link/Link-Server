@@ -17,7 +17,7 @@ class Feed(
     val title: String,
 
     @Column(length = 100)
-    val source: String,
+    val platform: String,
 
     @Column(length = 255)
     val sourceUrl: String,

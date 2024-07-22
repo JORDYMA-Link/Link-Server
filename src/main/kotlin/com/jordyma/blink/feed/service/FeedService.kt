@@ -41,7 +41,7 @@ class FeedService(
                     feedId = feedFolderDto.feed.id,
                     title = feedFolderDto.feed.title,
                     summary = feedFolderDto.feed.summary,
-                    source = feedFolderDto.feed.source,
+                    source = feedFolderDto.feed.platform,
                     sourceUrl = feedFolderDto.feed.url,
                     isMarked = feedFolderDto.feed.isMarked,
                     keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수
