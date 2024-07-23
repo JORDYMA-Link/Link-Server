@@ -7,12 +7,13 @@ import jakarta.persistence.*
 @Entity
 class Keyword(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     val id: Long,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "feed_id")
     val feed: Feed,
 
-    @Column(length = 20)
+    @Column(name = "keyword", length = 20)
     val keyword: String,
 ): BaseTimeEntity()

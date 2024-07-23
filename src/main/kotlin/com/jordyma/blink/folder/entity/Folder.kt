@@ -6,19 +6,18 @@ import jakarta.persistence.*
 
 @Entity
 class Folder(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @ManyToOne @JoinColumn(name = "user_id")
     val user: User,
 
-    @Column(length = 50)
-    var name: String,
+    @Column(name = "name", length = 50)
+    val name: String,
 
-    @Column(nullable = false)
-    var count: Int,
+    @Column(name = "count")
+    val count: Int,
 ): BaseTimeEntity() {
     fun increaseCount() {
         count++

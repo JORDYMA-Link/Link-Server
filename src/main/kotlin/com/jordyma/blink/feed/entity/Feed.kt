@@ -9,30 +9,31 @@ import jakarta.persistence.*
 class Feed(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     val id: Long,
 
-    @Column(length = 200)
+    @Column(name = "summary", length = 200)
     val summary: String,
 
-    @Column(length = 100)
+    @Column(name = "title", length = 100)
     val title: String,
 
-    @Column(length = 100)
+    @Column(name = "source", length = 100)
     val source: String,
 
-    @Column(length = 255)
+    @Column(name = "source_url", length = 255)
     val sourceUrl: String,
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String = "",
 
-    @Column(length = 255)
+    @Column(name = "thumbnail_image", length = 255)
     val thumbnailImage: String,
 
-    @Column(length = 255)
+    @Column(name = "url", length = 255)
     val url: String,
 
-    @Column(columnDefinition = "BIT")
+    @Column(name = "is_marked", columnDefinition = "BIT")
     val isMarked: Boolean,
 
     @ManyToOne @JoinColumn(name = "folder_id")
