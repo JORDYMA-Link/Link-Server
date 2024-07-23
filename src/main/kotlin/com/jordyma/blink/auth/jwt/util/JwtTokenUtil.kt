@@ -31,9 +31,9 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
     private val BEARER_PREFIX: String = "Bearer "
 
     //TODO 환경 변수로 빼기
-    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 24 * 60 * 60 * 1000
+    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 3 * 60 * 60 * 1000 /* 24 * 60 * 60 * 1000 */
 
-    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 5 * 60 * 60 * 1000 /* 14 * 24 * 60 * 60 * 1000 */
 
     // jwt 토큰 생성
     fun generateToken(tokenType: TokenType, user: User): String {

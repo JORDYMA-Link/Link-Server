@@ -1,6 +1,5 @@
 package com.jordyma.blink.feed.controller
 
-import FeedDetailDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.service.FeedService

@@ -4,18 +4,18 @@ import com.jordyma.blink.user.entity.Role
 import org.springframework.security.core.userdetails.User
 
 
-class UserAccount(userId: Long?, nickName: String?, role: Role?) :
+class UserAccount(userId: Long, nickName: String, role: Role) :
     User(userId.toString(), "", object : ArrayList<Role?>() {
         init {
             add(role)
         }
     }) {
 
-    var userId: Long? = null
+    val userId: Long = userId;
 
-    var nickName: String? = null
+    val nickName: String = nickName;
 
-    val role: Role? = null
+    val role: Role = Role.USER;
 }
 
 
