@@ -98,4 +98,29 @@ class FeedService(
         feed.modifyDeletedDate(LocalDateTime.now())
         feedRepository.save(feed)
     }
+
+    @Transactional
+    fun changeIsMarked(user: UserInfoDto, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+        val feed = feedRepository.findById(feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.folder.user.id != user.id) {
+            throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
+        }
+        feed.changeIsMarked(setMarked)
+        feed.modifyUpdatedDate(LocalDateTime.now())
+        feedRepository.save(feed)
+
+        val newFeed = getFeed(feedId)
+        return FeedIsMarkedResponseDto(
+            id = newFeed.id ?: throw IdRequiredException(ID_NOT_FOUND),
+            isMarked = newFeed.isMarked,
+            modifiedDate = if (newFeed.updatedAt != null) DateTimeUtils.localDateTimeToString(newFeed.updatedAt!!) else "9999-12-31"
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getFeed(feedId: Long): Feed
+            = feedRepository.findById(feedId)
+        .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+
 }

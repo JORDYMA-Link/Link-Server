@@ -27,13 +27,18 @@ class Feed(
     @Column(length = 255)
     val url: String,
 
-    @Column(columnDefinition = "BIT")
-    val isMarked: Boolean,
-
     @ManyToOne @JoinColumn(name = "folder_id")
     val folder: Folder,
 ): BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null
+
+    @Column(columnDefinition = "BIT")
+    var isMarked: Boolean = false
+        private set
+
+    fun changeIsMarked(newIsMarked: Boolean){
+        this.isMarked = newIsMarked
+    }
 }

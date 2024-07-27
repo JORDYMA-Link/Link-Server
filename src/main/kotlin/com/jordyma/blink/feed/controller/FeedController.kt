@@ -3,6 +3,7 @@ package com.jordyma.blink.feed.controller
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
+import com.jordyma.blink.feed.dto.FeedIsMarkedResponseDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -33,6 +35,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
+
     @Operation(summary = "피드 상세 조회 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id의 상세 정보를 반환해줍니다.")
     @GetMapping("/{feedId}")
     fun getFeedDetail(
@@ -44,6 +47,7 @@ class FeedController(
         return ResponseEntity.ok(feedDetailDto)
     }
 
+
     @Operation(summary = "피드 삭제 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id를 삭제합니다.")
     @DeleteMapping("/{feedId}")
     fun deleteFeed(
@@ -53,5 +57,15 @@ class FeedController(
         val userDto: UserInfoDto = userService.find(userId)
         feedService.deleteFeed(user = userDto, feedId = feedId)
         return ResponseEntity.noContent().build()
+    }
+
+
+    @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
+    @PatchMapping("/{feedId}")
+    fun changeFeedIsMarked(@PathVariable feedId: Long, @RequestUserId userId: Long, @RequestParam setMarked: Boolean,
+    ): ResponseEntity<FeedIsMarkedResponseDto> {
+        val userDto: UserInfoDto = userService.find(userId)
+        val responseDto= feedService.changeIsMarked(user = userDto, feedId = feedId, setMarked = setMarked)
+        return ResponseEntity.ok(responseDto)
     }
 }
