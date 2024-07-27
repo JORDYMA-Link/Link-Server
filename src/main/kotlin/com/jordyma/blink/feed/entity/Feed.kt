@@ -16,8 +16,8 @@ class Feed(
     @Column(name = "platform", length = 100)
     val platform: String,
 
-    @Column(name = "source_url", length = 255)
-    val sourceUrl: String,
+    @Column(name = "platform_image", length = 255)
+    val platformImage: String,
 
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String = "",
@@ -25,8 +25,8 @@ class Feed(
     @Column(name = "thumbnail_image", length = 255)
     val thumbnailImage: String,
 
-    @Column(name = "url", length = 255)
-    val url: String,
+    @Column(name = "origin_url", length = 255)
+    val originUrl: String,
 
     @ManyToOne @JoinColumn(name = "folder_id")
     val folder: Folder,

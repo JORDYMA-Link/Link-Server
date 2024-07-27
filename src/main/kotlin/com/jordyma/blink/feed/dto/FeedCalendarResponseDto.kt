@@ -22,7 +22,7 @@ data class FeedItemDto(
     val title: String,
     val summary: String,
     val platform: String,
-    val sourceUrl: String,
+    val platformImage: String,
     val isMarked: Boolean,
     val keywords: List<String>
 )
