@@ -1,8 +1,8 @@
 package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.feed.dto.*
-import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
