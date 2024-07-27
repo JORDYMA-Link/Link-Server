@@ -68,13 +68,15 @@ class FeedService(
         return FeedDetailDto(
             feedId = feedDetail.feedId,
             thumnailImage = feedDetail.thumnailImage,
+            platformImage = feedDetail.platformImage,
             title = feedDetail.title,
             date = DateTimeUtils.localDateTimeToString(feedDetail.date),
             summary = feedDetail.summary,
             keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
             folderName = feedDetail.folderName,
             memo = feedDetail.memo,
-            isMarked = feedDetail.isMarked
+            isMarked = feedDetail.isMarked,
+            originUrl = feedDetail.originUrl
         )
     }
 

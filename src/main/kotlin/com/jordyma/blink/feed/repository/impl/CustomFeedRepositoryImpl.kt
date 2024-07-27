@@ -53,12 +53,14 @@ class CustomFeedRepositoryImpl(
                     FeedDetailVo::class.java,
                     qFeed.id,
                     qFeed.thumbnailImage,
+                    qFeed.platformImage,
                     qFeed.title,
                     qFeed.createdAt.`as`("date"),
                     qFeed.summary,
                     qFolder.name.`as`("folderName"),
                     qFeed.memo,
-                    qFeed.isMarked
+                    qFeed.isMarked,
+                    qFeed.originUrl
                 )
             )
             .from(qFeed)
