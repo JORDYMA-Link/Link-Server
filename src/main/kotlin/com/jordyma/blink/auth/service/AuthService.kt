@@ -103,8 +103,12 @@ class AuthService(
     @Transactional
     fun kakaoLoginWeb(code: String): TokenResponseDto {
 
-        val redirectUri = this.kakaoRedirectUri
-        val tokenResponse = kakaoAuthApi.getKakaoToken(this.kakaoClientId, redirectUri, code)
+        val redirectUri = URLEncoder.encode(this.kakaoRedirectUri, Charsets.UTF_8)
+        val tokenResponse = kakaoAuthApi.getKakaoToken(
+            client_id = this.kakaoClientId,
+            redirect_uri = redirectUri,
+            code = code
+        )
 
         val idToken = tokenResponse.id_token
         val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
