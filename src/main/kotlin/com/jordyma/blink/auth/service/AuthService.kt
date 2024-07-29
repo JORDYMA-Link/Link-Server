@@ -5,6 +5,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
+
 import com.jordyma.blink.user.entity.SocialType
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
@@ -85,7 +86,14 @@ class AuthService(
 
     private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
         return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
-            ?: userRepository.save(User.of(nickname, SocialType.KAKAO, socialUserId, Role.USER))
+            ?: userRepository.save(
+                User(
+                    nickname = nickname,
+                    socialType = SocialType.KAKAO,
+                    socialUserId = socialUserId,
+                    role = Role.USER
+                )
+            )
     }
 
     @Transactional
@@ -112,8 +120,10 @@ class AuthService(
 
     @Transactional
     fun kakaoLoginWeb(code: String): TokenResponseDto {
+
         val redirectUri = this.kakaoRedirectUri
         val tokenResponse = kakaoAuthApi.getKakaoToken(this.kakaoClientId, redirectUri, code)
+
         val idToken = tokenResponse.id_token
         val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
         val kid: String = claims.header.get("kid").toString()

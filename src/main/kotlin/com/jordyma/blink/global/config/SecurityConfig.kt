@@ -25,9 +25,9 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/location/**",
             "/auth/kakao-login",
             "/auth/kakao-login-web/callback",
+            // TODO 수정 필요
+            "/api/feed/**",
             "/error",
-            // 다른 기능 완성되기 전 임시로 모두 허용
-            "/**"
     )
 
     @Bean
@@ -40,5 +40,6 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             .authorizeHttpRequests { it.requestMatchers(*permitAllUrls).permitAll().anyRequest().authenticated() }
             .addFilterBefore(JwtAuthenticationFilter(authenticationManager, permitAllUrls), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(JwtExceptionFilter(), JwtAuthenticationFilter::class.java)
+
             .build()
 }

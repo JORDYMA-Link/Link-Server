@@ -17,19 +17,25 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@Tag(name = "folder", description = "폴더 API")
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
+import com.jordyma.blink.folder.dto.*
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+
 @RestController
-@RequestMapping("/folder")
-class FolderController (
+@Tag(name = "folder", description = "폴더 API")
+@RequestMapping("/api/folders")
+class FolderController(
     private val folderService: FolderService,
-    private val userService: UserService,
-){
+    private val userService: UserService
+) {
 
     // TODO: @RequestUserId 적용 > request에서 userId 삭제
     @PostMapping(value = ["/onboarding"])
     @Operation(summary = "온보딩 주제 선택 API", description =
-            "'경제' > 'ECONOMY'\n" + "'기획' > 'PLANNING'\n" + "'개발' > 'DEVELOPMENT'\n" + "'독서' > 'READING'\n" + "'동물' > 'ANIMALS'\n" + "'디자인' > 'DESIGN'\n"
-                    + "'아이돌' > 'IDOL'\n" + "'여행' > 'TRAVEL'\n" + "'영감' > 'INSPIRATION'\n" + "'옷' > 'CLOTHING'\n" + "'요리' > 'COOKING'\n" + "'의료' > 'MEDICAL'")
+    "'경제' > 'ECONOMY'\n" + "'기획' > 'PLANNING'\n" + "'개발' > 'DEVELOPMENT'\n" + "'독서' > 'READING'\n" + "'동물' > 'ANIMALS'\n" + "'디자인' > 'DESIGN'\n"
+            + "'아이돌' > 'IDOL'\n" + "'여행' > 'TRAVEL'\n" + "'영감' > 'INSPIRATION'\n" + "'옷' > 'CLOTHING'\n" + "'요리' > 'COOKING'\n" + "'의료' > 'MEDICAL'")
     fun createOnboarding(@RequestBody request: OnboardingReqDto): ResponseEntity<OnboardingResDto> {
 
         val user = userService.find(request.userId) // TODO: 수정
@@ -54,5 +60,55 @@ class FolderController (
         folder.id ?: throw ApplicationException(ErrorCode.SHOULD_NOT_NULL, "폴더 생성 실패", Throwable())
 
         return ResponseEntity.ok(FolderCreateResDto(folder.id))
+    }
+
+    @Operation(summary = "보관함 폴더 리스트 조회", description = "")
+    @GetMapping("")
+    fun getFolders(
+        @AuthenticationPrincipal userAccount: UserAccount,
+    ): ResponseEntity<GetFolderListResponseDto> {
+        val response = folderService.getFolders(userAccount = userAccount)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "폴더 삭제", description = "")
+    @DeleteMapping("{folderId}")
+    fun deleteFolder(
+        @PathVariable("folderId") folderId: Long,
+        @AuthenticationPrincipal userAccount: UserAccount,
+    ): ResponseEntity<Unit> {
+        folderService.delete(userAccount = userAccount, folderId = folderId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @Operation(summary = "폴더별 피드 리스트 조회", description = "")
+    @GetMapping("{folderId}/feeds")
+    fun getFeedsByFolder(
+        @PathVariable("folderId") folderId: Long,
+        @AuthenticationPrincipal userAccount: UserAccount,
+    ): ResponseEntity<GetFeedsByFolderRequestDto> {
+        val response = folderService.getFeedsByFolder(userAccount = userAccount, folderId = folderId)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "폴더 생성", description = "")
+    @PostMapping("")
+    fun createFolder(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestBody requestDto: CreateFolderRequestDto,
+    ): ResponseEntity<FolderDto> {
+        val response = folderService.create(userAccount = userAccount, requestDto = requestDto)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "폴더 수정", description = "")
+    @PatchMapping("{folderId}")
+    fun updateFolder(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @PathVariable("folderId") folderId: Long,
+        @RequestBody requestDto: UpdateFolderRequestDto,
+    ): ResponseEntity<FolderDto> {
+        val response = folderService.update(userAccount = userAccount, folderId = folderId, requestDto = requestDto)
+        return ResponseEntity.ok(response)
     }
 }

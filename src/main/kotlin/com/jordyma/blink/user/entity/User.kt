@@ -1,27 +1,22 @@
 package com.jordyma.blink.user.entity
 
+import com.jordyma.blink.global.entity.BaseTimeEntity
 import jakarta.persistence.*
 import lombok.Getter
 import java.time.LocalDateTime
 
 
-@Getter
-@Entity
-class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    var id: Long? = null;
-
+@Entity(name = "user")
+class User(
     @Column(name = "nickname")
-    var nickname: String? = null;
+    var nickname: String = "",
 
-    @Column(name = "social_type")
+    @Column(name = "socialType")
     @Enumerated(EnumType.STRING)
-    var socialType: SocialType? = null;
+    val socialType: SocialType? = null,
 
-    @Column(name = "social_user_id")
-    var socialUserId: String? = null
+    @Column(name = "socialUserId")
+    val socialUserId: String? = null,
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
@@ -48,5 +43,8 @@ class User {
             return user
         }
     }
-
+): BaseTimeEntity()  {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long? = null
 }

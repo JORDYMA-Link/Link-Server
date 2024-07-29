@@ -1,23 +1,30 @@
 package com.jordyma.blink.folder.entity
 
-import com.jordyma.blink.common.entity.BaseTimeEntity
+import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
 
-
 @Entity
-@Table(name = "folder")
 class Folder(
-
-    @ManyToOne @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
-
-    @Column(nullable = false)
-    var name: String,
-
-    var count: Int,
-
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     val id: Long? = null,
 
-): BaseTimeEntity()
+    @ManyToOne @JoinColumn(name = "user_id")
+    val user: User,
+
+    @Column(name = "name", length = 50)
+    var name: String,
+
+    @Column(name = "count")
+    var count: Int,
+): BaseTimeEntity() {
+
+    fun increaseCount() {
+        count++
+    }
+
+    fun decreaseCount() {
+        count--
+    }
+}
