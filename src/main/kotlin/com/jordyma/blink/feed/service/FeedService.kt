@@ -1,6 +1,5 @@
 package com.jordyma.blink.feed.service
 
-import FeedDetailDto
 import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
@@ -65,6 +64,4 @@ class FeedService(
         }
         return keywords.map { it.keyword }
     }
-
-
 }

@@ -51,6 +51,10 @@ dependencies {
     kapt("jakarta.annotation:jakarta.annotation-api")
     kapt("jakarta.persistence:jakarta.persistence-api")
 
+    // json
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
+    implementation("org.json:json:20210307")
+
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("io.jsonwebtoken:jjwt-api:0.11.2")
