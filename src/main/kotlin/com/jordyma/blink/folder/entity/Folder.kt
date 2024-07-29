@@ -20,11 +20,4 @@ class Folder(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-): BaseTimeEntity(){
-
-    companion object {
-        fun of(user: User, name: String, count:Int): Folder {
-            return Folder(user = user, name = name, count = count)
-        }
-    }
-}
+): BaseTimeEntity()
