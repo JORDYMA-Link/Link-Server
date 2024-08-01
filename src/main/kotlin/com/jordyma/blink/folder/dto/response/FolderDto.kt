@@ -1,4 +1,4 @@
-package com.jordyma.blink.folder.dto
+package com.jordyma.blink.folder.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 

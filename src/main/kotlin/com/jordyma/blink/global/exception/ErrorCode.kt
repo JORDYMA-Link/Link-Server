@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus
 enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
 
     // Common
-    NOT_FOUND("C000", HttpStatus.NOT_FOUND),
+    SHOULD_NOT_NULL("C000", HttpStatus.NOT_FOUND),
+    NOT_FOUND("C001", HttpStatus.NOT_FOUND),
 
     // Authentication
     UNAUTHORIZED("A000", HttpStatus.UNAUTHORIZED),

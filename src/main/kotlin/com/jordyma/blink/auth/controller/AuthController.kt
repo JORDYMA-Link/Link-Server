@@ -35,6 +35,14 @@ class AuthController(
         return ResponseEntity.ok(authService.kakaoLogin(kakaoLoginRequestDto))
     }
 
+    @PostMapping("/apple-login")
+    @Operation(summary = "애플 로그인 API", description = "애플 idtoken을 입력받아 소셜 로그인을 진행")
+    fun appleLogin(
+        @Validated @RequestBody appleLoginRequestDto: AppleLoginRequestDto
+    ): ResponseEntity<TokenResponseDto> {
+        return ResponseEntity.ok(authService.appleLogin(appleLoginRequestDto))
+    }
+
     @PostMapping("/regenerate-token")
     @Operation(summary = "토큰 재발급 API", description = "기존 리프레시 토큰을 입력받아 새로운 토큰을 발급")
     fun regeneratedToken(

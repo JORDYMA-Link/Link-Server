@@ -53,6 +53,7 @@ dependencies {
     kapt("jakarta.annotation:jakarta.annotation-api")
     kapt("jakarta.persistence:jakarta.persistence-api")
 
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("io.jsonwebtoken:jjwt-api:0.11.2")
@@ -64,6 +65,18 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // json
+    // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
+    implementation("com.google.code.gson:gson:2.8.7")
+
+    // logging
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+}
+
+configurations.forEach {
+    it.exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    // it.exclude(group = "org.apache.logging.log4j", module = "log4j-to-slf4j")
 }
 
 tasks.withType<KotlinCompile> {
