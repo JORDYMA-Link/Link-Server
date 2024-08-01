@@ -1,38 +1,18 @@
 package com.jordyma.blink.folder.service
 
-import lombok.RequiredArgsConstructor
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.repository.FolderRepository
-import com.jordyma.blink.global.exception.ApplicationException
-import com.jordyma.blink.user.entity.User
-
-@Service
-@Transactional
-@RequiredArgsConstructor
-class FolderService (
-    private val folderRepository: FolderRepository,
-){
-
-    fun create(user: User, topic: String): Folder {
-        val folder = Folder(user, topic, 0)
-        return folderRepository.save(folder)
-    }
-}
-
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.folder.dto.*
+import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
+import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
+import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
+import com.jordyma.blink.folder.dto.response.FolderDto
+import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.repository.UserRepository
-import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
