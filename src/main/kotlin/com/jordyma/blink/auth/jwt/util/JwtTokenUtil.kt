@@ -61,22 +61,16 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         return token
     }
 
-    private fun removeSignature(jwt: String): String {
-        val jwtSplit = jwt.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return jwtSplit[0] + "." + jwtSplit[1] + "."
-    }
-
     fun parseJwt(jwt: String): Jwt<Header<*>, Claims> {
         try {
-            val jwtWithoutSignature = removeSignature(jwt)
-
             return Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
                 .build()
-                .parseClaimsJwt(jwtWithoutSignature)
+                .parseClaimsJwt(jwt)
         } catch (e: ExpiredJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.")
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.", e)
         } catch (e: MalformedJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "malformed token")
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 token입니다.", e)
         }
     }
 

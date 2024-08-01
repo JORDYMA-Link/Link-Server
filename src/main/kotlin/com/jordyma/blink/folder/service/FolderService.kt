@@ -85,8 +85,9 @@ class FolderService(
                 keywords = feed.keywords.map { it.keyword },
             )
         }
+        checkNotNull(folder.id)
 
-        return GetFeedsByFolderRequestDto(feedList)
+        return GetFeedsByFolderRequestDto(folderId=folder.id, folderName=folder.name, feedList=feedList)
     }
 
     fun create(userAccount: UserAccount, requestDto: CreateFolderRequestDto): FolderDto {
