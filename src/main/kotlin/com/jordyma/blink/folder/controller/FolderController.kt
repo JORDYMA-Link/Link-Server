@@ -26,11 +26,9 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "folder", description = "폴더 API")
 @RequestMapping("/api/folders")
 class FolderController(
-    private val folderService: FolderService,
-    private val userService: UserService
+    private val folderService: FolderService
 ) {
 
-    // TODO: @RequestUserId 적용 > request에서 userId 삭제
     @PostMapping(value = ["/onboarding"])
     @Operation(summary = "온보딩 주제 선택 API")
     fun createOnboarding(@AuthenticationPrincipal userAccount: UserAccount,

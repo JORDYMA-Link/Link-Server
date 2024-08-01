@@ -1,6 +1,7 @@
 package com.jordyma.blink.auth.controller
 import com.jordyma.blink.auth.dto.State
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
+import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.global.util.CommonUtil
