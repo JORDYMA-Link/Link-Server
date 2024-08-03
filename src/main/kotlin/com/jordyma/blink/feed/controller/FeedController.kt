@@ -5,7 +5,10 @@ import com.jordyma.blink.feed.dto.AiSummaryContent
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
+import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
+import com.jordyma.blink.feed.dto.response.FeedCreateResDto
 import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -13,11 +16,7 @@ import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/feeds")
@@ -38,7 +37,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
-    @Operation(summary = "AI가 요약한 내용 조회 api")
+    @Operation(summary = "링크 요약 api", description = "요약 결과 확인")
     @GetMapping("/summary/{link}")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
@@ -48,5 +47,16 @@ class FeedController(
         val response = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
         return ResponseEntity.ok(AiSummaryResponseDto.of(
             AiSummaryContent.from(response), "url", "folder"))
+    }
+
+    @Operation(summary = "링크 저장 api", description = "요약 결과 저장")
+    @PostMapping("")
+    fun createFeed(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestBody requestDto: FeedCreateReqDto,
+    ): ResponseEntity<FeedCreateResDto> {
+
+        val response = feedService.create(userAccount = userAccount, request = requestDto)
+        return ResponseEntity.ok(response)
     }
 }

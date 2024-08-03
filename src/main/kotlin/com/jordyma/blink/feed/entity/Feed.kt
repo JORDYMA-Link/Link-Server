@@ -10,35 +10,41 @@ class Feed(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    val id: Long,
+    val id: Long? = null,
 
     @Column(name = "summary", length = 200)
-    val summary: String,
+    var summary: String,
 
     @Column(name = "title", length = 100)
-    val title: String,
+    var title: String,
 
     @Column(name = "source", length = 100)
-    val source: String,
+    val source: String? = "",
 
     @Column(name = "source_url", length = 255)
-    val sourceUrl: String,
+    val sourceUrl: String? = "",
 
     @Column(name = "memo", columnDefinition = "TEXT")
-    var memo: String = "",
+    var memo: String? = "",
 
     @Column(name = "thumbnail_image", length = 255)
-    val thumbnailImage: String,
+    var thumbnailImage: String? = "",
 
     @Column(name = "url", length = 255)
-    val url: String,
+    var url: String,
 
     @Column(name = "is_marked", columnDefinition = "BIT")
-    val isMarked: Boolean,
+    var isMarked: Boolean = false,
 
     @ManyToOne @JoinColumn(name = "folder_id")
-    val folder: Folder,
+    var folder: Folder,
 
     @OneToMany(mappedBy = "feed")
-    val keywords: List<Keyword>,
-): BaseTimeEntity()
+    var keywords: List<Keyword>? = emptyList(),
+): BaseTimeEntity(){
+    fun updateKeywords(
+        keywords: List<Keyword>
+    ) {
+        this.keywords = keywords
+    }
+}

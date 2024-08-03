@@ -12,6 +12,7 @@ import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
 
@@ -76,13 +77,13 @@ class FolderService(
             FeedDto(
                 folderId = feed.folder.id,
                 folderName = feed.folder.name,
-                feedId = feed.id,
+                feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.source,
-                sourceUrl = feed.sourceUrl,
+                platform = feed.source!!,
+                sourceUrl = feed.sourceUrl!!,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.keyword },
+                keywords = feed.keywords!!.map { it.keyword },
             )
         }
         checkNotNull(folder.id)
