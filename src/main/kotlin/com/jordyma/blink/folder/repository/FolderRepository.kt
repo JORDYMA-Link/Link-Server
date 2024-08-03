@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface FolderRepository : JpaRepository<Folder, Long> {
     fun findByUser(user: User): List<Folder>
+
+    fun findAllByUser(user: User): List<Folder>
 }

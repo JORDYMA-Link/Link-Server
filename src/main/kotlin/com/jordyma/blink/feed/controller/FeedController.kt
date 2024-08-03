@@ -1,12 +1,9 @@
 package com.jordyma.blink.feed.controller
 
-import com.jordyma.blink.feed.dto.AiSummaryContent
-import com.jordyma.blink.feed.dto.AiSummaryResponseDto
+import FeedDetailDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.service.FeedService
-import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation

@@ -1,27 +1,134 @@
 package com.jordyma.blink.folder.service
 
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.dto.FeedDto
+import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
+import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
+import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
+import com.jordyma.blink.folder.dto.response.FolderDto
+import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 class FolderService(
     private val folderRepository: FolderRepository,
+    private val feedRepository: FeedRepository,
     private val userRepository: UserRepository,
 ) {
-    fun getFolderNames(userId: Long): List<String> {
-        val user = findUserOrThrow(userId)
-        return folderRepository.findByUser(user).stream().map { folder -> folder.name }.toList();
+    fun getFolders(userAccount: UserAccount): GetFolderListResponseDto {
+        val userId = userAccount.userId;
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val folders = folderRepository.findAllByUser(user)
+
+        folders.map { folder ->
+            FolderDto(
+                id = folder.id,
+                name = folder.name,
+                feedCount = folder.count
+            )
+        }.let {
+            return GetFolderListResponseDto(it)
+        }
+
     }
 
-    private fun findUserOrThrow(userId: Long): User {
-        return userRepository.findById(userId).orElseThrow {
-            ApplicationException(ErrorCode.NOT_FOUND, "존재하지 않는 id입니다 : $userId")
+    fun delete(userAccount: UserAccount, folderId: Long): Unit {
+        val userId = userAccount.userId;
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
+        val folder = folderRepository.findById(folderId).orElseThrow {
+            ApplicationException(ErrorCode.NOT_FOUND, "폴더를 찾을 수 없습니다.")
+        }
+
+        if (folder.user != user) {
+            throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 삭제 권한이 없습니다.")
+        }
+
+        feedRepository.deleteAllByFolder(folder)
+
+        folderRepository.delete(folder)
+    }
+
+    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long): GetFeedsByFolderRequestDto {
+        val userId = userAccount.userId;
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val folder = folderRepository.findById(folderId).orElseThrow {
+            ApplicationException(ErrorCode.NOT_FOUND, "폴더를 찾을 수 없습니다.")
+        }
+
+        if (folder.user != user) {
+            throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 조회 권한이 없습니다.")
+        }
+
+        val feeds = feedRepository.findAllByFolder(folder)
+        val feedList = feeds.map { feed ->
+            FeedDto(
+                folderId = feed.folder.id,
+                folderName = feed.folder.name,
+                feedId = feed.id,
+                title = feed.title,
+                summary = feed.summary,
+                platform = feed.source,
+                sourceUrl = feed.sourceUrl,
+                isMarked = feed.isMarked,
+                keywords = feed.keywords.map { it.keyword },
+            )
+        }
+        checkNotNull(folder.id)
+
+        return GetFeedsByFolderRequestDto(folderId=folder.id, folderName=folder.name, feedList=feedList)
+    }
+
+    fun create(userAccount: UserAccount, requestDto: CreateFolderRequestDto): FolderDto {
+        val userId = userAccount.userId;
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val folder = Folder(
+            name = requestDto.name,
+            user = user,
+            count = 0,
+        )
+
+        val savedFolder = folderRepository.save(folder)
+
+        return FolderDto(
+            id = savedFolder.id,
+            name = savedFolder.name,
+            feedCount = savedFolder.count
+        )
+    }
+
+    fun update(userAccount: UserAccount, folderId: Long, requestDto: UpdateFolderRequestDto): FolderDto {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val folder = folderRepository.findById(folderId).orElseThrow {
+            ApplicationException(ErrorCode.NOT_FOUND, "폴더를 찾을 수 없습니다.")
+        }
+
+        if (folder.user != user) {
+            throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 수정 권한이 없습니다.")
+        }
+
+        folder.name = requestDto.name
+        val savedFolder = folderRepository.save(folder)
+
+        return FolderDto(
+            id = savedFolder.id,
+            name = savedFolder.name,
+            feedCount = savedFolder.count
+        )
     }
 }

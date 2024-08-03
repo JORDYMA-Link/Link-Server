@@ -5,7 +5,7 @@ import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedItemDto
+import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -33,13 +33,13 @@ class FeedService(
 
         for (date in startOfMonth.toLocalDate().rangeTo(endOfMonth.toLocalDate())) {
             val feedItems = feedsByDate[date]?.map { feedFolderDto ->
-                FeedItemDto(
+                FeedDto(
                     folderId = feedFolderDto.folderId,
                     folderName = feedFolderDto.folderName,
                     feedId = feedFolderDto.feed.id,
                     title = feedFolderDto.feed.title,
                     summary = feedFolderDto.feed.summary,
-                    source = feedFolderDto.feed.source,
+                    platform = feedFolderDto.feed.source,
                     sourceUrl = feedFolderDto.feed.url,
                     isMarked = feedFolderDto.feed.isMarked,
                     keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수

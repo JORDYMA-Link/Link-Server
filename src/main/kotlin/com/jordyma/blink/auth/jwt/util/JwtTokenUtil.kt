@@ -31,9 +31,9 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
     private val BEARER_PREFIX: String = "Bearer "
 
     //TODO 환경 변수로 빼기
-    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 24 * 60 * 60 * 1000
+    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 3 * 60 * 1000 /* 24 * 60 * 60 * 1000 */
 
-    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 5 * 60 * 1000 /* 14 * 24 * 60 * 60 * 1000 */
 
     // jwt 토큰 생성
     fun generateToken(tokenType: TokenType, user: User): String {
@@ -61,22 +61,16 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         return token
     }
 
-    private fun removeSignature(jwt: String): String {
-        val jwtSplit = jwt.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        return jwtSplit[0] + "." + jwtSplit[1] + "."
-    }
-
     fun parseJwt(jwt: String): Jwt<Header<*>, Claims> {
         try {
-            val jwtWithoutSignature = removeSignature(jwt)
-
             return Jwts.parserBuilder()
+                .setSigningKey(jwtSecret)
                 .build()
-                .parseClaimsJwt(jwtWithoutSignature)
+                .parseClaimsJwt(jwt)
         } catch (e: ExpiredJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.")
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.", e)
         } catch (e: MalformedJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "malformed token")
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 token입니다.", e)
         }
     }
 
