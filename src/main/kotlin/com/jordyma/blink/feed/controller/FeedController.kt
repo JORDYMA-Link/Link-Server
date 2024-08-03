@@ -1,14 +1,18 @@
 package com.jordyma.blink.feed.controller
 
-import FeedDetailDto
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.dto.AiSummaryContent
+import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.folder.service.FolderService
+import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -37,21 +41,12 @@ class FeedController(
     @Operation(summary = "AI가 요약한 내용 조회 api")
     @GetMapping("/summary/{link}")
     fun getAiSummary(
+        @AuthenticationPrincipal userAccount: UserAccount,
         @PathVariable link: String,
-        @RequestUserId userId: Long
     ): ResponseEntity<AiSummaryResponseDto> {
-        val folderNames: List<String> = folderService.getFolderNames(userId)
+        val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
         val response = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
-
-        // keywords, folders 추출
-        val keywords = response.optJSONArray("keyword")?.let { array ->
-            List(array.length()) { index -> array.optString(index) }
-        }
-        val folders = response.optJSONArray("category")?.let { array ->
-            List(array.length()) { index -> array.optString(index) }
-        }
-
         return ResponseEntity.ok(AiSummaryResponseDto.of(
-            AiSummaryContent.of(response, keywords as List<String>, folders as List<String>), "url", "folder"))
+            AiSummaryContent.from(response), "url", "folder"))
     }
 }

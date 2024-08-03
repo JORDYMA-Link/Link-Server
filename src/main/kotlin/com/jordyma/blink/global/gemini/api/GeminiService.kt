@@ -4,7 +4,12 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.request.ChatRequest
 import com.jordyma.blink.global.gemini.response.ChatResponse
-import org.json.JSONObject
+import com.jordyma.blink.global.gemini.response.PromptResponse
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromJsonElement
+import net.minidev.json.JSONObject
+//import net.minidev.json.JSONObject
+// import org.json.JSONObject
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -20,7 +25,7 @@ class GeminiService @Autowired constructor(
     @Value("\${gemini.api.key}") private val geminiApiKey: String
 ) {
 
-    fun getContents(link: String, folders: String): JSONObject {
+    fun getContents(link: String, folders: String): PromptResponse? {
 
         // gemini 요청
         val requestUrl = "$apiUrl?key=$geminiApiKey"
@@ -31,12 +36,11 @@ class GeminiService @Autowired constructor(
         val responseText = response?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
 
         // json 파싱
-        val responseJson = extractJsonAndParse(responseText)
+        // val responseJson = extractJsonAndParse(responseText)
 
         // aiSummary
-
-        if(responseJson != null){
-            return responseJson
+        if(responseText != null){
+            return extractJsonAndParse(responseText)
         }else{
             throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
         }
@@ -58,7 +62,7 @@ class GeminiService @Autowired constructor(
                 "}\n"
     }
 
-    fun extractJsonAndParse(text: String): JSONObject? {
+    fun extractJsonAndParse(text: String): PromptResponse? {
         // JSON 부분 추출
         val regex = "\\{[^}]*\\}".toRegex()
         val matchResult = regex.find(text)
@@ -66,11 +70,12 @@ class GeminiService @Autowired constructor(
         // JSON 문자열이 존재하는지 확인
         val jsonString = matchResult?.value
 
-        // JSON 문자열을 JSONObject로 파싱하여 반환
+        // JSON 문자열을 ContentData로 파싱하여 반환
         return if (jsonString != null) {
-            JSONObject(jsonString)
+            Json.decodeFromString<PromptResponse>(text)
         } else {
             null
         }
     }
+
 }

@@ -1,14 +1,8 @@
 package com.jordyma.blink.feed.dto
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.jordyma.blink.global.gemini.response.ChatResponse
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import io.swagger.v3.oas.annotations.media.Schema
 import lombok.NoArgsConstructor
-import org.json.JSONObject
 
 @NoArgsConstructor
 @Schema(description = "AI 요약 결과 내용 DTO")
@@ -26,11 +20,11 @@ data class AiSummaryContent(
     val folders: List<String>
 ) {
     companion object {
-        fun of(chatResponse: JSONObject, keywords: List<String>, folders: List<String>) = AiSummaryContent(
-            subject = chatResponse.optString("subject"),
-            summary = chatResponse.optString("summary"),
-            keywords = keywords,
-            folders = folders
+        fun from(promptResponse: PromptResponse?) = AiSummaryContent(
+            subject = promptResponse?.subject ?: "",
+            summary = promptResponse?.summary ?: "",
+            keywords = promptResponse?.keywords ?: emptyList(),
+            folders = promptResponse?.category ?: emptyList(),
         )
     }
 }

@@ -42,6 +42,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
     implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     runtimeOnly("org.postgresql:postgresql")
@@ -51,10 +52,6 @@ dependencies {
     kapt("com.querydsl:querydsl-apt:5.0.0:jakarta")
     kapt("jakarta.annotation:jakarta.annotation-api")
     kapt("jakarta.persistence:jakarta.persistence-api")
-
-    // json
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
-    implementation("org.json:json:20210307")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.springframework.boot:spring-boot-starter-security")
@@ -71,7 +68,7 @@ dependencies {
 
     // json
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
-    implementation("com.google.code.gson:gson:2.8.7")
+     implementation("com.google.code.gson:gson:2.8.7")
 
     // logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
