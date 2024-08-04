@@ -20,6 +20,9 @@ data class FeedCreateReqDto (
     @Schema(description = "키워드")
     val keywords: List<String>,
 
-    @Schema(name = "메모")
+    @Schema(description = "메모")
     var memo: String,
+
+    @Schema(description = "AI 추천 폴더 리스트 - 링크 요약 api response 값 그대로 보내주시면 됩니다!")
+    val recommendFolders: List<String>,
 )

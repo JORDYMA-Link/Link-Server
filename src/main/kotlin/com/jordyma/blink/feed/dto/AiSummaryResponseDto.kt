@@ -38,13 +38,8 @@ data class AiSummaryResponseDto(
     val sourceUrl: String,
 
     @Schema(description = "AI 추천 폴더")
-    val recommend: String
-){
-    companion object {
-        fun of(aiSummaryContent: AiSummaryContent, sourceUrl: String, recommend: String) = AiSummaryResponseDto(
-            content = aiSummaryContent,
-            sourceUrl = sourceUrl,
-            recommend = recommend
-        )
-    }
-}
+    val recommendFolder: String,
+
+    @Schema(description = "AI 추천 폴더 리스트 (링크 저장 api request에 사용)")
+    val recommendFolders: List<String>,
+)

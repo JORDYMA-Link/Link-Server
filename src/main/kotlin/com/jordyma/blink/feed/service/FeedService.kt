@@ -13,7 +13,9 @@ import com.jordyma.blink.feed.entity.Brunch
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.folder.repository.FolderRepository
+import com.jordyma.blink.folder.repository.RecommendRepository
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -34,6 +36,7 @@ class FeedService(
     private val keywordRepository: KeywordRepository,
     private val userRepository: UserRepository,
     private val folderRepository: FolderRepository,
+    private val recommendRepository: RecommendRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -99,14 +102,42 @@ class FeedService(
             title = request.title,
             memo = request.memo,
             source = brunch.brunch,
-            // sourceUrl = brunch.image,
-            // thumbnailImage = "",
         )
         feedRepository.save(feed)
 
+        // 미분류인 경우 - 추천 폴더 생성
+        if(folder!!.name == "미분류"){
+            createRecommendFolders(feed, request)
+        }
+
         // 키워드 생성
+        createKeywords(feed, request)
+
+        if(feed.id == null){
+            throw ApplicationException(ErrorCode.NOT_CREATED, "피드 생성 오류")
+        }
+        return FeedCreateResDto(feed.id)
+    }
+
+    fun createRecommendFolders(feed: Feed, request: FeedCreateReqDto) {
+        var cnt = 0
+        val recommendFolders: MutableList<Recommend> = mutableListOf()
+        for (folderName in request.recommendFolders) {
+            val recommend = Recommend(
+                feed = feed,
+                folderName = folderName,
+                priority = cnt
+            )
+            recommendRepository.save(recommend)
+            recommendFolders.add(recommend)
+            cnt++
+        }
+        feed.recommendFolders = recommendFolders
+    }
+
+    fun createKeywords(feed: Feed, request: FeedCreateReqDto) {
         val createdKeywords: MutableList<Keyword> = mutableListOf()
-        for(keyword in request.keywords){
+        for (keyword in request.keywords) {
             val createdKeyword = Keyword(
                 feed = feed,
                 keyword = keyword
@@ -115,12 +146,8 @@ class FeedService(
             createdKeywords.add(createdKeyword)
         }
         feed.updateKeywords(createdKeywords)
-
-        if(feed.id == null){
-            throw ApplicationException(ErrorCode.NOT_CREATED, "피드 생성 오류")
-        }
-        return FeedCreateResDto(feed.id)
     }
+
 
     fun checkFolder(user: User, folderName: String): Folder? {
         var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == folderName }

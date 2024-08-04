@@ -12,6 +12,7 @@ import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
+import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -45,10 +46,21 @@ class FeedController(
         @PathVariable link: String,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val response = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
+        val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
         val brunch = feedService.findBrunch(link)
-        return ResponseEntity.ok(AiSummaryResponseDto.of(
-            AiSummaryContent.from(response), brunch.image, "folder"))
+
+        val response = makeAiSummaryResponse(content, brunch)
+        return ResponseEntity.ok(response)
+    }
+
+    private fun makeAiSummaryResponse(content: PromptResponse?, brunch: Brunch): AiSummaryResponseDto {
+        return AiSummaryResponseDto(
+            content = AiSummaryContent.from(content),
+            sourceUrl = brunch.image,
+            recommendFolder = content?.category?.get(0) ?: "",
+            recommendFolders = content?.category ?: emptyList()
+            // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
+        )
     }
 
     @Operation(summary = "링크 저장 api", description = "요약 결과 저장")
