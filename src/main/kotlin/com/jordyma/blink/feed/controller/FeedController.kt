@@ -7,6 +7,7 @@ import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
 import com.jordyma.blink.feed.dto.response.FeedCreateResDto
+import com.jordyma.blink.feed.entity.Brunch
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.service.FolderService
@@ -45,8 +46,9 @@ class FeedController(
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
         val response = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
+        val brunch = feedService.findBrunch(link)
         return ResponseEntity.ok(AiSummaryResponseDto.of(
-            AiSummaryContent.from(response), "url", "folder"))
+            AiSummaryContent.from(response), brunch.image, "folder"))
     }
 
     @Operation(summary = "링크 저장 api", description = "요약 결과 저장")
@@ -55,7 +57,6 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: FeedCreateReqDto,
     ): ResponseEntity<FeedCreateResDto> {
-
         val response = feedService.create(userAccount = userAccount, request = requestDto)
         return ResponseEntity.ok(response)
     }

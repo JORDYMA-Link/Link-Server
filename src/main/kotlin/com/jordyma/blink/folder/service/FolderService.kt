@@ -2,6 +2,7 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
+import com.jordyma.blink.feed.entity.Brunch
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
@@ -81,7 +82,7 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.source!!,
-                sourceUrl = feed.sourceUrl!!,
+                sourceUrl = Brunch.getBrunchByName(feed.source)!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords!!.map { it.keyword },
             )

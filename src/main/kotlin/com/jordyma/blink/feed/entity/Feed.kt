@@ -21,8 +21,8 @@ class Feed(
     @Column(name = "source", length = 100)
     val source: String? = "",
 
-    @Column(name = "source_url", length = 255)
-    val sourceUrl: String? = "",
+//    @Column(name = "source_url", length = 255)
+//    val sourceUrl: String? = "",
 
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",

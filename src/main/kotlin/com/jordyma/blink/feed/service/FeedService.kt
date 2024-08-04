@@ -9,6 +9,7 @@ import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
 import com.jordyma.blink.feed.dto.response.FeedCreateResDto
+import com.jordyma.blink.feed.entity.Brunch
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
@@ -90,15 +91,16 @@ class FeedService(
         val folder = checkFolder(user, request.folderName)
 
         // 피드 생성
+        val brunch = findBrunch(request.url)
         val feed = Feed(
             folder = folder!!,
             url = request.url,
             summary = request.summary,
             title = request.title,
             memo = request.memo,
-//            source = "",
-//            sourceUrl = "",
-//            thumbnailImage = "",
+            source = brunch.brunch,
+            // sourceUrl = brunch.image,
+            thumbnailImage = "",
         )
         feedRepository.save(feed)
 
@@ -130,6 +132,24 @@ class FeedService(
             )
         }
         return folder
+    }
+
+    fun findBrunch(link: String): Brunch {
+        return if(link.contains("blog.naver.com")){
+            Brunch.NAVER_BLOG
+        } else if (link.contains("velog.io")){
+            Brunch.VELOG
+        } else if (link.contains("brunch.co.kr")){
+            Brunch.BRUNCH
+        } else if (link.contains("yozm.wishket")){
+            Brunch.YOZM_IT
+        } else if (link.contains("tistory.com")){
+            Brunch.TISTORY
+        } else if (link.contains("eopla.net")){
+            Brunch.EO
+        } else{
+            Brunch.DEFAULT
+        }
     }
 
     fun findUserOrElseThrow(userId: Long): User {

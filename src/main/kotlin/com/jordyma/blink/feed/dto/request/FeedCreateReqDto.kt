@@ -20,9 +20,6 @@ data class FeedCreateReqDto (
     @Schema(description = "키워드")
     val keywords: List<String>,
 
-    @Schema(name = "플랫폼 이미지 url")
-    val sourceImage: String,
-
     @Schema(name = "메모")
     var memo: String,
 )
