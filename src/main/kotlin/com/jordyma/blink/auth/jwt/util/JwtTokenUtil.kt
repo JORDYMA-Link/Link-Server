@@ -148,13 +148,4 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         val keySpec = RSAPublicKeySpec(n, e)
         return keyFactory.generatePublic(keySpec)
     }
-
-    fun extractUserIdFromToken(token: String?): Long? {
-        try {
-            val claims: Claims = parseToken(token)?.body ?: return null
-            return claims.get("user_id", Long::class.java)
-        } catch (e: JwtException) {
-            return null
-        }
-    }
 }
