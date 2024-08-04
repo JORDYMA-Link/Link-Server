@@ -4,6 +4,8 @@ import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.service.AuthService
+import com.jordyma.blink.global.exception.ApplicationException
+import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.CommonUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -49,7 +51,7 @@ class AuthController(
     fun regeneratedToken(
        @Schema(hidden = true) @RequestHeader("Authorization") authorizationHeader: String?
     ): ResponseEntity<TokenResponseDto> {
-        val token: String? = CommonUtil.parseTokenFromBearer(authorizationHeader)
+        val token: String = CommonUtil.parseTokenFromBearer(authorizationHeader) ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰 형식입니다.")
 
         val tokenResponseDto: TokenResponseDto = authService.regenerateToken(token)
 
