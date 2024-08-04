@@ -11,6 +11,8 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
+import com.jordyma.blink.user.repository.UserRepository
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -21,6 +23,7 @@ import java.time.format.DateTimeFormatter
 class FeedService(
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
+    private val userRepository: UserRepository,
 ) {
 
     @Transactional(readOnly = true)
@@ -124,5 +127,27 @@ class FeedService(
     fun getFeed(feedId: Long): Feed
             = feedRepository.findById(feedId)
         .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+
+    @Transactional(readOnly = true)
+    fun getFeedsByType(user: UserInfoDto, type: FeedType, page: Int, size: Int): List<FeedTypeResponseDto> {
+        val pageable = PageRequest.of(page, size)
+        val feedList =  when (type) {
+            FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id, pageable).content
+            FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id, pageable).content
+        }
+        val recommendedFolderList: List<String>? = null // todo recommendedRepository.findRecommendedFolder(feedId)
+        return feedList.map { feed ->
+            FeedTypeResponseDto(
+                feedId = feed.id!!,
+                title = feed.title,
+                summary = feed.summary,
+                platform = feed.platform,
+                platformImage = feed.platformImage,
+                isMarked = feed.isMarked,
+                keywords = getKeywordsByFeedId(feed.id), // 키워드 추출 함수
+                recommendedFolder = recommendedFolderList
+            )
+        }
+    }
 
 }

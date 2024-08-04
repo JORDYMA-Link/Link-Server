@@ -1,15 +1,15 @@
 package com.jordyma.blink.feed.controller
 
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.global.resolver.RequestUserId
-import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedDetailDto
-import com.jordyma.blink.feed.dto.FeedIsMarkedResponseDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -25,7 +25,7 @@ class FeedController(
     private val userService: UserService
 ) {
     @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 반환해줍니다.")
-    @GetMapping("")
+    @GetMapping("by-date")
     fun getFeedsByDate(
         @RequestParam("yearMonth") yearMonth: String,
         @RequestUserId userId: Long
@@ -67,5 +67,19 @@ class FeedController(
         val userDto: UserInfoDto = userService.find(userId)
         val responseDto= feedService.changeIsMarked(user = userDto, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
+    }
+
+    @Operation(summary = "중요/미분류 피드 리스트 조회 api", description = "type은 BOOKMARKED / UNCLASSIFIED (String)으로 구분됩니다.")
+    @GetMapping("by-type")
+    fun getFeedsByType(
+        @RequestParam("type") type: String,
+        @RequestParam("page") page: Int,
+        @RequestParam("size") size: Int,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<List<FeedTypeResponseDto>> {
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
+        val feedType = FeedType.valueOf(type.uppercase())
+        val response = feedService.getFeedsByType(user = userDto, type = feedType, page = page, size = size)
+        return ResponseEntity.ok(response)
     }
 }
