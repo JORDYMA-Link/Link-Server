@@ -100,7 +100,7 @@ class FeedService(
             memo = request.memo,
             source = brunch.brunch,
             // sourceUrl = brunch.image,
-            thumbnailImage = "",
+            // thumbnailImage = "",
         )
         feedRepository.save(feed)
 

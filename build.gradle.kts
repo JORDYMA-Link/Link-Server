@@ -72,6 +72,9 @@ dependencies {
 
     // logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+
+    // s3
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 }
 
 configurations.forEach {

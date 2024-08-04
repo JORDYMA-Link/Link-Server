@@ -2,6 +2,7 @@ package com.jordyma.blink.feed.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.image.thumbnail.ThumbnailImage
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
 
@@ -27,8 +28,8 @@ class Feed(
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
 
-    @Column(name = "thumbnail_image", length = 255)
-    var thumbnailImage: String? = "",
+    @OneToOne @PrimaryKeyJoinColumn(name = "thumbnail_image_id")
+    var thumbnailImage: ThumbnailImage? = null,
 
     @Column(name = "url", length = 255)
     var url: String,
