@@ -9,7 +9,7 @@ import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
 import com.jordyma.blink.feed.dto.response.FeedCreateResDto
-import com.jordyma.blink.feed.entity.Brunch
+import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
@@ -101,7 +101,7 @@ class FeedService(
             summary = request.summary,
             title = request.title,
             memo = request.memo,
-            source = brunch.brunch,
+            source = brunch.source,
         )
         feedRepository.save(feed)
 
@@ -161,21 +161,21 @@ class FeedService(
         return folder
     }
 
-    fun findBrunch(link: String): Brunch {
+    fun findBrunch(link: String): Source {
         return if(link.contains("blog.naver.com")){
-            Brunch.NAVER_BLOG
+            Source.NAVER_BLOG
         } else if (link.contains("velog.io")){
-            Brunch.VELOG
+            Source.VELOG
         } else if (link.contains("brunch.co.kr")){
-            Brunch.BRUNCH
+            Source.BRUNCH
         } else if (link.contains("yozm.wishket")){
-            Brunch.YOZM_IT
+            Source.YOZM_IT
         } else if (link.contains("tistory.com")){
-            Brunch.TISTORY
+            Source.TISTORY
         } else if (link.contains("eopla.net")){
-            Brunch.EO
+            Source.EO
         } else{
-            Brunch.DEFAULT
+            Source.DEFAULT
         }
     }
 

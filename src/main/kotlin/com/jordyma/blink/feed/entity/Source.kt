@@ -1,6 +1,6 @@
 package com.jordyma.blink.feed.entity
 
-enum class Brunch(val brunch: String, val image: String){
+enum class Source(val source: String, val image: String){
 
     NAVER_BLOG("NAVER_BLOG", "https://jordyma-dev.s3.ap-northeast-2.amazonaws.com/brunch/%E1%84%82%E1%85%A6%E1%84%8B%E1%85%B5%E1%84%87%E1%85%A5-%E1%84%87%E1%85%B3%E1%86%AF%E1%84%85%E1%85%A9%E1%84%80%E1%85%B3-%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9.png"),
     VELOG("VELOG", "https://jordyma-dev.s3.ap-northeast-2.amazonaws.com/brunch/%E1%84%87%E1%85%A6%E1%86%AF%E1%84%85%E1%85%A9%E1%84%80%E1%85%B3-%E1%84%85%E1%85%A9%E1%84%80%E1%85%A9.png"),
@@ -12,11 +12,11 @@ enum class Brunch(val brunch: String, val image: String){
 
     companion object {
         fun getBrunchByImage(imageUrl: String): String? {
-            return values().firstOrNull { it.image == imageUrl }?.brunch
+            return values().firstOrNull { it.image == imageUrl }?.source
         }
 
-        fun getBrunchByName(brunchName: String): Brunch? {
-            return values().firstOrNull { it.brunch == brunchName }
+        fun getBrunchByName(brunchName: String): Source? {
+            return values().firstOrNull { it.source == brunchName }
         }
     }
 }

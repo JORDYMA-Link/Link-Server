@@ -2,7 +2,7 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
-import com.jordyma.blink.feed.entity.Brunch
+import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
@@ -13,7 +13,6 @@ import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
 
@@ -82,7 +81,7 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.source!!,
-                sourceUrl = Brunch.getBrunchByName(feed.source)!!.image,
+                sourceUrl = Source.getBrunchByName(feed.source)!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords!!.map { it.keyword },
             )

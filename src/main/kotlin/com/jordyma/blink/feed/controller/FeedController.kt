@@ -7,14 +7,12 @@ import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
 import com.jordyma.blink.feed.dto.response.FeedCreateResDto
-import com.jordyma.blink.feed.entity.Brunch
+import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.service.FeedService
-import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.image.dto.response.ImageCreateResDto
-import com.jordyma.blink.image.entity.thumbnail.ThumbnailImage
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
@@ -59,10 +57,10 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
-    private fun makeAiSummaryResponse(content: PromptResponse?, brunch: Brunch): AiSummaryResponseDto {
+    private fun makeAiSummaryResponse(content: PromptResponse?, source: Source): AiSummaryResponseDto {
         return AiSummaryResponseDto(
             content = AiSummaryContent.from(content),
-            sourceUrl = brunch.image,
+            sourceUrl = source.image,
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList()
             // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
