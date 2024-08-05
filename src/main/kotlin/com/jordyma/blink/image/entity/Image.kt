@@ -1,4 +1,4 @@
-package com.jordyma.blink.image
+package com.jordyma.blink.image.entity
 
 import jakarta.persistence.*
 

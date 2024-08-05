@@ -3,7 +3,7 @@ package com.jordyma.blink.feed.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
-import com.jordyma.blink.image.thumbnail.ThumbnailImage
+import com.jordyma.blink.image.entity.thumbnail.ThumbnailImage
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
 

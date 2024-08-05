@@ -25,4 +25,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
 
     // Folder
     NOT_CREATED("F000", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Feed
+    FEED_NOT_FOUND("FD000", HttpStatus.NOT_FOUND),
 }

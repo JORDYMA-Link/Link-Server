@@ -5,7 +5,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.amazonaws.services.s3.model.DeleteObjectRequest
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.image.Image
+import com.jordyma.blink.image.entity.Image
 import com.jordyma.blink.logger
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
@@ -26,7 +26,7 @@ class S3Uploader {
 
     // 피드 썸네일 이미지 업로드
     @Throws(IOException::class)
-    private fun s3UploadOfThumbnailImage(feed: Feed, multipartFile: MultipartFile): String {
+    fun s3UploadOfThumbnailImage(feed: Feed, multipartFile: MultipartFile): String {
 
         //폴더 경로
         val folderPath = "thumbnail"

@@ -1,7 +1,7 @@
-package com.jordyma.blink.image.thumbnail
+package com.jordyma.blink.image.entity.thumbnail
 
 import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.image.Image
+import com.jordyma.blink.image.entity.Image
 import jakarta.persistence.*
 
 @Entity
