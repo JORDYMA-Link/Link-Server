@@ -14,7 +14,9 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
+@Transactional(readOnly = true)
 @Service
 class FolderService(
     private val folderRepository: FolderRepository,
@@ -40,6 +42,7 @@ class FolderService(
 
     }
 
+    @Transactional
     fun delete(userAccount: UserAccount, folderId: Long): Unit {
         val userId = userAccount.userId;
         val user = userRepository.findById(userId).orElseThrow {
@@ -90,6 +93,7 @@ class FolderService(
         return GetFeedsByFolderRequestDto(folderId=folder.id, folderName=folder.name, feedList=feedList)
     }
 
+    @Transactional
     fun create(userAccount: UserAccount, requestDto: CreateFolderRequestDto): FolderDto {
         val userId = userAccount.userId;
         val user = userRepository.findById(userAccount.userId).orElseThrow {
@@ -110,6 +114,7 @@ class FolderService(
         )
     }
 
+    @Transactional
     fun update(userAccount: UserAccount, folderId: Long, requestDto: UpdateFolderRequestDto): FolderDto {
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
 
-    override fun deleteAllByFolder(folder: Folder): Unit
+    override fun deleteAllByFolder(folder: Folder): Long
 
     override fun findAllByFolder(folder: Folder): List<Feed>
 }

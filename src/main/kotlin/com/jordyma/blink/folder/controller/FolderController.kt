@@ -61,7 +61,7 @@ class FolderController(
         @AuthenticationPrincipal userAccount: UserAccount,
     ): ResponseEntity<Unit> {
         folderService.delete(userAccount = userAccount, folderId = folderId)
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.ok().build()
     }
 
     @Operation(summary = "폴더별 피드 리스트 조회", description = "")

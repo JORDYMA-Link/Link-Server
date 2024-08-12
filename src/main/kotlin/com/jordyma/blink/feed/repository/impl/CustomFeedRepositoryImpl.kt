@@ -70,8 +70,8 @@ class CustomFeedRepositoryImpl(
             .fetchOne()
     }
 
-    override fun deleteAllByFolder(folder: Folder) {
-        queryFactory
+    override fun deleteAllByFolder(folder: Folder): Long {
+        return queryFactory
             .delete(QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
             .execute()
