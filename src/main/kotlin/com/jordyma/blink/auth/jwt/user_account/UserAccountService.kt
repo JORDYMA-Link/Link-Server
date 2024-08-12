@@ -14,7 +14,7 @@ class UserAccountService: UserDetailsService {
 
     override fun loadUserByUsername(token: String?): UserDetails {
         val claims = Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseClaimsJws(token)
-        val userId = claims.body["user_id"]?.toString()?.toLongOrNull()
+        val userId = claims.body["user_id"].toString().toLong()
         val nickName = claims.body.get("nick_name", String::class.java)
         val role: Role = Role.valueOf(claims.body["role", String::class.java])
 

@@ -1,4 +1,4 @@
-package com.jordyma.blink.global.entity
+package com.jordyma.blink.common.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.EntityListeners
@@ -12,26 +12,19 @@ import java.time.LocalDateTime
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener::class)
-open class BaseTimeEntity(
+open class BaseTimeEntity {
+
     @CreatedDate
-    @Column(name = "createdAt", updatable = false)
-    val createdAt: LocalDateTime? = null
-) {
+    @Column(name = "created_at", updatable = false)
+    var createdAt: LocalDateTime? = null
+        private set
+
     @LastModifiedDate
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     var updatedAt: LocalDateTime? = null
-        protected set
+        private set
 
-    @Column(name = "deletedAt")
+    @Column(name = "deleted_at")
     var deletedAt: LocalDateTime? = null
-        protected set
-
-    fun modifyUpdatedDate(dateTime: LocalDateTime){
-        updatedAt = dateTime
-    }
-
-
-    fun modifyDeletedDate(dateTime: LocalDateTime){
-        deletedAt = dateTime
-    }
+        private set
 }

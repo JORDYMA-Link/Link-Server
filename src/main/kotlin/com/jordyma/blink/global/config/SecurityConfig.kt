@@ -9,6 +9,9 @@ import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 class SecurityConfig(private val authenticationManager: AuthenticationManager) {
@@ -25,10 +28,10 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/location/**",
             "/auth/kakao-login",
             "/auth/kakao-login-web/callback",
-            "/api/**",
+            "/auth/regenerate-token",
+            // TODO 수정 필요
+            "/api/feed/**",
             "/error",
-            // 다른 기능 완성되기 전 임시로 모두 허용
-            "/**"
     )
 
     @Bean
@@ -41,5 +44,18 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             .authorizeHttpRequests { it.requestMatchers(*permitAllUrls).permitAll().anyRequest().authenticated() }
             .addFilterBefore(JwtAuthenticationFilter(authenticationManager, permitAllUrls), UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(JwtExceptionFilter(), JwtAuthenticationFilter::class.java)
+
             .build()
+
+        @Bean
+        fun corsConfigurationSource(): CorsConfigurationSource {
+                val corsAllowList = listOf("http://localhost:3000", "https://don8l2wodvwyx.cloudfront.net")
+                val configuration = CorsConfiguration()
+                configuration.allowedOrigins = corsAllowList
+                configuration.allowedMethods = listOf("POST", "GET", "DELETE", "PUT")
+                configuration.allowedHeaders = listOf("*")
+                val source = UrlBasedCorsConfigurationSource()
+                source.registerCorsConfiguration("/**", configuration)
+                return source
+        }
 }

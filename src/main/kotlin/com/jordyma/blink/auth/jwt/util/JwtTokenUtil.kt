@@ -1,5 +1,7 @@
 package com.jordyma.blink.auth.jwt.util
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.auth.jwt.enums.TokenType
@@ -19,24 +21,16 @@ import java.security.spec.InvalidKeySpecException
 import java.security.spec.RSAPublicKeySpec
 import java.util.*
 
-
 @Component
-class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
-
-    @Value("\${jwt.secret}")
-    private val jwtSecret: String? = null
-
-    private val AUTHORIZATION_HEADER: String = "Authorization"
-
-    private val BEARER_PREFIX: String = "Bearer "
+class JwtTokenUtil() {
 
     //TODO 환경 변수로 빼기
-    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 24 * 60 * 60 * 1000
+    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 3 * 60 * 1000 /* 24 * 60 * 60 * 1000 */
 
-    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 5 * 60 * 1000 /* 14 * 24 * 60 * 60 * 1000 */
 
     // jwt 토큰 생성
-    fun generateToken(tokenType: TokenType, user: User): String {
+    fun generateToken(tokenType: TokenType, user: User, jwtSecret: String): String {
         val now: Date = Date()
 
         val expireDuration =
@@ -63,41 +57,29 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
 
     private fun removeSignature(jwt: String): String {
         val jwtSplit = jwt.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        if (jwtSplit.size != 3) {
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
+        }
         return jwtSplit[0] + "." + jwtSplit[1] + "."
     }
 
-    fun parseJwt(jwt: String): Jwt<Header<*>, Claims> {
-        try {
-            val jwtWithoutSignature = removeSignature(jwt)
+    fun getJwtHeader(jwt: String): Jwt<Header<*>, Claims> {
+        val jwtWithoutSignature = removeSignature(jwt)
 
-            return Jwts.parserBuilder()
-                .build()
-                .parseClaimsJwt(jwtWithoutSignature)
-        } catch (e: ExpiredJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰이 만료되었습니다.")
-        } catch (e: MalformedJwtException) {
-            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "malformed token")
+        return kotlin.runCatching { Jwts.parserBuilder()
+            .build()
+            .parseClaimsJwt(jwtWithoutSignature)
+            } .getOrElse {
+            throw ApplicationException(ErrorCode.TOKEN_EXPIRED, "토큰이 만료되었습니다.")
         }
     }
 
-    fun verifySignature(idToken: String?, kid: String?, aud: String?, iss: String?, nonce: String?) {
-        val keyListResponse: OpenKeyListResponse = kakaoAuthApi.getKakaoOpenKeyAddress()
-
-
-        //TODO openKey 값을 캐싱해서 사용할 수 있도록 수정
-        val openKey: OpenKeyListResponse.JWK? = keyListResponse.keys?.stream()
-            ?.filter { key -> key.kid.equals(kid) }
-            ?.findFirst()
-            ?.get()
-//            .orElseThrow {
-//                ApplicationException(ErrorCode.OPENKEY_NOT_MATCHED)
-//            }
-
+    fun verifySignature(idToken: String?, key: Key, aud: String?, iss: String?, nonce: String?) {
         try {
             val claims: Jws<Claims> = Jwts.parserBuilder()
                 .requireAudience(aud)
                 .requireIssuer(iss)
-                .setSigningKey(getRSAPublicKey(openKey?.n, openKey?.e))
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(idToken)
 
@@ -111,10 +93,10 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         }
     }
 
-    fun parseToken(token: String?): Jws<Claims>? {
+    fun parseToken(token: String, secret: String): Jws<Claims>? {
         try {
             return Jwts.parserBuilder()
-                .setSigningKey(jwtSecret)
+                .setSigningKey(secret)
                 .build()
                 .parseClaimsJws(token)
         } catch (e: ExpiredJwtException) {
@@ -126,7 +108,22 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
         }
     }
 
-    fun isValidToken(token: String?): Boolean {
+    fun parseToken(token: String, secret: Key): Jws<Claims> {
+        try {
+            return Jwts.parserBuilder()
+                .setSigningKey(secret)
+                .build()
+                .parseClaimsJws(token)
+        } catch (e: ExpiredJwtException) {
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
+        } catch (e: MalformedJwtException) {
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
+        } catch (e: SignatureException) {
+            throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.")
+        }
+    }
+
+    fun isValidToken(token: String, jwtSecret: String): Boolean {
         try {
             Jwts.parserBuilder()
                 .setSigningKey(jwtSecret)
@@ -140,27 +137,6 @@ class JwtTokenUtil(private val kakaoAuthApi: KakaoAuthApi) {
             return false
         } catch (e: SignatureException) {
             return false
-        }
-    }
-
-    @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
-    private fun getRSAPublicKey(modulus: String?, exponent: String?): Key {
-        val keyFactory: KeyFactory = KeyFactory.getInstance("RSA")
-        val decodeN: ByteArray = Base64.getUrlDecoder().decode(modulus)
-        val decodeE: ByteArray = Base64.getUrlDecoder().decode(exponent)
-        val n = BigInteger(1, decodeN)
-        val e = BigInteger(1, decodeE)
-
-        val keySpec = RSAPublicKeySpec(n, e)
-        return keyFactory.generatePublic(keySpec)
-    }
-
-    fun extractUserIdFromToken(token: String?): Long? {
-        try {
-            val claims: Claims = parseToken(token)?.body ?: return null
-            return claims.get("user_id", Long::class.java)
-        } catch (e: JwtException) {
-            return null
         }
     }
 }
