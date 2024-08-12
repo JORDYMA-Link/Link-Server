@@ -13,7 +13,7 @@ interface CustomFeedRepository {
 
     fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo?
 
-    fun deleteAllByFolder(folder: Folder): Unit
+    fun deleteAllByFolder(folder: Folder): Long
 
     fun findAllByFolder(folder: Folder): List<Feed>
 }
