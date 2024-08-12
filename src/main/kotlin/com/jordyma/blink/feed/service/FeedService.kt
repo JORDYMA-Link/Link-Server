@@ -4,7 +4,6 @@ import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
-import com.jordyma.blink.feed.dto.FeedItemDto
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.exception.ApplicationException

@@ -4,6 +4,7 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.QFeed
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.feed.repository.CustomFeedRepository
+import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.keyword.entity.QKeyword
@@ -67,6 +68,7 @@ class CustomFeedRepositoryImpl(
                 qFeed.id.eq(feedId)
             )
             .fetchOne()
+    }
 
     override fun deleteAllByFolder(folder: Folder) {
         queryFactory
