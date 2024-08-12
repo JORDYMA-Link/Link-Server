@@ -82,7 +82,7 @@ class FeedService(
         if (keywords.isEmpty()) {
             throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
         }
-        return keywords.map { it.keyword }
+        return keywords.map { it.content }
     }
 
 

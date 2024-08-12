@@ -85,7 +85,7 @@ class FolderService(
                 platform = feed.source,
                 sourceUrl = feed.sourceUrl,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.keyword },
+                keywords = feed.keywords.map { it.content },
             )
         }
         checkNotNull(folder.id)
