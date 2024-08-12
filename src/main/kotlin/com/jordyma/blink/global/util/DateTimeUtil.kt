@@ -23,6 +23,10 @@ object DateTimeUtils {
         return localDate.format(DateTimeFormatter.ISO_DATE)
     }
 
+    fun localDateTimeToString(localDateTime: LocalDateTime, pattern: String = "yyyy-MM-dd"): String {
+        return localDateTime.format(DateTimeFormatter.ofPattern(pattern))
+    }
+
     fun convertDayOfWeekToKor(dayOfWeek: DayOfWeek): String {
         return dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.KOREAN)
     }

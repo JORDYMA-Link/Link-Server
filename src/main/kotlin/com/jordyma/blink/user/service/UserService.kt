@@ -1,10 +1,10 @@
 package com.jordyma.blink.user.service
 
 import com.jordyma.blink.global.error.ID_NOT_FOUND
-import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.repository.UserRepository

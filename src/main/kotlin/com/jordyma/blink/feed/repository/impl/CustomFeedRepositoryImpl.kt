@@ -4,14 +4,13 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.QFeed
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.feed.repository.CustomFeedRepository
+import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.keyword.entity.QKeyword
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Repository
@@ -42,6 +41,33 @@ class CustomFeedRepositoryImpl(
                     .and(feed.createdAt.between(startOfMonth, endOfMonth))
             )
             .fetch()
+    }
+
+
+    override fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo? {
+        val qFeed = QFeed.feed
+        val qFolder = QFolder.folder
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    FeedDetailVo::class.java,
+                    qFeed.id,
+                    qFeed.thumbnailImage,
+                    qFeed.title,
+                    qFeed.createdAt.`as`("date"),
+                    qFeed.summary,
+                    qFolder.name.`as`("folderName"),
+                    qFeed.memo
+                )
+            )
+            .from(qFeed)
+            .join(qFolder).on(qFeed.folder.id.eq(qFolder.id))
+            .where(
+                qFolder.user.id.eq(memberId),
+                qFeed.id.eq(feedId)
+            )
+            .fetchOne()
     }
 
     override fun deleteAllByFolder(folder: Folder) {
