@@ -183,14 +183,17 @@ class FeedService(
                 keywords = feed.keywords.map { it.content },
                 date = localDateTimeToStringDefault(feed.createdAt?: LocalDateTime.now())
             )
-        }.sortedByDescending { it.date }
+        }
     }
 
     fun sortFeedsByRelevance(feeds: List<Feed>, query: String): List<ScoredFeedVo> {
         val scoredFeeds = feeds.map { feed ->
             ScoredFeedVo(feed, calculateScore(feed, query))
         }
-        return scoredFeeds.sortedByDescending { it.score }
+        return scoredFeeds.sortedWith(
+            compareByDescending<ScoredFeedVo> { it.score }
+                .thenByDescending { it.feed.createdAt }
+        )
     }
 
     fun calculateScore(feed: Feed, query: String): Double {
