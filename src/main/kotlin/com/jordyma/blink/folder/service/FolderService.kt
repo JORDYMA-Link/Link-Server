@@ -81,7 +81,7 @@ class FolderService(
                 platform = feed.platform,
                 sourceUrl = feed.originUrl,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.keyword },
+                keywords = feed.keywords.map { it.content },
             )
         }
 

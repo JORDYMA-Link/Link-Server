@@ -85,7 +85,7 @@ class CustomFeedRepositoryImpl(
             .from(QFeed.feed)
             .join(QFeed.feed.folder, QFolder.folder)
             .fetchJoin()
-            .join(QKeyword.keyword1.feed, QFeed.feed)
+            .join(QKeyword.keyword.feed, QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
             .fetch()
     }
