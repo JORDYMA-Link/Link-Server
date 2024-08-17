@@ -6,6 +6,7 @@ import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
+import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
@@ -63,6 +64,15 @@ class FeedController(
         @PathVariable feedId: Long,
     ): ResponseEntity<FeedUpdateResDto> {
         val response = feedService.update(userAccount, requestDto, feedId)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "요약 중인 링크 조회 api")
+    @GetMapping("/processing")
+    fun getProcessing(
+        @AuthenticationPrincipal userAccount: UserAccount,
+    ): ResponseEntity<ProcessingListDto> {
+        val response = feedService.getProcessing(userAccount)
         return ResponseEntity.ok(response)
     }
 

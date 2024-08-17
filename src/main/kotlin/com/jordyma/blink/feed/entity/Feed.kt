@@ -40,6 +40,9 @@ class Feed(
     @Column(name = "is_marked", columnDefinition = "BIT")
     var isMarked: Boolean = false,
 
+    @Column(name = "is_checked", columnDefinition = "BIT")
+    var isChecked: Boolean = false,
+
     @Column(name = "status", length = 10)
     @Enumerated(EnumType.STRING)
     var status: Status = Status.REQUESTED,
@@ -65,12 +68,12 @@ class Feed(
         this.recommendFolders = recommendFolders
     }
 
-    fun updateTitle(title: String){
-        this.title = title
+    fun updateStatus(status: Status){
+        this.status = status
     }
 
-    fun updateSummary(summary: String){
-        this.title = title
+    fun updateIsChecked(){
+        this.isChecked = true
     }
 
     fun update(title: String,

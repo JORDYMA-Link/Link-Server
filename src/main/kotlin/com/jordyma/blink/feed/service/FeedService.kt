@@ -7,6 +7,8 @@ import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
+import com.jordyma.blink.feed.dto.response.ProcessingFeedResDto
+import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.Status
@@ -117,7 +119,6 @@ class FeedService(
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList(),
             feedId = feedId,
-            // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
         )
     }
 
@@ -132,12 +133,31 @@ class FeedService(
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
         feed.update(request.title, request.summary, request.memo, folder!!)
+        feed.updateStatus(Status.COMPLETED)
+        feed.updateIsChecked()  // 요약 내용 확인 플래그
 
         // 키워드 업데이트
         updateKeywords(feed, request.keywords)
 
         feedRepository.save(feed)
         return FeedUpdateResDto(feed.id!!)
+    }
+
+    // 요약 중인 링크 조회
+    fun getProcessing(userAccount: UserAccount): ProcessingListDto? {
+        val user = findUserOrElseThrow(userAccount.userId)
+        val feeds = feedRepository.getProcessing(user)
+        var result: MutableList<ProcessingFeedResDto> = mutableListOf()
+        for(feed in feeds){
+            result.add(
+                ProcessingFeedResDto(
+                    feedId = feed.id!!,
+                    title = feed.title,
+                    status = feed.status.toString()
+                )
+            )
+        }
+        return ProcessingListDto(processingFeedResDtos = result)
     }
 
     fun updateKeywords(feed: Feed, updatedKeywords: List<String>) {
