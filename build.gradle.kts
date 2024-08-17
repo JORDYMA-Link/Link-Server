@@ -23,6 +23,12 @@ configurations {
     }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("io.awspring.cloud:spring-cloud-aws-dependencies:3.0.1")
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -43,6 +49,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+
+    implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     runtimeOnly("org.postgresql:postgresql")
