@@ -21,6 +21,7 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.entity.Keyword
 import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
@@ -179,6 +180,7 @@ class FeedService(
     fun createRecommendFolders(feed: Feed, content: PromptResponse?) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
+        logger().info("promt resonse ? " + (content?.summary ?: "nullllll"))
         for (folderName in content!!.category) {
             val recommend = Recommend(
                 feed = feed,

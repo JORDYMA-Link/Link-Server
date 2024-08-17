@@ -41,10 +41,10 @@ class FeedController(
     }
 
     @Operation(summary = "링크 요약 api", description = "요약 결과 확인")
-    @GetMapping("/summary/{link}")
+    @GetMapping("/summary")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
-        @PathVariable link: String,
+        @RequestParam("link") link: String,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
         val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "), userAccount)

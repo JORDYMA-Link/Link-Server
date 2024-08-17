@@ -9,6 +9,7 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.request.ChatRequest
 import com.jordyma.blink.global.gemini.response.ChatResponse
 import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
 import kotlinx.serialization.json.Json
@@ -34,10 +35,13 @@ class GeminiService @Autowired constructor(
             // gemini 요청
             val requestUrl = "$apiUrl?key=$geminiApiKey"
             val request = ChatRequest(makePrompt(link, folders))
+            logger().info("Sending request to Gemini server: $requestUrl with body: $request")
 
             // gemini 요청값 받아오기
             val response = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
             val responseText = response?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
+            logger().info("Received response from Gemini server: $response")
+
 
             // aiSummary
             if (responseText.isNotEmpty()) {
@@ -78,8 +82,10 @@ class GeminiService @Autowired constructor(
 
         // JSON 문자열을 ContentData로 파싱하여 반환
         return if (jsonString != null) {
+            logger().info("jsonString ::::::::: $jsonString")
             Json.decodeFromString<PromptResponse>(text)
         } else {
+            logger().info("jsonString is null !!!!!!!!!!")
             null
         }
     }
