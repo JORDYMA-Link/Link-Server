@@ -19,8 +19,8 @@ object DateTimeUtils {
         return LocalDate.parse(localDate, DateTimeFormatter.ISO_DATE)
     }
 
-    fun localDateToString(localDate: LocalDate): String {
-        return localDate.format(DateTimeFormatter.ISO_DATE)
+    fun localDateTimeToStringDefault(localDateTime: LocalDateTime): String {
+        return localDateTime.format(DateTimeFormatter.ISO_DATE)
     }
 
     fun localDateTimeToString(localDateTime: LocalDateTime, pattern: String = "yyyy-MM-dd"): String {

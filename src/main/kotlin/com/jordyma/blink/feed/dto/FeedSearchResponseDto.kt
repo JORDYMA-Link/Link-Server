@@ -32,5 +32,8 @@ data class FeedResultDto(
     val isMarked: Boolean,
 
     @Schema(description = "키워드 리스트")
-    val keywords: List<String>
+    val keywords: List<String>,
+
+    @Schema(description = "생성 날짜")
+    val date: String
 )

@@ -10,6 +10,8 @@ import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
+import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
+import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToStringDefault
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
 import org.springframework.data.domain.PageRequest
@@ -74,7 +76,7 @@ class FeedService(
             thumnailImage = feedDetail.thumnailImage,
             platformImage = feedDetail.platformImage,
             title = feedDetail.title,
-            date = DateTimeUtils.localDateTimeToString(feedDetail.date),
+            date = localDateTimeToString(feedDetail.date),
             summary = feedDetail.summary,
             keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
             folderName = feedDetail.folderName,
@@ -166,7 +168,7 @@ class FeedService(
         return sortedFeeds.subList(start, end)
     }
 
-    // 서비스 메서드 예시
+
     fun searchAndSortFeeds(query: String, feeds: List<Feed>): List<FeedResultDto> {
         val sortedFeeds = sortFeedsByRelevance(feeds, query)
         return sortedFeeds.map { scoredFeed ->
@@ -178,9 +180,10 @@ class FeedService(
                 platform = feed.platform,
                 platformImage = feed.platformImage,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.content }
+                keywords = feed.keywords.map { it.content },
+                date = localDateTimeToStringDefault(feed.createdAt?: LocalDateTime.now())
             )
-        }
+        }.sortedByDescending { it.date }
     }
 
     fun sortFeedsByRelevance(feeds: List<Feed>, query: String): List<ScoredFeedVo> {
