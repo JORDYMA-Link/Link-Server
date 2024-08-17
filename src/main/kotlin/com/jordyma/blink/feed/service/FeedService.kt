@@ -208,7 +208,7 @@ class FeedService(
         val summaryOccurrences = countOccurrences(feed.summary, queryLower)
         score += summaryOccurrences * 0.3
 
-        // 3. 텍스트 유사도 - 키워드에서 검색어 등장 횟수에 따라 가중치 부여
+        // 3. 키워드 유사도 - 키워드에서 검색어 등장 횟수에 따라 가중치 부여
         val keywordOccurrences = feed.keywords.sumOf { countOccurrences(it.content, queryLower) }
         score += keywordOccurrences * 0.3
 
