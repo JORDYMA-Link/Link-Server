@@ -76,6 +76,16 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
+    @Operation(summary = "요약 불가 링크 삭제 api")
+    @DeleteMapping("/processing/{feedId}")
+    fun deleteProcessingFeed(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @PathVariable feedId: Long,
+    ): ResponseEntity<String> {
+        feedService.deleteProcessingFeed(userAccount, feedId)
+        return ResponseEntity.ok("삭제 완료되었습니다.")
+    }
+
     @Operation(summary = "썸네일 이미지 업로드 api")
     @PostMapping("/image/{feedId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createThumbnailImage(

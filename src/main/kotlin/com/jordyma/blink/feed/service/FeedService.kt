@@ -160,6 +160,18 @@ class FeedService(
         return ProcessingListDto(processingFeedResDtos = result)
     }
 
+    // 요약 실패 피드 삭제
+    fun deleteProcessingFeed(userAccount: UserAccount, feedId: Long) {
+        val user = findUserOrElseThrow(userAccount.userId)
+        val feed = findFeedOrElseThrow(feedId)
+        if(feed.folder!!.user != user){
+            throw ApplicationException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없습니다.")
+        }
+
+        feed.updateDeletedAt()
+        feedRepository.save(feed)
+    }
+
     fun updateKeywords(feed: Feed, updatedKeywords: List<String>) {
         // 기존 키워드
         val existingKeywords: MutableList<Keyword> = feed.keywords!!.toMutableList()

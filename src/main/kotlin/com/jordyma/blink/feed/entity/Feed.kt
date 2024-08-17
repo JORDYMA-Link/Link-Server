@@ -7,6 +7,7 @@ import com.jordyma.blink.image.entity.thumbnail.ThumbnailImage
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "feed")
@@ -74,6 +75,10 @@ class Feed(
 
     fun updateIsChecked(){
         this.isChecked = true
+    }
+
+    fun updateDeletedAt(){
+        this.deletedAt = LocalDateTime.now()
     }
 
     fun update(title: String,
