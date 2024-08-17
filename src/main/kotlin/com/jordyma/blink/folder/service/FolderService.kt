@@ -154,6 +154,24 @@ class FolderService(
         return folder
     }
 
+    // 유저의 요약 실패 폴더 찾기
+    fun getFailed(userAccount: UserAccount): Folder?{
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+
+        // 요약 실패 폴더 찾기
+        var folder = folderRepository.findFailed(user)
+        if(folder == null){     // 없으면 생성
+            val request = CreateFolderRequestDto(
+                name = "요약실패"
+            )
+            folder = getFolderById(create(userAccount, request).id!!)
+        }
+
+        return folder
+    }
+
     fun getFolderById(folderId: Long): Folder{
         return folderRepository.findById(folderId).orElseThrow {
             ApplicationException(ErrorCode.FOLDER_NOT_FOUND, "폴더를 찾을 수 없습니다.")

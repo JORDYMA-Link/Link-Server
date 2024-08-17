@@ -2,11 +2,15 @@ package com.jordyma.blink.global.gemini.api
 
 //import net.minidev.json.JSONObject
 // import org.json.JSONObject
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.request.ChatRequest
 import com.jordyma.blink.global.gemini.response.ChatResponse
 import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.repository.UserRepository
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -20,27 +24,31 @@ import org.springframework.web.client.RestTemplate
 class GeminiService @Autowired constructor(
     @Qualifier("geminiRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${gemini.api.url}") private val apiUrl: String,
-    @Value("\${gemini.api.key}") private val geminiApiKey: String
+    @Value("\${gemini.api.key}") private val geminiApiKey: String,
+    private val feedService: FeedService,
+    private val userRepository: UserRepository,
 ) {
 
-    fun getContents(link: String, folders: String): PromptResponse? {
+    fun getContents(link: String, folders: String, userAccount: UserAccount): PromptResponse? {
+        return try {
+            // gemini 요청
+            val requestUrl = "$apiUrl?key=$geminiApiKey"
+            val request = ChatRequest(makePrompt(link, folders))
 
-        // gemini 요청
-        val requestUrl = "$apiUrl?key=$geminiApiKey"
-        val request = ChatRequest(makePrompt(link, folders))
+            // gemini 요청값 받아오기
+            val response = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
+            val responseText = response?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
 
-        // gemini 요청값 받아오기
-        val response = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
-        val responseText = response?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
-
-        // json 파싱
-        // val responseJson = extractJsonAndParse(responseText)
-
-        // aiSummary
-        if(responseText != null){
-            return extractJsonAndParse(responseText)
-        }else{
-            throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
+            // aiSummary
+            if (responseText.isNotEmpty()) {
+                extractJsonAndParse(responseText)
+            } else {
+                throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
+            }
+        } catch (e: Exception) {
+            // 요약 실패 feed 생성
+            feedService.createFailed(userAccount, link)
+            throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini 요청 처리 중 오류 발생: ${e.message}")
         }
     }
 

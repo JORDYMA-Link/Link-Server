@@ -2,7 +2,7 @@ package com.jordyma.blink.feed.dto.request
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(description = "요약 저장 요청 dto")
+@Schema(description = "요약 저장(수정) 요청 dto")
 data class FeedCreateReqDto (
 
     @Schema(description = "링크 url")
@@ -23,6 +23,6 @@ data class FeedCreateReqDto (
     @Schema(description = "메모")
     var memo: String,
 
-    @Schema(description = "AI 추천 폴더 리스트 - 링크 요약 api response 값 그대로 보내주시면 됩니다!")
+    @Schema(description = "AI 추천 폴더 리스트")
     val recommendFolders: List<String>,
 )

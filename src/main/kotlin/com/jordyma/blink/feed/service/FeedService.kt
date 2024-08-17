@@ -119,37 +119,23 @@ class FeedService(
         return FeedCreateResDto(feed.id)
     }
 
-    fun createRecommendFolders(feed: Feed, request: FeedCreateReqDto) {
-        var cnt = 0
-        val recommendFolders: MutableList<Recommend> = mutableListOf()
-        for (folderName in request.recommendFolders) {
-            val recommend = Recommend(
-                feed = feed,
-                folderName = folderName,
-                priority = cnt
-            )
-            recommendRepository.save(recommend)
-            recommendFolders.add(recommend)
-            cnt++
-        }
-        feed.recommendFolders = recommendFolders
-    }
-
-    fun createKeywords(feed: Feed, request: FeedCreateReqDto) {
-        val createdKeywords: MutableList<Keyword> = mutableListOf()
-        for (keyword in request.keywords) {
-            val createdKeyword = Keyword(
-                feed = feed,
-                keyword = keyword
-            )
-            keywordRepository.save(createdKeyword)
-            createdKeywords.add(createdKeyword)
-        }
-        feed.updateKeywords(createdKeywords)
+    // 요약 실패 피드 생성
+    fun createFailed(userAccount: UserAccount, link: String) {
+        val user = findUserOrElseThrow(userAccount.userId)
+        val failedFolder = folderService.getFailed(userAccount)
+        val feed = Feed(
+            folder = failedFolder,
+            url = link,
+            summary = "",
+            title = "",
+            status = Status.FAILED,
+        )
+        feedRepository.save(feed)
     }
 
     fun makeFeedAndResponse(content: PromptResponse?, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
-        val feed = makeFeed(userAccount, content, brunch, link)
+        val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
+        createRecommendFoldersV2(feed, content)
         return makeAiSummaryResponse(content, brunch, feed.id!!)
     }
 
@@ -179,6 +165,51 @@ class FeedService(
             feedId = feedId,
             // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
         )
+    }
+
+    fun createRecommendFolders(feed: Feed, request: FeedCreateReqDto) {
+        var cnt = 0
+        val recommendFolders: MutableList<Recommend> = mutableListOf()
+        for (folderName in request.recommendFolders) {
+            val recommend = Recommend(
+                feed = feed,
+                folderName = folderName,
+                priority = cnt
+            )
+            recommendRepository.save(recommend)
+            recommendFolders.add(recommend)
+            cnt++
+        }
+        feed.recommendFolders = recommendFolders
+    }
+
+    fun createRecommendFoldersV2(feed: Feed, content: PromptResponse?) {
+        var cnt = 0
+        val recommendFolders: MutableList<Recommend> = mutableListOf()
+        for (folderName in content!!.category) {
+            val recommend = Recommend(
+                feed = feed,
+                folderName = folderName,
+                priority = cnt
+            )
+            recommendRepository.save(recommend)
+            recommendFolders.add(recommend)
+            cnt++
+        }
+        feed.recommendFolders = recommendFolders
+    }
+
+    fun createKeywords(feed: Feed, request: FeedCreateReqDto) {
+        val createdKeywords: MutableList<Keyword> = mutableListOf()
+        for (keyword in request.keywords) {
+            val createdKeyword = Keyword(
+                feed = feed,
+                keyword = keyword
+            )
+            keywordRepository.save(createdKeyword)
+            createdKeywords.add(createdKeyword)
+        }
+        feed.updateKeywords(createdKeywords)
     }
 
     fun checkFolder(user: User, folderName: String): Folder? {

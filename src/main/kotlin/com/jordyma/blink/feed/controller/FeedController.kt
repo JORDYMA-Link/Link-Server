@@ -50,7 +50,7 @@ class FeedController(
         @PathVariable link: String,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
+        val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "), userAccount)
         val brunch = feedService.findBrunch(link)
 
         val response = feedService.makeFeedAndResponse(content, brunch, userAccount, link)
@@ -58,11 +58,12 @@ class FeedController(
     }
 
 
-    @Operation(summary = "링크 저장 api", description = "요약 결과 저장")
-    @PostMapping("")
+    @Operation(summary = "링크 저장(수정) api", description = "요약 결과 저장, 수정")
+    @PatchMapping("/{feedId}")
     fun createFeed(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: FeedCreateReqDto,
+        @PathVariable feedId: Long,
     ): ResponseEntity<FeedCreateResDto> {
         val response = feedService.create(userAccount = userAccount, request = requestDto)
         return ResponseEntity.ok(response)
