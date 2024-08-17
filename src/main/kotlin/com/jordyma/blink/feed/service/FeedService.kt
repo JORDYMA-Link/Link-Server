@@ -4,6 +4,8 @@ import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.vo.FeedKeywordVo
+import com.jordyma.blink.feed.vo.ScoredFeedVo
 import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.math.min
 
 @Service
 class FeedService(
@@ -150,4 +154,71 @@ class FeedService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun searchFeeds(user: UserInfoDto, query: String, page: Int, size: Int): List<FeedResultDto> {
+        val fetchSize = size * 5 // 5배로 fetch
+        val pageable = PageRequest.of(page / 5, fetchSize) // 실제 페이징 계산 (page/5)
+        val feedList = feedRepository.findFeedByQuery(user.id, query, pageable).content
+
+        // DB에서 가져온 데이터를 가중치에 따라 정렬
+        val sortedFeeds = searchAndSortFeeds(query, feedList)
+
+        // 클라이언트에서 요청한 데이터만큼만 반환
+        val start = (page % 5) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
+        val end = min(start + size, sortedFeeds.size) // 끝 인덱스는 정렬된 데이터 크기 내로 제한
+        return sortedFeeds.subList(start, end)
+    }
+
+    // 서비스 메서드 예시
+    fun searchAndSortFeeds(query: String, feeds: List<Feed>): List<FeedResultDto> {
+        val sortedFeeds = sortFeedsByRelevance(feeds, query)
+        return sortedFeeds.map { scoredFeed ->
+            val feed = scoredFeed.feed
+            FeedResultDto(
+                feedId = feed.id!!,
+                title = feed.title,
+                summary = feed.summary,
+                platform = feed.platform,
+                platformImage = feed.platformImage,
+                isMarked = feed.isMarked,
+                keywords = feed.keywords.map { it.content }
+            )
+        }
+    }
+
+    fun sortFeedsByRelevance(feeds: List<Feed>, query: String): List<ScoredFeedVo> {
+        val scoredFeeds = feeds.map { feed ->
+            ScoredFeedVo(feed, calculateScore(feed, query))
+        }
+        return scoredFeeds.sortedByDescending { it.score }
+    }
+
+    fun calculateScore(feed: Feed, query: String): Double {
+        var score = 0.0
+        val queryLower = query.lowercase(Locale.getDefault())
+
+        // 1. 제목 유사도 - 제목에서 검색어 등장 횟수에 따라 가중치 부여
+        val titleOccurrences = countOccurrences(feed.title, queryLower)
+        score += titleOccurrences * 0.6
+
+        // 2. 텍스트 유사도 - 요약에서 검색어 등장 횟수에 따라 가중치 부여
+        val summaryOccurrences = countOccurrences(feed.summary, queryLower)
+        score += summaryOccurrences * 0.3
+
+        // 3. 텍스트 유사도 - 키워드에서 검색어 등장 횟수에 따라 가중치 부여
+        val keywordOccurrences = feed.keywords.sumOf { countOccurrences(it.content, queryLower) }
+        score += keywordOccurrences * 0.3
+
+        // 4. 메모 유사도 - 메모에서 검색어 등장 횟수에 따라 가중치 부여
+        val memoOccurrences = countOccurrences(feed.memo, queryLower)
+        score += memoOccurrences * 0.2
+
+        return score
+    }
+
+
+    // 문자열 내에서 검색어 등장 횟수를 계산하는 함수
+    fun countOccurrences(text: String, query: String): Int {
+        return Regex(query, RegexOption.IGNORE_CASE).findAll(text).count()
+    }
 }

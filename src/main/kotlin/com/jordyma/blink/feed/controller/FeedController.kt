@@ -82,4 +82,17 @@ class FeedController(
         val response = feedService.getFeedsByType(user = userDto, type = feedType, page = page, size = size)
         return ResponseEntity.ok(response)
     }
+
+    @Operation(summary = "피드 일반, 키워드 검색 api", description = "검색어를 param으로 넣어주면, 해당 검색어를 포함하는 피드 리스트를 반환해줍니다.")
+    @GetMapping("search")
+    fun searchFeeds(
+        @RequestParam("query") query: String,
+        @RequestParam("page") page: Int,
+        @RequestParam("size") size: Int,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<List<FeedResultDto>> {
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
+        val responseDto = feedService.searchFeeds(user = userDto, query = query, page = page, size = size)
+        return ResponseEntity.ok(responseDto)
+    }
 }
