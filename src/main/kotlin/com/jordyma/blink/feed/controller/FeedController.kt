@@ -28,9 +28,9 @@ class FeedController(
     @GetMapping("by-date")
     fun getFeedsByDate(
         @RequestParam("yearMonth") yearMonth: String,
-        @RequestUserId userId: Long
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedCalendarResponseDto> {
-        val userDto: UserInfoDto = userService.find(userId)
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
         val response = feedService.getFeedsByMonth(user = userDto, yrMonth = yearMonth)
         return ResponseEntity.ok(response)
     }
@@ -40,9 +40,9 @@ class FeedController(
     @GetMapping("/{feedId}")
     fun getFeedDetail(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
-        @RequestUserId userId: Long
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedDetailDto> {
-        val userDto: UserInfoDto = userService.find(userId)
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
         val feedDetailDto = feedService.getFeedDetail(user = userDto, feedId = feedId)
         return ResponseEntity.ok(feedDetailDto)
     }
@@ -52,9 +52,9 @@ class FeedController(
     @DeleteMapping("/{feedId}")
     fun deleteFeed(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
-        @RequestUserId userId: Long
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<Unit> {
-        val userDto: UserInfoDto = userService.find(userId)
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
         feedService.deleteFeed(user = userDto, feedId = feedId)
         return ResponseEntity.noContent().build()
     }
@@ -62,10 +62,13 @@ class FeedController(
 
     @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
     @PatchMapping("/{feedId}")
-    fun changeFeedIsMarked(@PathVariable feedId: Long, @RequestUserId userId: Long, @RequestParam setMarked: Boolean,
+    fun changeFeedIsMarked(
+        @PathVariable feedId: Long,
+        @RequestParam setMarked: Boolean,
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val userDto: UserInfoDto = userService.find(userId)
-        val responseDto= feedService.changeIsMarked(user = userDto, feedId = feedId, setMarked = setMarked)
+        val userDto: UserInfoDto = userService.find(userAccount.userId)
+        val responseDto = feedService.changeIsMarked(user = userDto, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 
