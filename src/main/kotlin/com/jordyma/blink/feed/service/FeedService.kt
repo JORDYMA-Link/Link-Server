@@ -4,7 +4,6 @@ import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.feed.vo.FeedKeywordVo
 import com.jordyma.blink.feed.vo.ScoredFeedVo
 import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
@@ -13,7 +12,6 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
-import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,7 +25,6 @@ import kotlin.math.min
 class FeedService(
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
-    private val userRepository: UserRepository,
 ) {
 
     @Transactional(readOnly = true)
@@ -221,4 +218,5 @@ class FeedService(
     fun countOccurrences(text: String, query: String): Int {
         return Regex(query, RegexOption.IGNORE_CASE).findAll(text).count()
     }
+
 }

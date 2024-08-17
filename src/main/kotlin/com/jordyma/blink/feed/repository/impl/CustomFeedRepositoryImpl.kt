@@ -1,10 +1,10 @@
 package com.jordyma.blink.feed.repository.impl
 
-import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.QFeed
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.feed.repository.CustomFeedRepository
+import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.keyword.entity.QKeyword
@@ -43,6 +43,7 @@ class CustomFeedRepositoryImpl(
             .fetch()
     }
 
+
     override fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo? {
         val qFeed = QFeed.feed
         val qFolder = QFolder.folder
@@ -72,8 +73,8 @@ class CustomFeedRepositoryImpl(
             .fetchOne()
     }
 
-    override fun deleteAllByFolder(folder: Folder) {
-        queryFactory
+    override fun deleteAllByFolder(folder: Folder): Long {
+        return queryFactory
             .delete(QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
             .execute()
@@ -84,8 +85,8 @@ class CustomFeedRepositoryImpl(
             .select(QFeed.feed)
             .from(QFeed.feed)
             .join(QFeed.feed.folder, QFolder.folder)
+            .join(QFeed.feed.keywords, QKeyword.keyword)
             .fetchJoin()
-            .join(QKeyword.keyword.feed, QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
             .fetch()
     }

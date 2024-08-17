@@ -4,7 +4,6 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.folder.entity.Folder
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 interface CustomFeedRepository {
@@ -12,7 +11,7 @@ interface CustomFeedRepository {
 
     fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo?
 
-    fun deleteAllByFolder(folder: Folder): Unit
+    fun deleteAllByFolder(folder: Folder): Long
 
     fun findAllByFolder(folder: Folder): List<Feed>
 }

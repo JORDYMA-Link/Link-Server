@@ -29,6 +29,8 @@ class JwtExceptionFilter : OncePerRequestFilter() {
             response.status = e.code.statusCode.value()
             response.contentType = MediaType.APPLICATION_JSON_VALUE
             body.put("message", e.message)
+            body.put("code", e.code.errorCode)
+            body.put("detail", "")
             mapper.writeValue(response.outputStream, body)
         }
     }
