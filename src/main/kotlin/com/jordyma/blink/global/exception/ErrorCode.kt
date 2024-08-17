@@ -19,4 +19,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
 
     // User
     USER_NOT_FOUND("U000", HttpStatus.NOT_FOUND),
+
+    // Token
+    TOKEN_EXCHANGE_FAILED("T000", HttpStatus.INTERNAL_SERVER_ERROR),
 }
