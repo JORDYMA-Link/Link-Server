@@ -1,0 +1,9 @@
+package com.jordyma.blink.feed.entity
+
+enum class Status{
+
+    REQUESTED,   // 요약 요청
+    PROCESSING,  // 요약 중
+    COMPLETED,   // 요약 완료
+    FAILED;      // 요약 실패
+}

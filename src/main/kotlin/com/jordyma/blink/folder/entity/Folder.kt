@@ -18,6 +18,9 @@ class Folder(
 
     @Column(name = "count")
     var count: Int,
+
+    @Column(name = "is_unclassified")
+    var isUnclassified: Boolean,
 ): BaseTimeEntity() {
 
     fun increaseCount() {

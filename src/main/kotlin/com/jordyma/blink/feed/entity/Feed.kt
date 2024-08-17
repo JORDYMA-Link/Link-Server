@@ -38,8 +38,12 @@ class Feed(
     @Column(name = "is_marked", columnDefinition = "BIT")
     var isMarked: Boolean = false,
 
+    @Column(name = "status", length = 10)
+    @Enumerated(EnumType.STRING)
+    var status: Status = Status.REQUESTED,
+
     @ManyToOne @JoinColumn(name = "folder_id")
-    var folder: Folder,
+    var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")
     var keywords: List<Keyword>? = emptyList(),

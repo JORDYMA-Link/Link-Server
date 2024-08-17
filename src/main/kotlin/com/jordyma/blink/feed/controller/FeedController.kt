@@ -53,19 +53,10 @@ class FeedController(
         val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "))
         val brunch = feedService.findBrunch(link)
 
-        val response = makeAiSummaryResponse(content, brunch)
+        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, link)
         return ResponseEntity.ok(response)
     }
 
-    private fun makeAiSummaryResponse(content: PromptResponse?, source: Source): AiSummaryResponseDto {
-        return AiSummaryResponseDto(
-            content = AiSummaryContent.from(content),
-            sourceUrl = source.image,
-            recommendFolder = content?.category?.get(0) ?: "",
-            recommendFolders = content?.category ?: emptyList()
-            // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
-        )
-    }
 
     @Operation(summary = "링크 저장 api", description = "요약 결과 저장")
     @PostMapping("")

@@ -15,6 +15,7 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class FolderService(
@@ -75,8 +76,8 @@ class FolderService(
         val feeds = feedRepository.findAllByFolder(folder)
         val feedList = feeds.map { feed ->
             FeedDto(
-                folderId = feed.folder.id,
-                folderName = feed.folder.name,
+                folderId = feed.folder!!.id,
+                folderName = feed.folder!!.name,
                 feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
@@ -96,10 +97,12 @@ class FolderService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
+
         val folder = Folder(
             name = requestDto.name,
             user = user,
             count = 0,
+            isUnclassified = requestDto.name == "미분류"
         )
 
         val savedFolder = folderRepository.save(folder)
@@ -131,5 +134,30 @@ class FolderService(
             name = savedFolder.name,
             feedCount = savedFolder.count
         )
+    }
+
+    // 유저의 미분류 폴더 찾기
+    fun getUnclassified(userAccount: UserAccount): Folder?{
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+
+        // 미분류 폴더 찾기
+        var folder = folderRepository.findUnclassified(user)
+        if(folder == null){     // 없으면 생성
+            val request = CreateFolderRequestDto(
+                name = "미분류"
+            )
+            folder = getFolderById(create(userAccount, request).id!!)
+        }
+
+        return folder
+    }
+
+    fun getFolderById(folderId: Long): Folder{
+        return folderRepository.findById(folderId).orElseThrow {
+            ApplicationException(ErrorCode.FOLDER_NOT_FOUND, "폴더를 찾을 수 없습니다.")
+        }
+
     }
 }

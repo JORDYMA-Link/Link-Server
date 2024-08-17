@@ -31,6 +31,10 @@ data class AiSummaryContent(
 
 @Schema(description = "AI 요약 결과 DTO")
 data class AiSummaryResponseDto(
+
+    @Schema(description = "피드 id")
+    val feedId: Long,
+
     @Schema(description = "AI 요약 결과 내용")
     val content: AiSummaryContent,
 

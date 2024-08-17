@@ -1,16 +1,15 @@
 package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.dto.FeedCalendarListDto
+import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
-import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
 import com.jordyma.blink.feed.dto.response.FeedCreateResDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.feed.entity.Status
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
@@ -19,6 +18,7 @@ import com.jordyma.blink.folder.repository.RecommendRepository
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.entity.Keyword
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -148,6 +148,38 @@ class FeedService(
         feed.updateKeywords(createdKeywords)
     }
 
+    fun makeFeedAndResponse(content: PromptResponse?, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
+        val feed = makeFeed(userAccount, content, brunch, link)
+        return makeAiSummaryResponse(content, brunch, feed.id!!)
+    }
+
+    private fun makeFeed(userAccount: UserAccount, content: PromptResponse?, brunch: Source, link: String): Feed {
+        val user = findUserOrElseThrow(userAccount.userId)
+        val folder = folderService.getUnclassified(userAccount)
+
+        // ai 요약 결과로 피드 생성 (유저 매칭을 위해 폴더는 미분류로 지정)
+        val feed = Feed(
+            folder = folder!!,
+            url = link,
+            summary = content?.summary ?: "",
+            title = content?.subject ?: "",
+            memo = "",
+            source = brunch.source,
+            status = Status.REQUESTED,
+        )
+        return feedRepository.save(feed)
+    }
+
+    private fun makeAiSummaryResponse(content: PromptResponse?, source: Source, feedId: Long): AiSummaryResponseDto {
+        return AiSummaryResponseDto(
+            content = AiSummaryContent.from(content),
+            sourceUrl = source.image,
+            recommendFolder = content?.category?.get(0) ?: "",
+            recommendFolders = content?.category ?: emptyList(),
+            feedId = feedId,
+            // TODO: gemini가 json으로 답하지 않는 경우 처리 필요
+        )
+    }
 
     fun checkFolder(user: User, folderName: String): Folder? {
         var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == folderName }
@@ -156,6 +188,7 @@ class FeedService(
                 name = folderName,
                 user = user,
                 count = 0,
+                isUnclassified = folderName == "미분류"
             )
         }
         return folder
