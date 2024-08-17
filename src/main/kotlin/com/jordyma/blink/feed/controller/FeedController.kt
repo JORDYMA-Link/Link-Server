@@ -1,17 +1,14 @@
 package com.jordyma.blink.feed.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.dto.AiSummaryContent
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
-import com.jordyma.blink.feed.dto.response.FeedCreateResDto
-import com.jordyma.blink.feed.entity.Source
+import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
+import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
-import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.image.dto.response.ImageCreateResDto
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -62,10 +59,10 @@ class FeedController(
     @PatchMapping("/{feedId}")
     fun createFeed(
         @AuthenticationPrincipal userAccount: UserAccount,
-        @RequestBody requestDto: FeedCreateReqDto,
+        @RequestBody requestDto: FeedUpdateReqDto,
         @PathVariable feedId: Long,
-    ): ResponseEntity<FeedCreateResDto> {
-        val response = feedService.create(userAccount = userAccount, request = requestDto)
+    ): ResponseEntity<FeedUpdateResDto> {
+        val response = feedService.update(userAccount, requestDto, feedId)
         return ResponseEntity.ok(response)
     }
 

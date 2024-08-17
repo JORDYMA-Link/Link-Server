@@ -5,8 +5,8 @@ import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.global.error.KEYWORDS_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.util.rangeTo
-import com.jordyma.blink.feed.dto.request.FeedCreateReqDto
-import com.jordyma.blink.feed.dto.response.FeedCreateResDto
+import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
+import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.Status
@@ -84,58 +84,11 @@ class FeedService(
         return keywords.map { it.keyword }
     }
 
+
     // 피드 생성
-    fun create(userAccount: UserAccount, request: FeedCreateReqDto): FeedCreateResDto? {
-
-        // 유저 확인
-        val user = findUserOrElseThrow(userAccount.userId)
-
-        // 기존 폴더 확인 or 새 폴더 생성
-        val folder = checkFolder(user, request.folderName)
-
-        // 피드 생성
-        val brunch = findBrunch(request.url)
-        val feed = Feed(
-            folder = folder!!,
-            url = request.url,
-            summary = request.summary,
-            title = request.title,
-            memo = request.memo,
-            source = brunch.source,
-        )
-        feedRepository.save(feed)
-
-        // 미분류인 경우 - 추천 폴더 생성
-        if(folder!!.name == "미분류"){
-            createRecommendFolders(feed, request)
-        }
-
-        // 키워드 생성
-        createKeywords(feed, request)
-
-        if(feed.id == null){
-            throw ApplicationException(ErrorCode.NOT_CREATED, "피드 생성 오류")
-        }
-        return FeedCreateResDto(feed.id)
-    }
-
-    // 요약 실패 피드 생성
-    fun createFailed(userAccount: UserAccount, link: String) {
-        val user = findUserOrElseThrow(userAccount.userId)
-        val failedFolder = folderService.getFailed(userAccount)
-        val feed = Feed(
-            folder = failedFolder,
-            url = link,
-            summary = "",
-            title = "",
-            status = Status.FAILED,
-        )
-        feedRepository.save(feed)
-    }
-
     fun makeFeedAndResponse(content: PromptResponse?, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
-        createRecommendFoldersV2(feed, content)
+        createRecommendFolders(feed, content)
         return makeAiSummaryResponse(content, brunch, feed.id!!)
     }
 
@@ -167,23 +120,63 @@ class FeedService(
         )
     }
 
-    fun createRecommendFolders(feed: Feed, request: FeedCreateReqDto) {
-        var cnt = 0
-        val recommendFolders: MutableList<Recommend> = mutableListOf()
-        for (folderName in request.recommendFolders) {
-            val recommend = Recommend(
-                feed = feed,
-                folderName = folderName,
-                priority = cnt
-            )
-            recommendRepository.save(recommend)
-            recommendFolders.add(recommend)
-            cnt++
-        }
-        feed.recommendFolders = recommendFolders
+    // 피드 수정
+    fun update(userAccount: UserAccount, request: FeedUpdateReqDto, feedId: Long): FeedUpdateResDto {
+        // 유저 확인
+        val user = findUserOrElseThrow(userAccount.userId)
+
+        // 기존 폴더 확인 or 새 폴더 생성
+        val folder = checkFolder(user, request.folderName)
+
+        // 피드 업데이트
+        val feed = findFeedOrElseThrow(feedId)
+        feed.update(request.title, request.summary, request.memo, folder!!)
+
+        // 키워드 업데이트
+        updateKeywords(feed, request.keywords)
+
+        feedRepository.save(feed)
+        return FeedUpdateResDto(feed.id!!)
     }
 
-    fun createRecommendFoldersV2(feed: Feed, content: PromptResponse?) {
+    fun updateKeywords(feed: Feed, updatedKeywords: List<String>) {
+        // 기존 키워드
+        val existingKeywords: MutableList<Keyword> = feed.keywords!!.toMutableList()
+
+        // 기존 키워드 제거
+        for (kw in existingKeywords){
+            if(!updatedKeywords.any { it == kw.keyword }){
+                keywordRepository.deleteById(kw.id!!)
+            }
+        }
+
+        // 새로운 키워드 추가
+        for(newKw in updatedKeywords){
+            if(!existingKeywords.any { it.keyword == newKw }){
+                val newKeyword = Keyword(
+                    feed = feed,
+                    keyword = newKw
+                )
+                keywordRepository.save(newKeyword)
+            }
+        }
+    }
+
+    // 요약 실패 피드 생성
+    fun createFailed(userAccount: UserAccount, link: String) {
+        val user = findUserOrElseThrow(userAccount.userId)
+        val failedFolder = folderService.getFailed(userAccount)
+        val feed = Feed(
+            folder = failedFolder,
+            url = link,
+            summary = "",
+            title = "",
+            status = Status.FAILED,
+        )
+        feedRepository.save(feed)
+    }
+
+    fun createRecommendFolders(feed: Feed, content: PromptResponse?) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
         for (folderName in content!!.category) {
@@ -199,7 +192,7 @@ class FeedService(
         feed.recommendFolders = recommendFolders
     }
 
-    fun createKeywords(feed: Feed, request: FeedCreateReqDto) {
+    fun createKeywords(feed: Feed, request: FeedUpdateReqDto) {
         val createdKeywords: MutableList<Keyword> = mutableListOf()
         for (keyword in request.keywords) {
             val createdKeyword = Keyword(
@@ -246,6 +239,12 @@ class FeedService(
     fun findUserOrElseThrow(userId: Long): User {
         return userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+    }
+
+    fun findFeedOrElseThrow(feedId: Long): Feed{
+        return feedRepository.findById(feedId).orElseThrow {
+            ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }
     }
 }

@@ -6,8 +6,10 @@ import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.image.entity.thumbnail.ThumbnailImage
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
+import java.time.LocalDate
 
 @Entity
+@Table(name = "feed")
 class Feed(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,5 +63,23 @@ class Feed(
         recommendFolders: List<Recommend>
     ) {
         this.recommendFolders = recommendFolders
+    }
+
+    fun updateTitle(title: String){
+        this.title = title
+    }
+
+    fun updateSummary(summary: String){
+        this.title = title
+    }
+
+    fun update(title: String,
+               summary: String,
+               memo: String,
+               folder: Folder){
+        this.title = title
+        this.summary = summary
+        this.memo = memo
+        this.folder = folder
     }
 }
