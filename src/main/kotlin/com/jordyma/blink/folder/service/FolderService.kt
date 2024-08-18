@@ -2,6 +2,7 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
+import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
@@ -14,6 +15,7 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
+import java.util.*
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional(readOnly = true)
@@ -77,14 +79,15 @@ class FolderService(
         val feeds = feedRepository.findAllByFolder(folder)
         val feedList = feeds.map { feed ->
             FeedDto(
-                folderId = feed.folder.id,
-                folderName = feed.folder.name,
-                feedId = feed.id,
+                folderId = feed.folder!!.id,
+                folderName = feed.folder!!.name,
+                feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.source,
-                sourceUrl = feed.sourceUrl,
+                platform = feed.source!!,
+                sourceUrl = Source.getBrunchByName(feed.source)!!.image,
                 isMarked = feed.isMarked,
+                keywords = feed.keywords!!.map { it.keyword },
                 keywords = feed.keywords.map { it.content },
             )
         }
@@ -99,10 +102,12 @@ class FolderService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
+
         val folder = Folder(
             name = requestDto.name,
             user = user,
             count = 0,
+            isUnclassified = requestDto.name == "미분류"
         )
 
         val savedFolder = folderRepository.save(folder)
@@ -135,5 +140,48 @@ class FolderService(
             name = savedFolder.name,
             feedCount = savedFolder.count
         )
+    }
+
+    // 유저의 미분류 폴더 찾기
+    fun getUnclassified(userAccount: UserAccount): Folder?{
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+
+        // 미분류 폴더 찾기
+        var folder = folderRepository.findUnclassified(user)
+        if(folder == null){     // 없으면 생성
+            val request = CreateFolderRequestDto(
+                name = "미분류"
+            )
+            folder = getFolderById(create(userAccount, request).id!!)
+        }
+
+        return folder
+    }
+
+    // 유저의 요약 실패 폴더 찾기
+    fun getFailed(userAccount: UserAccount): Folder?{
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+
+        // 요약 실패 폴더 찾기
+        var folder = folderRepository.findFailed(user, "FAILED")
+        if(folder == null){     // 없으면 생성
+            val request = CreateFolderRequestDto(
+                name = "요약실패"
+            )
+            folder = getFolderById(create(userAccount, request).id!!)
+        }
+
+        return folder
+    }
+
+    fun getFolderById(folderId: Long): Folder{
+        return folderRepository.findById(folderId).orElseThrow {
+            ApplicationException(ErrorCode.FOLDER_NOT_FOUND, "폴더를 찾을 수 없습니다.")
+        }
+
     }
 }
