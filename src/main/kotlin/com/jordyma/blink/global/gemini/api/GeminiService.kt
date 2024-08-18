@@ -1,7 +1,5 @@
 package com.jordyma.blink.global.gemini.api
 
-//import net.minidev.json.JSONObject
-// import org.json.JSONObject
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
@@ -12,9 +10,6 @@ import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.repository.UserRepository
 import kotlinx.serialization.json.Json
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.select.Elements
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -35,34 +30,6 @@ class GeminiService @Autowired constructor(
 
     fun getContents(link: String, folders: String, userAccount: UserAccount, content: String): PromptResponse? {
         return try {
-
-//            // 지정된 URL로 접속하여 HTML 문서를 가져옴
-//            val document = Jsoup.connect(link).get()
-//
-//            // 페이지의 본문에 해당하는 'content' 클래스를 가진 <div> 요소를 선택
-//            val htmlText = document.select("div.content")
-//
-//            // 본문 내용을 텍스트로 추출
-//            val htmlContent = htmlText.text()
-//
-//            logger().info("htmlParser ::::::: $htmlContent")
-
-//            val htmlFetcher = HtmlFetcher()
-//            val htmlContent = htmlFetcher.fetchHtml(link)
-//            c
-
-            // 지정된 URL로 접속하여 HTML 문서를 가져옴
-//            val document = Jsoup.connect(link).get()
-//
-//            // 모든 <div> 태그를 선택
-//            val divs = document.select("div")
-//
-//            // 각 <div> 태그의 텍스트를 하나의 문자열로 이어붙임
-//            val htmlContent = divs.joinToString(separator = "\n") { it.text() }
-
-            // val htmlContent = getHtml(link)
-            // logger().info("htmlParser ::::::: $htmlContent")
-
             // gemini 요청
             val requestUrl = "$apiUrl?key=$geminiApiKey"
             val request = ChatRequest(makePrompt(link, folders, content))
@@ -87,34 +54,6 @@ class GeminiService @Autowired constructor(
             throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini 요청 처리 중 오류 발생: ${e.message}")
         }
     }
-
-//    fun getHtml(link: String): String {
-//        var returnVal = ""
-//        try {
-//            //val originalUrl = "https://bbs.ruliweb.com/community/board/300143"
-//            val originalDoc: Document = Jsoup.connect(link).get()
-//            val linkElements: Elements = originalDoc.select("a.deco[href*=read]")
-//            for (linkElement in linkElements) {
-//                val linkUrl: String = linkElement.attr("href")
-//                val absoluteUrl = URL(URL(link), linkUrl)
-//                val absoluteUrlString: String = absoluteUrl.toString()
-//                val newDoc: Document = Jsoup.connect(absoluteUrlString).get()
-//                val elements: Elements = newDoc.select("article > div > p")
-//                println("\"$absoluteUrlString\" :해당 게시물 div tag: ")
-//                val contentBuilder = StringBuilder()
-//                // 해당 링크 text부분 긁어오기
-//                for (element in elements) {
-//                    contentBuilder.append(element.text())
-//                    contentBuilder.append("\n") // <br> 태그를 만날 때마다 줄바꿈 추가
-//                }
-//                println(contentBuilder.toString())
-//                returnVal = contentBuilder.toString()
-//            }
-//        } catch (e: java.lang.Exception) {
-//            e.printStackTrace()
-//        }
-//        return returnVal
-//    }
 
     fun makePrompt(link: String, folders: String, content: String): String{
         return "다음 텍스트를 읽고 다음 요구사항을 들어줘.\n" +
