@@ -1,5 +1,6 @@
 package com.jordyma.blink.notice.controller
 
+import com.jordyma.blink.notice.dto.response.NoticeListDto
 import com.jordyma.blink.notice.dto.response.NoticeResDto
 import com.jordyma.blink.notice.service.NoticeService
 import io.swagger.v3.oas.annotations.Operation
@@ -17,14 +18,14 @@ class NoticeController (
     private val noticeService: NoticeService
         ){
 
-    @Operation(summary = "공지사항 리스트 조회 api")
+    @Operation(summary = "공지사항 리스트 조회 api", description = "page: 요청할 페이지 번호(0부터 시작), size: 한 페이지에 포함할 데이터 개수")
     @GetMapping("")
     fun getNotices(
         @RequestParam("page") page: Int,
         @RequestParam("size") size: Int,
-    ): ResponseEntity<List<NoticeResDto>> {
-        val response = noticeService.getNotices(page, size)
+    ): ResponseEntity<NoticeListDto> {
+        val response = NoticeListDto(
+            notices = noticeService.getNotices(page, size))
         return ResponseEntity.ok(response)
     }
-
 }
