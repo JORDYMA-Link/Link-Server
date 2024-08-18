@@ -23,7 +23,7 @@ data class AiSummaryContent(
         fun from(promptResponse: PromptResponse?) = AiSummaryContent(
             subject = promptResponse?.subject ?: "",
             summary = promptResponse?.summary ?: "",
-            keywords = promptResponse?.keywords ?: emptyList(),
+            keywords = promptResponse?.keyword ?: emptyList(),
             folders = promptResponse?.category ?: emptyList(),
         )
     }

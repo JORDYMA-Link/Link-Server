@@ -1,7 +1,6 @@
 package com.jordyma.blink.global.gemini.response
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 @Serializable
 data class PromptResponse(
@@ -10,7 +9,7 @@ data class PromptResponse(
 
     val summary: String,
 
-    val keywords: List<String>,
+    val keyword: List<String>,
 
     val category: List<String>,
 )

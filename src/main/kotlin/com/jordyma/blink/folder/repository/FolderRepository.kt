@@ -13,6 +13,6 @@ interface FolderRepository : JpaRepository<Folder, Long> {
     @Query("select f from Folder f where f.user =:user and f.isUnclassified =true")
     fun findUnclassified(user: User): Folder?
 
-    @Query("select f from Folder f where f.user =:user and f.name =:요약실패")
-    fun findFailed(user: User?): Folder?
+    @Query("select f from Folder f where f.user =:user and f.name =:status")
+    fun findFailed(user: User?, status: String): Folder?
 }

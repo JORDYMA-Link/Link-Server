@@ -48,7 +48,7 @@ class Feed(
     @Enumerated(EnumType.STRING)
     var status: Status = Status.REQUESTED,
 
-    @ManyToOne @JoinColumn(name = "folder_id")
+    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
     var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")

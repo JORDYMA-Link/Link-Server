@@ -161,7 +161,7 @@ class FolderService(
         }
 
         // 요약 실패 폴더 찾기
-        var folder = folderRepository.findFailed(user)
+        var folder = folderRepository.findFailed(user, "FAILED")
         if(folder == null){     // 없으면 생성
             val request = CreateFolderRequestDto(
                 name = "요약실패"

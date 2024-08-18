@@ -172,6 +172,7 @@ class FeedService(
         feedRepository.save(feed)
     }
 
+    @Transactional
     fun updateKeywords(feed: Feed, updatedKeywords: List<String>) {
         // 기존 키워드
         val existingKeywords: MutableList<Keyword> = feed.keywords!!.toMutableList()

@@ -5,6 +5,7 @@ import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
+import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
@@ -42,16 +43,17 @@ class FeedController(
     }
 
     @Operation(summary = "링크 요약 api", description = "요약 결과 확인")
-    @GetMapping("/summary")
+    @PostMapping("/summary")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
-        @RequestParam("link") link: String,
+       // @RequestParam("link") link: String,
+        @RequestBody requestDto: TempReqDto,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(link = link, folders = folderNames.joinToString(separator = " "), userAccount)
-        val brunch = feedService.findBrunch(link)
+        val content = geminiService.getContents(link = requestDto.link, folders = folderNames.joinToString(separator = " "), userAccount, requestDto.content)
+        val brunch = feedService.findBrunch(requestDto.link)
 
-        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, link)
+        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
         return ResponseEntity.ok(response)
     }
 
