@@ -38,6 +38,9 @@ class Feed(
     @Column(name = "url", length = 255)
     var url: String,
 
+    @Column(name = "thumbnail_image_url", length = 200)
+    var thumbnailImageUrl: String? = "",
+
     @Column(name = "is_marked", columnDefinition = "BIT")
     var isMarked: Boolean = false,
 
@@ -79,6 +82,10 @@ class Feed(
 
     fun updateDeletedAt(){
         this.deletedAt = LocalDateTime.now()
+    }
+
+    fun updateThumbnailImageUrl(imageUrl: String){
+        this.thumbnailImageUrl = imageUrl
     }
 
     fun update(title: String,

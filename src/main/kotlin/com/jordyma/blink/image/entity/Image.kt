@@ -12,5 +12,5 @@ abstract class Image(
     val id: Long? = null,
 
     @Column(nullable = false, length = 300)
-    open var url: String
+    open var url: String,
 )

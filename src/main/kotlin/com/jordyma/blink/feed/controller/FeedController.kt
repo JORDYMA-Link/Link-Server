@@ -107,9 +107,9 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestPart(value = "thumbnailImage") thumbnailImage: MultipartFile,
         @PathVariable feedId: Long,
-    ): ResponseEntity<ImageCreateResDto> {
+    ): ResponseEntity<String> {
         val response = imageService.uploadThumbnailImage(thumbnailImage, feedId)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok("이미지 업로드 완료 $response")
     }
 
     @Operation(summary = "피드 상세 조회 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id의 상세 정보를 반환해줍니다.")

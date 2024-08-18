@@ -8,7 +8,7 @@ import jakarta.persistence.*
 @DiscriminatorValue("thumbnail")
 class ThumbnailImage(
 
-    @OneToOne @PrimaryKeyJoinColumn(name = "feed_id")
+    @ManyToOne @JoinColumn(name = "feed_id")
     var feed: Feed,
 
 ) : Image(url = "") {
