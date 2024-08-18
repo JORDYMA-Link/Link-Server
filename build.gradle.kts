@@ -77,10 +77,20 @@ dependencies {
 
     // json
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
-    implementation("com.google.code.gson:gson:2.8.7")
+     implementation("com.google.code.gson:gson:2.8.7")
 
     // logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+
+    // s3
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
+    // jsoup
+    implementation("org.jsoup:jsoup:1.15.3")
+
+    implementation("org.seleniumhq.selenium:selenium-java:4.1.0")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.1.0")
+
 }
 
 configurations.forEach {

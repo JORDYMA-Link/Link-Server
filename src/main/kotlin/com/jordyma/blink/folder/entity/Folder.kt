@@ -18,11 +18,11 @@ class Folder(
 
     @Column(name = "count")
     var count: Int,
-): BaseTimeEntity() {
 
     @Column(name = "is_unclassified", columnDefinition = "BIT")
     var isUnclassified: Boolean = false
-        private set
+
+): BaseTimeEntity() {
 
     fun changeIsUnclassified(newIsUnclassified: Boolean){
         this.isUnclassified = newIsUnclassified

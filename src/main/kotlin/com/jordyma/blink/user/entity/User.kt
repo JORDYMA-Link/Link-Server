@@ -23,4 +23,8 @@ class User(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null
+
+    fun updateNickname(nickname: String) {
+        this.nickname = nickname
+    }
 }

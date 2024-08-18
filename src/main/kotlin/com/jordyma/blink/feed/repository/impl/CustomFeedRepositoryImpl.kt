@@ -2,12 +2,17 @@ package com.jordyma.blink.feed.repository.impl
 
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.QFeed
+import com.jordyma.blink.feed.entity.QFeed.feed
+import com.jordyma.blink.feed.entity.Status
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.feed.repository.CustomFeedRepository
 import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
+import com.jordyma.blink.folder.entity.QFolder.folder
 import com.jordyma.blink.keyword.entity.QKeyword
+import com.jordyma.blink.user.entity.QUser.user
+import com.jordyma.blink.user.entity.User
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.stereotype.Repository
@@ -53,8 +58,7 @@ class CustomFeedRepositoryImpl(
                 Projections.constructor(
                     FeedDetailVo::class.java,
                     qFeed.id,
-                    qFeed.thumbnailImage,
-                    qFeed.platformImage,
+                    qFeed.thumbnailImageUrl,
                     qFeed.title,
                     qFeed.createdAt.`as`("date"),
                     qFeed.summary,
@@ -88,6 +92,22 @@ class CustomFeedRepositoryImpl(
             .join(QFeed.feed.keywords, QKeyword.keyword)
             .fetchJoin()
             .where(QFeed.feed.folder.eq(folder))
+            .fetch()
+    }
+
+    override fun getProcessing(findUser: User): List<Feed> {
+        return queryFactory
+            .selectFrom(feed)
+            .join(feed.folder, folder).fetchJoin()
+            .join(folder.user, user).fetchJoin()
+            .where(
+                ((feed.status.eq(Status.PROCESSING)).and(feed.folder.user.eq(user)))
+                    .or((feed.status.eq(Status.COMPLETED).and(feed.isChecked.isFalse))
+                        .and(feed.folder.user.eq(user)))
+                    .or((feed.status.eq(Status.REQUESTED)
+                        .and(feed.folder.user.eq(user)))
+                    .or((feed.status.eq(Status.FAILED).and(feed.deletedAt.isNotNull))
+                        .and(feed.folder.user.eq(user)))))
             .fetch()
     }
 }

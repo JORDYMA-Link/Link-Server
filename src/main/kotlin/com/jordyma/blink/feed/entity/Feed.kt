@@ -2,47 +2,95 @@ package com.jordyma.blink.feed.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
+@Table(name = "feed")
 class Feed(
     @Column(name = "summary", length = 200)
-    val summary: String,
+    var summary: String = "",
 
     @Column(name = "title", length = 100)
-    val title: String,
+    var title: String = "",
 
     @Column(name = "platform", length = 100)
     val platform: String,
 
-    @Column(name = "platform_image", length = 255)
-    val platformImage: String,
-
-    @Column(name = "memo", columnDefinition = "TEXT")
-    var memo: String = "",
-
-    @Column(name = "thumbnail_image", length = 255)
-    val thumbnailImage: String,
-
     @Column(name = "origin_url", length = 255)
     val originUrl: String,
 
-    @ManyToOne @JoinColumn(name = "folder_id")
-    val folder: Folder,
+    @Column(name = "thumbnail_image_url", length = 200)
+    var thumbnailImageUrl: String? = "",
 
-    @OneToMany(mappedBy = "feed")
-    val keywords: List<Keyword>,
+    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
+    var folder: Folder? = null,
+
+    @Column(name = "status", length = 10)
+    @Enumerated(EnumType.STRING)
+    var status: Status = Status.REQUESTED
+
 ): BaseTimeEntity() {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null
 
+    @Column(name = "memo", columnDefinition = "TEXT")
+    var memo: String = ""
+        private set
+
     @Column(name = "is_marked", columnDefinition = "BIT")
     var isMarked: Boolean = false
         private set
 
+    // 사용자가 피드 확인했는지 여부
+    @Column(name = "is_checked", columnDefinition = "BIT")
+    var isChecked: Boolean = false
+        private set
+
+    @OneToMany(mappedBy = "feed")
+    var keywords: List<Keyword> = emptyList()
+
+    @OneToMany(mappedBy = "feed")
+    var recommendFolders: List<Recommend>? = emptyList()
+
     fun changeIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
+    }
+
+    fun updateKeywords(
+        keywords: List<Keyword>
+    ) {
+        this.keywords = keywords
+    }
+
+    fun updateRecommendFolders(
+        recommendFolders: List<Recommend>
+    ) {
+        this.recommendFolders = recommendFolders
+    }
+
+    fun updateStatus(status: Status){
+        this.status = status
+    }
+
+    fun updateIsChecked(){
+        this.isChecked = true
+    }
+
+    fun updateDeletedAt(){
+        this.deletedAt = LocalDateTime.now()
+    }
+
+    fun update(title: String,
+               summary: String,
+               memo: String,
+               folder: Folder){
+        this.title = title
+        this.summary = summary
+        this.memo = memo
+        this.folder = folder
     }
 }
