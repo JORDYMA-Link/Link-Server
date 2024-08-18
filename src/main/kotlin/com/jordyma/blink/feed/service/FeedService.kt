@@ -11,7 +11,6 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
-import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToStringDefault
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.user.dto.UserInfoDto
 import org.springframework.data.domain.PageRequest
@@ -163,7 +162,7 @@ class FeedService(
         val sortedFeeds = searchAndSortFeeds(query, feedList)
 
         // 클라이언트에서 요청한 데이터만큼만 반환
-        val start = (page % 5) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
+        val start = ((page-1) % 5 ) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
         val end = min(start + size, sortedFeeds.size) // 끝 인덱스는 정렬된 데이터 크기 내로 제한
         return sortedFeeds.subList(start, end)
     }
@@ -181,7 +180,7 @@ class FeedService(
                 platformImage = feed.platformImage,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
-                date = localDateTimeToStringDefault(feed.createdAt?: LocalDateTime.now())
+                dateTime = localDateTimeToString(feed.createdAt?: LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss")
             )
         }
     }
