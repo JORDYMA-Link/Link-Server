@@ -18,6 +18,7 @@ import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -50,6 +51,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
+    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "링크 요약 api", description = "요약 결과 확인")
     @PostMapping("/summary")
     fun getAiSummary(
@@ -65,7 +67,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
-
+    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "링크 저장(수정) api", description = "요약 결과 저장, 수정")
     @PatchMapping("/{feedId}")
     fun createFeed(
@@ -77,6 +79,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
+    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "요약 중인 링크 조회 api")
     @GetMapping("/processing")
     fun getProcessing(
@@ -86,6 +89,7 @@ class FeedController(
         return ResponseEntity.ok(response)
     }
 
+    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "요약 불가 링크 삭제 api")
     @DeleteMapping("/processing/{feedId}")
     fun deleteProcessingFeed(
@@ -96,6 +100,7 @@ class FeedController(
         return ResponseEntity.ok("삭제 완료되었습니다.")
     }
 
+    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "썸네일 이미지 업로드 api")
     @PostMapping("/image/{feedId}", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createThumbnailImage(
