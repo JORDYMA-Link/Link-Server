@@ -2,23 +2,22 @@ package com.jordyma.blink.feed.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
-import com.jordyma.blink.global.resolver.RequestUserId
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.dto.response.ProcessingListDto
-import com.jordyma.blink.global.resolver.RequestUserId
-import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.image.dto.response.ImageCreateResDto
 import com.jordyma.blink.image.service.ImageService
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -29,6 +28,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import lombok.extern.java.Log
 
 @RestController
 @RequestMapping("/api/feeds")
@@ -111,8 +111,10 @@ class FeedController(
     @GetMapping("/{feedId}")
     fun getFeedDetail(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
-        @AuthenticationPrincipal userAccount: UserAccount,
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedDetailDto> {
+        logger().info("getFeedDetail called : feedId = $feedId")
+
         val userDto: UserInfoDto = userService.find(userAccount.userId)
         val feedDetailDto = feedService.getFeedDetail(user = userDto, feedId = feedId)
         return ResponseEntity.ok(feedDetailDto)

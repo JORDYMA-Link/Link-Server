@@ -27,9 +27,9 @@ import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
 import com.jordyma.blink.feed.dto.FeedDto
-import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.global.exception.ApplicationException
-import com.jordyma.blink.global.exception.ErrorCode
+//import com.jordyma.blink.feed.repository.FeedRepository
+//import com.jordyma.blink.global.exception.ApplicationException
+//import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.DateTimeUtils
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.logger
@@ -206,17 +206,17 @@ class FeedService(
 
         // 기존 키워드 제거
         for (kw in existingKeywords){
-            if(!updatedKeywords.any { it == kw.keyword }){
+            if(!updatedKeywords.any { it == kw.content }){
                 keywordRepository.deleteById(kw.id!!)
             }
         }
 
         // 새로운 키워드 추가
         for(newKw in updatedKeywords){
-            if(!existingKeywords.any { it.keyword == newKw }){
+            if(!existingKeywords.any { it.content == newKw }){
                 val newKeyword = Keyword(
                     feed = feed,
-                    keyword = newKw
+                    content = newKw
                 )
                 keywordRepository.save(newKeyword)
             }
@@ -259,7 +259,7 @@ class FeedService(
         for (keyword in request.keywords) {
             val createdKeyword = Keyword(
                 feed = feed,
-                keyword = keyword
+                content = keyword
             )
             keywordRepository.save(createdKeyword)
             createdKeywords.add(createdKeyword)
