@@ -2,6 +2,7 @@ package com.jordyma.blink.folder.repository
 
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.user.entity.User
+import org.openqa.selenium.print.PageSize
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 

@@ -9,6 +9,6 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
 
     override fun deleteAllByFolder(folder: Folder): Long
 
-    override fun findAllByFolder(folder: Folder): List<Feed>
+    override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
 }
 

@@ -32,7 +32,7 @@ class Feed(
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
 
-    @OneToOne @PrimaryKeyJoinColumn(name = "thumbnail_image_id")
+    @OneToOne(fetch = FetchType.LAZY) @PrimaryKeyJoinColumn(name = "thumbnail_image_id")
     var thumbnailImage: ThumbnailImage? = null,
 
     @Column(name = "url", length = 255)
@@ -51,7 +51,7 @@ class Feed(
     @Enumerated(EnumType.STRING)
     var status: Status = Status.REQUESTED,
 
-    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
+    @ManyToOne(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY) @JoinColumn(name = "folder_id")
     var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")

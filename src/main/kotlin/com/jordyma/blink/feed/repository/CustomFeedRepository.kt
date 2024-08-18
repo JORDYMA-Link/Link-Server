@@ -16,7 +16,7 @@ interface CustomFeedRepository {
 
     fun deleteAllByFolder(folder: Folder): Long
 
-    fun findAllByFolder(folder: Folder): List<Feed>
+    fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
 
     fun getProcessing(user: User): List<Feed>
 }

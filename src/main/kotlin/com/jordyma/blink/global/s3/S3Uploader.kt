@@ -23,7 +23,7 @@ import java.util.*
 @Component
 class S3Uploader (
      private val amazonS3: AmazonS3,
-     @Value("\${cloud.aws.s3.bucket}") private val bucket: String
+     @Value("\${spring.cloud.aws.s3.bucket}") private val bucket: String
      ){
 
     // 피드 썸네일 이미지 업로드
