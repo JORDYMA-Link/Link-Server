@@ -41,3 +41,7 @@ out/
 
 ### application.yml ###
 **/application.yml
+
+### for api test files ###
+/http/*
+/http/http-client.private.env.json

@@ -25,9 +25,9 @@ import java.util.*
 class JwtTokenUtil() {
 
     //TODO 환경 변수로 빼기
-    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 3 * 60 * 1000 /* 24 * 60 * 60 * 1000 */
+    private val ACCESS_TOKEN_EXPIRATION_MS: Int = 3 * 60 * 60 * 1000
 
-    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 5 * 60 * 1000 /* 14 * 24 * 60 * 60 * 1000 */
+    private val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
 
     // jwt 토큰 생성
     fun generateToken(tokenType: TokenType, user: User, jwtSecret: String): String {

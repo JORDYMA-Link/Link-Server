@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.serialization.json.*
 import lombok.RequiredArgsConstructor
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,6 +21,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
+import java.net.URL
 import java.util.*
 
 
@@ -76,11 +79,9 @@ class AuthController(
         }
         val webRedirectUrl = stateInfo.webRedirectUrl
         val tokenInfo = authService.kakaoLoginWeb(code)
-        val redirectUrl = "${webRedirectUrl}?accessToken=${tokenInfo.accessToken}&refreshToken=${tokenInfo.refreshToken}"
-        val uri = UriComponentsBuilder.newInstance()
-            .host(redirectUrl)
-            .queryParam("accessToken", tokenInfo.accessToken)
-            .queryParam("refreshToken", tokenInfo.refreshToken)
+        val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter("accessToken", tokenInfo.accessToken)
+            .addQueryParameter("refreshToken", tokenInfo.refreshToken)
             .build()
 
         val headers = HttpHeaders()
