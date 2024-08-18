@@ -29,7 +29,6 @@ class UserService (
         val user = userRepository.getById(userAccount.userId)
         return UserProfileResDto(
             nickName = user.nickname,
-            // email = user.
         )
     }
 
