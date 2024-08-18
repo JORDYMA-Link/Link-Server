@@ -16,13 +16,11 @@ import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
-import com.jordyma.blink.global.http.request.GetKakaoTokenRequestDto
+import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
 import com.jordyma.blink.user_refresh_token.repository.UserRefreshTokenRepository
 import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Header
-import io.jsonwebtoken.Jwt
 import io.jsonwebtoken.Jwts
 import lombok.RequiredArgsConstructor
 import org.apache.coyote.BadRequestException
@@ -36,8 +34,11 @@ import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.security.Key
 import java.security.KeyFactory
+import java.security.NoSuchAlgorithmException
 import java.security.PublicKey
+import java.security.spec.InvalidKeySpecException
 import java.security.spec.RSAPublicKeySpec
 import java.util.*
 
@@ -48,40 +49,48 @@ class AuthService(
     private val jwtTokenUtil: JwtTokenUtil,
     private val userRepository: UserRepository,
     private val kakaoAuthApi: KakaoAuthApi,
-    private val userRefreshTokenRepository: UserRefreshTokenRepository
+    private val userRefreshTokenRepository: UserRefreshTokenRepository,
+    @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
+    @Value("\${kakao.auth.jwt.iss}") val iss: String? = null,
+    @Value("\${kakao.auth.jwt.client-id}") val kakaoClientId: String,
+    @Value("\${kakao.auth.jwt.redirect-uri}") val kakaoRedirectUri: String,
+    @Value("\${jwt.secret}") val jwtSecret: String,
 ) {
-
-    @Value("\${kakao.auth.jwt.aud}")
-    val aud: String? = null
-
-    @Value("\${kakao.auth.jwt.iss}")
-    val iss: String? = null
-
-    @Value("\${kakao.auth.jwt.client-id}")
-    lateinit var kakaoClientId: String
-
-    @Value("\${kakao.auth.jwt.redirect-uri}")
-    lateinit var kakaoRedirectUri: String
 
     @Transactional
     fun kakaoLogin(kakaoLoginRequestDto: KakaoLoginRequestDto): TokenResponseDto {
         val idToken: String = kakaoLoginRequestDto.idToken;
-        val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
 
-        val kid: String = claims.header.get("kid").toString()
-        jwtTokenUtil.verifySignature(idToken, kid, aud, iss, kakaoLoginRequestDto.nonce)
+        val header = jwtTokenUtil.getJwtHeader(idToken)
+
+        val kid: String = header.header["kid"].toString()
+        val publicKey: Key = getKakaoPublicKey(kid)
+        val claims = jwtTokenUtil.parseToken(idToken, publicKey)
+        jwtTokenUtil.verifySignature(idToken, publicKey, aud, iss, kakaoLoginRequestDto.nonce)
 
         val nickname: String = claims.body.get("nickname", String::class.java)
         val socialUserId: String = claims.body.get("sub", String::class.java)
 
         val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
 
-        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
-        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
         userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
 
         return TokenResponseDto(accessToken, refreshToken);
+    }
+
+    fun getKakaoPublicKey(kid: String): Key {
+        // TODO 캐싱 필요
+        val keyListResponse: OpenKeyListResponse = kakaoAuthApi.getKakaoOpenKeyAddress()
+
+        val openKey: OpenKeyListResponse.JWK? = keyListResponse.keys?.stream()
+            ?.filter { key -> key.kid.equals(kid) }
+            ?.findFirst()
+            ?.get()
+
+        return getRSAPublicKey(openKey?.n, openKey?.e)
     }
 
     private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
@@ -97,8 +106,8 @@ class AuthService(
     }
 
     @Transactional
-    fun regenerateToken(token: String?): TokenResponseDto {
-        val claims = jwtTokenUtil.parseToken(token)
+    fun regenerateToken(token: String): TokenResponseDto {
+        val claims = jwtTokenUtil.parseToken(token, jwtSecret);
         val tokenType: TokenType = TokenType.valueOf(claims!!.body["type", String::class.java])
 
         if (tokenType !== TokenType.REFRESH_TOKEN) {
@@ -110,8 +119,8 @@ class AuthService(
         val subject = claims.body.subject
         val user: User = userRepository.findById(subject.toLong())
             .orElseThrow { ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.") }
-        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
-        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
         userRefreshToken.updateRefreshToken(refreshToken)
 
@@ -128,17 +137,19 @@ class AuthService(
         )
 
         val idToken = tokenResponse.id_token
-        val claims: Jwt<Header<*>, Claims> = jwtTokenUtil.parseJwt(idToken)
-        val kid: String = claims.header.get("kid").toString()
-        jwtTokenUtil.verifySignature(idToken, kid, this.kakaoClientId, iss, null)
+        val header = jwtTokenUtil.getJwtHeader(idToken);
+
+        val kid: String = header.header["kid"].toString()
+        val publicKey: Key = getKakaoPublicKey(kid)
+        val claims = jwtTokenUtil.parseToken(idToken, publicKey)
 
         val nickname: String = claims.body.get("nickname", String::class.java)
         val socialUserId: String = claims.body.get("sub", String::class.java)
 
         val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
 
-        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
-        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
         userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
 
@@ -178,8 +189,8 @@ class AuthService(
             val user: User = upsertUser(SocialType.APPLE, socialUserId, name)
             userRepository.save(user)
 
-            val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user)
-            val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user)
+            val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+            val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
             userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
 
             return TokenResponseDto(accessToken, refreshToken);
@@ -253,6 +264,21 @@ class AuthService(
 
         } catch (e: IOException) {
             throw Exception("URL 파싱 실패")
+        }
+    }
+
+    private fun getRSAPublicKey(modulus: String?, exponent: String?): Key {
+        val keyFactory: KeyFactory = KeyFactory.getInstance("RSA")
+        val decodeN: ByteArray = Base64.getUrlDecoder().decode(modulus)
+        val decodeE: ByteArray = Base64.getUrlDecoder().decode(exponent)
+        val n = BigInteger(1, decodeN)
+        val e = BigInteger(1, decodeE)
+
+        val keySpec = RSAPublicKeySpec(n, e)
+        return kotlin.runCatching {
+            keyFactory.generatePublic(keySpec)
+        } .getOrElse {
+            exception -> throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.", exception)
         }
     }
 }

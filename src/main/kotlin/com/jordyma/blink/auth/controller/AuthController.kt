@@ -4,12 +4,16 @@ import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.service.AuthService
+import com.jordyma.blink.global.exception.ApplicationException
+import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.CommonUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.serialization.json.*
 import lombok.RequiredArgsConstructor
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,6 +21,7 @@ import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
+import java.net.URL
 import java.util.*
 
 
@@ -49,7 +54,7 @@ class AuthController(
     fun regeneratedToken(
        @Schema(hidden = true) @RequestHeader("Authorization") authorizationHeader: String?
     ): ResponseEntity<TokenResponseDto> {
-        val token: String? = CommonUtil.parseTokenFromBearer(authorizationHeader)
+        val token: String = CommonUtil.parseTokenFromBearer(authorizationHeader) ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰 형식입니다.")
 
         val tokenResponseDto: TokenResponseDto = authService.regenerateToken(token)
 
@@ -74,11 +79,9 @@ class AuthController(
         }
         val webRedirectUrl = stateInfo.webRedirectUrl
         val tokenInfo = authService.kakaoLoginWeb(code)
-        val redirectUrl = "${webRedirectUrl}?accessToken=${tokenInfo.accessToken}&refreshToken=${tokenInfo.refreshToken}"
-        val uri = UriComponentsBuilder.newInstance()
-            .host(redirectUrl)
-            .queryParam("accessToken", tokenInfo.accessToken)
-            .queryParam("refreshToken", tokenInfo.refreshToken)
+        val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter("accessToken", tokenInfo.accessToken)
+            .addQueryParameter("refreshToken", tokenInfo.refreshToken)
             .build()
 
         val headers = HttpHeaders()

@@ -22,6 +22,15 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.entity.Keyword
+import com.jordyma.blink.feed.dto.FeedCalendarListDto
+import com.jordyma.blink.global.util.rangeTo
+import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
+import com.jordyma.blink.feed.dto.FeedDetailDto
+import com.jordyma.blink.feed.dto.FeedDto
+import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.global.exception.ApplicationException
+import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.global.util.DateTimeUtils
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -79,12 +88,30 @@ class FeedService(
         return FeedCalendarResponseDto(response)
     }
 
+    @Throws(ApplicationException::class)
+    @Transactional(readOnly = true)
+    fun getFeedDetail(user: UserInfoDto, feedId: Long): FeedDetailDto {
+        val feedDetail = feedRepository.findFeedDetail(user.id, feedId)
+            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
+        return FeedDetailDto(
+            feedId = feedDetail.feedId,
+            thumnailImage = feedDetail.thumnailImage,
+            title = feedDetail.title,
+            date = DateTimeUtils.localDateTimeToString(feedDetail.date),
+            summary = feedDetail.summary,
+            keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
+            folderName = feedDetail.folderName,
+            memo = feedDetail.memo
+        )
+    }
+
+
     private fun getKeywordsByFeedId(feedId: Long): List<String> {
         val keywords = keywordRepository.findByFeedId(feedId)
         if (keywords.isEmpty()) {
-            throw BadRequestException(KEYWORDS_NOT_FOUND)
+            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
         }
-        return keywords.map { it.keyword }
+        return keywords.map { it.content }
     }
 
 

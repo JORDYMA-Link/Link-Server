@@ -14,6 +14,6 @@ class Keyword(
     @JoinColumn(name = "feed_id")
     val feed: Feed,
 
-    @Column(name = "keyword", length = 20)
-    val keyword: String,
+    @Column(name = "content", length = 20)
+    val content: String,
 ): BaseTimeEntity()
