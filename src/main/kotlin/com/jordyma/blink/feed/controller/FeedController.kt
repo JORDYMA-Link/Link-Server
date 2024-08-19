@@ -12,7 +12,6 @@ import com.jordyma.blink.feed.dto.FeedDetailDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
-import com.jordyma.blink.image.dto.response.ImageCreateResDto
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.dto.UserInfoDto
@@ -168,11 +167,11 @@ class FeedController(
         @RequestParam("page") page: Int,
         @RequestParam("size") size: Int,
         @AuthenticationPrincipal userAccount: UserAccount
-    ): ResponseEntity<List<FeedTypeResponseDto>> {
+    ): ResponseEntity<FeedTypeResponseDto> {
         val userDto: UserInfoDto = userService.find(userAccount.userId)
         val feedType = FeedType.valueOf(type.uppercase())
         val response = feedService.getFeedsByType(user = userDto, type = feedType, page = page, size = size)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(FeedTypeResponseDto(feedList = response))
     }
 
 
