@@ -4,6 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "피드 중요/미분류 피드 리스트(홈) 응답 DTO")
 data class FeedTypeResponseDto(
+    val feedList : List<FeedTypeDto>
+)
+
+@Schema(description = "피드 중요/미분류 피드 리스트(홈) DTO")
+data class FeedTypeDto(
     @Schema(description = "피드 ID")
     val feedId: Long,
 
@@ -28,4 +33,3 @@ data class FeedTypeResponseDto(
     @Schema(description = "추천 폴더 리스트 (미분류 대상에만 존재, 이외는 Null)")
     val recommendedFolder: List<String>? = null
 )
-
