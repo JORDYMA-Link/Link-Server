@@ -15,14 +15,18 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
     override fun findAllByFolder(folder: Folder): List<Feed>
 
     @Query(
-        "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder.id = fdr.id " +
-                "WHERE fdr.user.id = :userId AND fd.isMarked = true"
+        "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
+         "WHERE fdr.user.id = :userId "+
+           "AND fd.isMarked = true " +
+           "AND fd.status = 'COMPLETED'"
     )
     fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
     @Query(
-        "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder.id = fdr.id " +
-                "WHERE fdr.user.id = :userId AND fdr.isUnclassified = true"
+        "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
+         "WHERE fdr.user.id = :userId " +
+           "AND fdr.isUnclassified = true " +
+           "AND fd.status = 'COMPLETED'"
     )
     fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
