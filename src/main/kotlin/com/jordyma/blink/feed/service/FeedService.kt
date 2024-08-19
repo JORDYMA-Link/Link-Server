@@ -110,15 +110,6 @@ class FeedService(
     }
 
 
-    private fun getKeywordsByFeedId(feedId: Long): List<String> {
-        val keywords = keywordRepository.findByFeedId(feedId)
-        if (keywords.isEmpty()) {
-            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
-        }
-        return keywords.map { it.content }
-    }
-
-
     @Transactional
     fun deleteFeed(user: UserInfoDto, feedId: Long) {
         val feed = feedRepository.findById(feedId)
@@ -162,7 +153,6 @@ class FeedService(
             FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id, pageable).content
         }
         if (feedList.size > 0) logger().info("feedList = ${feedList[0]}")
-        val recommendedFolderList: List<String>? = null // todo recommendedRepository.findRecommendedFolder(feedId)
         return feedList.map { feed ->
             FeedTypeDto(
                 feedId = feed.id!!,
@@ -172,7 +162,7 @@ class FeedService(
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content }, // 키워드 추출 함수
-                recommendedFolder = recommendedFolderList
+                recommendedFolder = getRecommendFoldersByFeedId(feed.id)
             )
         }
     }
@@ -443,5 +433,21 @@ class FeedService(
         return feedRepository.findById(feedId).orElseThrow {
             ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }
+    }
+
+    private fun getKeywordsByFeedId(feedId: Long): List<String> {
+        val keywords = keywordRepository.findByFeedId(feedId)
+        if (keywords.isEmpty()) {
+            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
+        }
+        return keywords.map { it.content }
+    }
+
+    private fun getRecommendFoldersByFeedId(feedId: Long): List<String> {
+        val recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
+        if (recommendFolders.isEmpty()) {
+            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 추천 폴더가 없습니다 : $feedId", Throwable())
+        }
+        return recommendFolders.map { it.folderName }
     }
 }
