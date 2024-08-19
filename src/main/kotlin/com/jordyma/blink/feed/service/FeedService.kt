@@ -71,8 +71,8 @@ class FeedService(
                     feedId = feedFolderDto.feed.id ?: throw IdRequiredException(ID_NOT_FOUND),
                     title = feedFolderDto.feed.title,
                     summary = feedFolderDto.feed.summary,
-                    platform = feedFolderDto.feed.platform,
-                    platformImage = findBrunch(feedFolderDto.feed.platform).image,
+                    platform = feedFolderDto.feed.platform ?: "",
+                    platformImage = findBrunch(feedFolderDto.feed.platform ?: "").image,
                     isMarked = feedFolderDto.feed.isMarked,
                     keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수
                 )
@@ -155,22 +155,23 @@ class FeedService(
         .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
 
     @Transactional(readOnly = true)
-    fun getFeedsByType(user: UserInfoDto, type: FeedType, page: Int, size: Int): List<FeedTypeResponseDto> {
+    fun getFeedsByType(user: UserInfoDto, type: FeedType, page: Int, size: Int): List<FeedTypeDto> {
         val pageable = PageRequest.of(page, size)
         val feedList =  when (type) {
             FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id, pageable).content
             FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id, pageable).content
         }
+        if (feedList.size > 0) logger().info("feedList = ${feedList[0]}")
         val recommendedFolderList: List<String>? = null // todo recommendedRepository.findRecommendedFolder(feedId)
         return feedList.map { feed ->
-            FeedTypeResponseDto(
+            FeedTypeDto(
                 feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.platform,
-                platformImage = findBrunch(feed.platform).image,
+                platform = feed.platform ?: "",
+                platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
-                keywords = getKeywordsByFeedId(feed.id), // 키워드 추출 함수
+                keywords = feed.keywords.map { it.content }, // 키워드 추출 함수
                 recommendedFolder = recommendedFolderList
             )
         }
@@ -200,10 +201,10 @@ class FeedService(
                 feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.platform,
-                platformImage = findBrunch(feed.platform).image,
+                platform = feed.platform ?: "",
+                platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords!!.map { it.content },
+                keywords = feed.keywords.map { it.content },
                 dateTime = localDateTimeToString(feed.createdAt?: LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss")
             )
         }
@@ -414,7 +415,7 @@ class FeedService(
         return folder
     }
 
-    fun findBrunch(link: String): Source {
+    fun findBrunch(link: String = ""): Source {
         return if(link.contains("blog.naver.com")){
             Source.NAVER_BLOG
         } else if (link.contains("velog.io")){
