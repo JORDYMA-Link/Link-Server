@@ -17,7 +17,7 @@ class Feed(
     var title: String,
 
     @Column(name = "platform", length = 100)
-    val platform: String,
+    val platform: String? = "",
 
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
