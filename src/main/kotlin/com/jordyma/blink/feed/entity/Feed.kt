@@ -11,13 +11,16 @@ import java.time.LocalDateTime
 @Table(name = "feed")
 class Feed(
     @Column(name = "summary", length = 200)
-    var summary: String = "",
+    var summary: String,
 
     @Column(name = "title", length = 100)
-    var title: String = "",
+    var title: String,
 
     @Column(name = "platform", length = 100)
     val platform: String,
+
+    @Column(name = "memo", columnDefinition = "TEXT")
+    var memo: String? = "",
 
     @Column(name = "origin_url", length = 255)
     val originUrl: String,
@@ -25,36 +28,28 @@ class Feed(
     @Column(name = "thumbnail_image_url", length = 200)
     var thumbnailImageUrl: String? = "",
 
-    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
-    var folder: Folder? = null,
+    @Column(name = "is_marked", columnDefinition = "BIT")
+    var isMarked: Boolean = false,
+
+    @Column(name = "is_checked", columnDefinition = "BIT")
+    var isChecked: Boolean = false,
 
     @Column(name = "status", length = 10)
     @Enumerated(EnumType.STRING)
-    var status: Status = Status.REQUESTED
+    var status: Status = Status.REQUESTED,
 
-): BaseTimeEntity() {
+    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
+    var folder: Folder? = null,
+
+    @OneToMany(mappedBy = "feed")
+    var keywords: List<Keyword> = emptyList(),
+
+    @OneToMany(mappedBy = "feed")
+    var recommendFolders: List<Recommend> = emptyList(),
+): BaseTimeEntity(){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null
-
-    @Column(name = "memo", columnDefinition = "TEXT")
-    var memo: String = ""
-        private set
-
-    @Column(name = "is_marked", columnDefinition = "BIT")
-    var isMarked: Boolean = false
-        private set
-
-    // 사용자가 피드 확인했는지 여부
-    @Column(name = "is_checked", columnDefinition = "BIT")
-    var isChecked: Boolean = false
-        private set
-
-    @OneToMany(mappedBy = "feed")
-    var keywords: List<Keyword> = emptyList()
-
-    @OneToMany(mappedBy = "feed")
-    var recommendFolders: List<Recommend>? = emptyList()
 
     fun changeIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
@@ -82,6 +77,10 @@ class Feed(
 
     fun updateDeletedAt(){
         this.deletedAt = LocalDateTime.now()
+    }
+
+    fun updateThumbnailImageUrl(imageUrl: String){
+        this.thumbnailImageUrl = imageUrl
     }
 
     fun update(title: String,

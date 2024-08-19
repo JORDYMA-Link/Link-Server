@@ -9,6 +9,7 @@ import com.jordyma.blink.image.entity.Image
 import com.jordyma.blink.logger
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
@@ -20,10 +21,10 @@ import java.util.*
 @Slf4j
 @RequiredArgsConstructor
 @Component
-class S3Uploader {
-    private val bucket = "jordyma-dev"  // TODO: 버킷이름 환경변수로
-    private val amazonS3: AmazonS3? = null
-
+class S3Uploader (
+     private val amazonS3: AmazonS3,
+     @Value("\${spring.cloud.aws.s3.bucket}") private val bucket: String
+){
     // 피드 썸네일 이미지 업로드
     @Throws(IOException::class)
     fun s3UploadOfThumbnailImage(feed: Feed, multipartFile: MultipartFile): String {
@@ -82,7 +83,8 @@ class S3Uploader {
                 bucket,
                 storeKey,
                 uploadFile
-            ).withCannedAcl(CannedAccessControlList.PublicRead)
+            )
+                // .withCannedAcl(CannedAccessControlList.PublicRead)
         )
         return amazonS3.getUrl(bucket, storeKey).toString()
     }

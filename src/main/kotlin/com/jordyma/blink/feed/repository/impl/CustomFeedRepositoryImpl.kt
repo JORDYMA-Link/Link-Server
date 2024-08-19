@@ -62,6 +62,7 @@ class CustomFeedRepositoryImpl(
                     qFeed.title,
                     qFeed.createdAt.`as`("date"),
                     qFeed.summary,
+                    qFeed.platform,
                     qFolder.name.`as`("folderName"),
                     qFeed.memo,
                     qFeed.isMarked,

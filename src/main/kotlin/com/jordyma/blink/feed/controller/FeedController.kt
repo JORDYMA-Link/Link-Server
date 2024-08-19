@@ -117,13 +117,13 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestPart(value = "thumbnailImage") thumbnailImage: MultipartFile,
         @PathVariable feedId: Long,
-    ): ResponseEntity<ImageCreateResDto> {
+    ): ResponseEntity<String> {
         val response = imageService.uploadThumbnailImage(thumbnailImage, feedId)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok("이미지 업로드 완료 $response")
     }
 
     @Operation(summary = "피드 상세 조회 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id의 상세 정보를 반환해줍니다.")
-    @GetMapping("/{feedId}")
+    @GetMapping("/detail/{feedId}")
     fun getFeedDetail(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
         @AuthenticationPrincipal userAccount: UserAccount
@@ -149,7 +149,7 @@ class FeedController(
 
 
     @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
-    @PatchMapping("/{feedId}")
+    @PatchMapping("/bookmark/{feedId}")
     fun changeFeedIsMarked(
         @PathVariable feedId: Long,
         @RequestParam setMarked: Boolean,

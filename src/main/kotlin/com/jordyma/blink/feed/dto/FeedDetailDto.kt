@@ -8,7 +8,7 @@ data class FeedDetailDto(
     val feedId: Long,
 
     @Schema(description = "썸네일 배경 이미지 URL")
-    val thumnailImage: String,
+    val thumnailImage: String?,
 
     @Schema(description = "플랫폼 이미지 URL")
     val platformImage: String,

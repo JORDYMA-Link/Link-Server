@@ -96,7 +96,7 @@ class FeedService(
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
         return FeedDetailDto(
             feedId = feedDetail.feedId,
-            thumnailImage = feedDetail.thumnailImage,
+            thumnailImage = feedDetail.thumnailImageUrl,
             platformImage = findBrunch(feedDetail.platform).image,
             title = feedDetail.title,
             date = localDateTimeToString(feedDetail.date),
@@ -145,7 +145,7 @@ class FeedService(
         return FeedIsMarkedResponseDto(
             id = newFeed.id ?: throw IdRequiredException(ID_NOT_FOUND),
             isMarked = newFeed.isMarked,
-            modifiedDate = if (newFeed.updatedAt != null) DateTimeUtils.localDateTimeToString(newFeed.updatedAt!!) else "9999-12-31"
+            modifiedDate = if (newFeed.updatedAt != null) localDateTimeToString(newFeed.updatedAt!!, "yyyy-MM-dd HH:mm:ss") else "9999-12-31 23:59:59"
         )
     }
 
@@ -203,7 +203,7 @@ class FeedService(
                 platform = feed.platform,
                 platformImage = findBrunch(feed.platform).image,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.content },
+                keywords = feed.keywords!!.map { it.content },
                 dateTime = localDateTimeToString(feed.createdAt?: LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss")
             )
         }
@@ -236,7 +236,7 @@ class FeedService(
         score += keywordOccurrences * 0.3
 
         // 4. 메모 유사도 - 메모에서 검색어 등장 횟수에 따라 가중치 부여
-        val memoOccurrences = countOccurrences(feed.memo, queryLower)
+        val memoOccurrences = countOccurrences(feed.memo ?: "", queryLower)
         score += memoOccurrences * 0.2
 
         return score
