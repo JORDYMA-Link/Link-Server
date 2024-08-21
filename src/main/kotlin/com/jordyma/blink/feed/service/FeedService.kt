@@ -5,9 +5,6 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
-import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
-import com.jordyma.blink.feed.dto.response.ProcessingFeedResDto
-import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Status
 import com.jordyma.blink.feed.repository.FeedRepository
@@ -25,12 +22,11 @@ import com.jordyma.blink.feed.vo.ScoredFeedVo
 import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedDetailDto
-import com.jordyma.blink.global.util.DateTimeUtils
+import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
+import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.dto.UserInfoDto
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
@@ -94,13 +90,13 @@ class FeedService(
 
     @Throws(ApplicationException::class)
     @Transactional(readOnly = true)
-    fun getFeedDetail(userAccount: UserAccount, feedId: Long): FeedDetailDto {
+    fun getFeedDetail(userAccount: UserAccount, feedId: Long): FeedDetailResponseDto {
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
-        return FeedDetailDto(
+        return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
             thumnailImage = feedDetail.thumnailImageUrl,
             platformImage = findBrunch(feedDetail.platform).image,

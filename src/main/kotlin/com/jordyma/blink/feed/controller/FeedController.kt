@@ -1,15 +1,13 @@
 package com.jordyma.blink.feed.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.dto.*
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.TempReqDto
-import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
-import com.jordyma.blink.feed.dto.response.ProcessingListDto
-import com.jordyma.blink.feed.dto.FeedDetailDto
+import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
+import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
@@ -124,7 +122,7 @@ class FeedController(
     fun getFeedDetail(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
         @AuthenticationPrincipal userAccount: UserAccount
-    ): ResponseEntity<FeedDetailDto> {
+    ): ResponseEntity<FeedDetailResponseDto> {
         logger().info("getFeedDetail called : feedId = $feedId")
 
         val feedDetailDto = feedService.getFeedDetail(userAccount = userAccount, feedId = feedId)

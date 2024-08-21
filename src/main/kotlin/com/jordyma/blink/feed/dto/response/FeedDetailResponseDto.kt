@@ -1,9 +1,9 @@
-package com.jordyma.blink.feed.dto
+package com.jordyma.blink.feed.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "피드 상세 DTO")
-data class FeedDetailDto(
+data class FeedDetailResponseDto(
     @Schema(description = "피드 ID")
     val feedId: Long,
 
