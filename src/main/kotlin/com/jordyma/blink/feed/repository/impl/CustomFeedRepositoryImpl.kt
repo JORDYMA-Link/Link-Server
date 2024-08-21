@@ -49,7 +49,7 @@ class CustomFeedRepositoryImpl(
     }
 
 
-    override fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo? {
+    override fun findFeedDetail(user: User, feedId: Long): FeedDetailVo? {
         val qFeed = QFeed.feed
         val qFolder = QFolder.folder
 
@@ -72,7 +72,7 @@ class CustomFeedRepositoryImpl(
             .from(qFeed)
             .join(qFolder).on(qFeed.folder.id.eq(qFolder.id))
             .where(
-                qFolder.user.id.eq(memberId),
+                qFolder.user.id.eq(user.id),
                 qFeed.id.eq(feedId)
             )
             .fetchOne()

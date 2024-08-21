@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 interface CustomFeedRepository {
     fun findFeedFolderDtoByUserIdAndBetweenDate(userId: Long, startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): List<FeedFolderVo>
 
-    fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo?
+    fun findFeedDetail(user: User, feedId: Long): FeedDetailVo?
 
     fun deleteAllByFolder(folder: Folder): Long
 

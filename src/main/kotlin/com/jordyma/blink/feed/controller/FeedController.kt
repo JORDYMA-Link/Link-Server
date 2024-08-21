@@ -129,8 +129,7 @@ class FeedController(
     ): ResponseEntity<FeedDetailDto> {
         logger().info("getFeedDetail called : feedId = $feedId")
 
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        val feedDetailDto = feedService.getFeedDetail(user = userDto, feedId = feedId)
+        val feedDetailDto = feedService.getFeedDetail(userAccount = userAccount, feedId = feedId)
         return ResponseEntity.ok(feedDetailDto)
     }
 

@@ -91,8 +91,12 @@ class FeedService(
 
     @Throws(ApplicationException::class)
     @Transactional(readOnly = true)
-    fun getFeedDetail(user: UserInfoDto, feedId: Long): FeedDetailDto {
-        val feedDetail = feedRepository.findFeedDetail(user.id, feedId)
+    fun getFeedDetail(userAccount: UserAccount, feedId: Long): FeedDetailDto {
+        val userId = userAccount.userId
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val feedDetail = feedRepository.findFeedDetail(user, feedId)
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
         return FeedDetailDto(
             feedId = feedDetail.feedId,
