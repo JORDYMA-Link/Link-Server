@@ -9,6 +9,7 @@ import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.dto.FeedDetailDto
+import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
@@ -19,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -56,11 +58,16 @@ class FeedController(
     @PostMapping("/summary")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
-       // @RequestParam("link") link: String,
+        // @RequestParam("link") link: String,
         @RequestBody requestDto: TempReqDto,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(link = requestDto.link, folders = folderNames.joinToString(separator = " "), userAccount, requestDto.content)
+        val content = geminiService.getContents(
+            link = requestDto.link,
+            folders = folderNames.joinToString(separator = " "),
+            userAccount,
+            requestDto.content
+        )
         val brunch = feedService.findBrunch(requestDto.link)
 
         val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
@@ -149,15 +156,17 @@ class FeedController(
 
 
     @Operation(summary = "중요/미분류 피드 리스트 조회 api", description = "type은 BOOKMARKED / UNCLASSIFIED (String)으로 구분됩니다.")
-    @GetMapping("/by-type")
+    @PostMapping("/by-type")
     fun getFeedsByType(
-        @RequestParam("type") type: String,
-        @RequestParam("page") page: Int,
-        @RequestParam("size") size: Int,
+        @Valid @RequestBody postFeedTypeReqDto: PostFeedTypeReqDto,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedTypeResponseDto> {
-        val feedType = FeedType.valueOf(type.uppercase())
-        val response = feedService.getFeedsByType(userAccount = userAccount, type = feedType, page = page, size = size)
+        val response = feedService.getFeedsByType(
+            userAccount = userAccount,
+            type = postFeedTypeReqDto.type,
+            page = postFeedTypeReqDto.page,
+            size = postFeedTypeReqDto.size
+        )
         return ResponseEntity.ok(FeedTypeResponseDto(feedList = response))
     }
 
