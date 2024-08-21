@@ -5,20 +5,20 @@ import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.TempReqDto
-import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
-import com.jordyma.blink.feed.dto.response.ProcessingListDto
-import com.jordyma.blink.feed.dto.FeedDetailDto
+import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
+import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
+import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
-import com.jordyma.blink.image.dto.response.ImageCreateResDto
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import lombok.extern.java.Log
 
 @RestController
 @RequestMapping("/api/feeds")
@@ -40,14 +39,15 @@ class FeedController(
     private val geminiService: GeminiService,
     private val imageService: ImageService
 ) {
-    @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 반환해줍니다.")
-    @GetMapping("by-date")
+
+    @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 날짜를 Key로 반환해줍니다.")
+    @GetMapping("/by-date")
     fun getFeedsByDate(
+        @Schema(description = "년도와 월(yyyy-MM)", example = "2024-08")
         @RequestParam("yearMonth") yearMonth: String,
-        @AuthenticationPrincipal userAccount: UserAccount,
+        @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedCalendarResponseDto> {
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        val response = feedService.getFeedsByMonth(user = userDto, yrMonth = yearMonth)
+        val response = feedService.getFeedsByMonth(userAccount = userAccount, yrMonth = yearMonth)
         return ResponseEntity.ok(response)
     }
 
@@ -56,11 +56,16 @@ class FeedController(
     @PostMapping("/summary")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
-       // @RequestParam("link") link: String,
+        // @RequestParam("link") link: String,
         @RequestBody requestDto: TempReqDto,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(link = requestDto.link, folders = folderNames.joinToString(separator = " "), userAccount, requestDto.content)
+        val content = geminiService.getContents(
+            link = requestDto.link,
+            folders = folderNames.joinToString(separator = " "),
+            userAccount,
+            requestDto.content
+        )
         val brunch = feedService.findBrunch(requestDto.link)
 
         val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
@@ -113,16 +118,68 @@ class FeedController(
     }
 
     @Operation(summary = "피드 상세 조회 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id의 상세 정보를 반환해줍니다.")
-    @GetMapping("/{feedId}")
+    @GetMapping("/detail/{feedId}")
     fun getFeedDetail(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
         @AuthenticationPrincipal userAccount: UserAccount
-    ): ResponseEntity<FeedDetailDto> {
+    ): ResponseEntity<FeedDetailResponseDto> {
         logger().info("getFeedDetail called : feedId = $feedId")
 
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        val feedDetailDto = feedService.getFeedDetail(user = userDto, feedId = feedId)
+        val feedDetailDto = feedService.getFeedDetail(userAccount = userAccount, feedId = feedId)
         return ResponseEntity.ok(feedDetailDto)
+    }
+
+
+    @Operation(summary = "피드 삭제 api", description = "피드 아이디를 pathVariable로 넣어주면, 해당 피드id를 삭제합니다.")
+    @DeleteMapping("/{feedId}")
+    fun deleteFeed(
+        @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<Unit> {
+        feedService.deleteFeed(userAccount = userAccount, feedId = feedId)
+        return ResponseEntity.noContent().build()
+    }
+
+
+    @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
+    @PatchMapping("/bookmark/{feedId}")
+    fun changeFeedIsMarked(
+        @PathVariable feedId: Long,
+        @RequestParam setMarked: Boolean,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<FeedIsMarkedResponseDto> {
+        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
+        return ResponseEntity.ok(responseDto)
+    }
+
+
+    @Operation(summary = "중요/미분류 피드 리스트 조회 api", description = "type은 BOOKMARKED / UNCLASSIFIED (String)으로 구분됩니다.")
+    @PostMapping("/by-type")
+    fun getFeedsByType(
+        @Valid @RequestBody postFeedTypeReqDto: PostFeedTypeReqDto,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<FeedTypeResponseDto> {
+        val response = feedService.getFeedsByType(
+            userAccount = userAccount,
+            type = postFeedTypeReqDto.type,
+            page = postFeedTypeReqDto.page,
+            size = postFeedTypeReqDto.size
+        )
+        return ResponseEntity.ok(FeedTypeResponseDto(feedList = response))
+    }
+
+
+    @Operation(summary = "피드 일반, 키워드 검색 api", description = "검색어를 param으로 넣어주면, 해당 검색어를 포함하는 피드 리스트를 반환해줍니다.")
+    @GetMapping("/search")
+    fun searchFeeds(
+        @RequestParam("query") query: String,
+        @RequestParam("page") page: Int,
+        @RequestParam("size") size: Int,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<FeedSearchResponseDto> {
+        logger().info("searchFeeds called : query = $query")
+        val responseDto = feedService.searchFeeds(userAccount = userAccount, query = query, page = page, size = size)
+        return ResponseEntity.ok(FeedSearchResponseDto(query = query, result = responseDto))
     }
 
 }

@@ -9,7 +9,7 @@ abstract class Image(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    open val id: Long? = null,
 
     @Column(nullable = false, length = 300)
     open var url: String,

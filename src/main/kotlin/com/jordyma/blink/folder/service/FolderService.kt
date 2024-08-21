@@ -15,7 +15,6 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
-import java.util.*
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional(readOnly = true)
@@ -84,10 +83,10 @@ class FolderService(
                 feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.source!!,
-                sourceUrl = Source.getBrunchByName(feed.source)!!.image,
+                platform = feed.platform ?: "",
+                sourceUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords!!.map { it.content },
+                keywords = feed.keywords.map { it.content },
             )
         }
         checkNotNull(folder.id)

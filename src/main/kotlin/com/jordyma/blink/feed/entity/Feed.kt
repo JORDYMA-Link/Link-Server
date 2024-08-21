@@ -3,40 +3,27 @@ package com.jordyma.blink.feed.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
-import com.jordyma.blink.image.entity.thumbnail.ThumbnailImage
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "feed")
 class Feed(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    val id: Long? = null,
-
     @Column(name = "summary", length = 200)
     var summary: String,
 
     @Column(name = "title", length = 100)
     var title: String,
 
-    @Column(name = "source", length = 100)
-    val source: String? = "",
-
-//    @Column(name = "source_url", length = 255)
-//    val sourceUrl: String? = "",
+    @Column(name = "platform", length = 100)
+    val platform: String? = "",
 
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
 
-    @OneToOne @PrimaryKeyJoinColumn(name = "thumbnail_image_id")
-    var thumbnailImage: ThumbnailImage? = null,
-
-    @Column(name = "url", length = 255)
-    var url: String,
+    @Column(name = "origin_url", length = 255)
+    val originUrl: String,
 
     @Column(name = "thumbnail_image_url", length = 200)
     var thumbnailImageUrl: String? = "",
@@ -55,11 +42,19 @@ class Feed(
     var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")
-    var keywords: List<Keyword>? = emptyList(),
+    var keywords: List<Keyword> = emptyList(),
 
     @OneToMany(mappedBy = "feed")
-    var recommendFolders: List<Recommend>? = emptyList(),
+    var recommendFolders: List<Recommend> = emptyList(),
 ): BaseTimeEntity(){
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    val id: Long? = null
+
+    fun changeIsMarked(newIsMarked: Boolean){
+        this.isMarked = newIsMarked
+    }
+
     fun updateKeywords(
         keywords: List<Keyword>
     ) {
