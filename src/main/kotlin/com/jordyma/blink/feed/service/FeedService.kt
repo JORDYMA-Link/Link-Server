@@ -53,15 +53,18 @@ class FeedService(
 ) {
 
     @Transactional(readOnly = true)
-    fun getFeedsByMonth(user: UserInfoDto, yrMonth: String): FeedCalendarResponseDto {
+    fun getFeedsByMonth(userAccount: UserAccount, yrMonth: String): FeedCalendarResponseDto {
         val yearMonth = YearMonth.parse(yrMonth, DateTimeFormatter.ofPattern("yyyy-MM"))
         val startOfMonth = yearMonth.atDay(1).atStartOfDay()
         val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
 
-        val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user.id, startOfMonth, endOfMonth)
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user, startOfMonth, endOfMonth)
         val feedsByDate = feeds.groupBy { it.feed.createdAt?.toLocalDate() }
 
-        val response = mutableMapOf<String, FeedCalendarListDto>()
+        val response = mutableMapOf<String, FeedCalendarListDto>() //
 
         for (date in startOfMonth.toLocalDate().rangeTo(endOfMonth.toLocalDate())) {
             val feedItems = feedsByDate[date]?.map { feedFolderDto ->
@@ -74,7 +77,7 @@ class FeedService(
                     platform = feedFolderDto.feed.platform ?: "",
                     platformImage = findBrunch(feedFolderDto.feed.platform ?: "").image,
                     isMarked = feedFolderDto.feed.isMarked,
-                    keywords = getKeywordsByFeedId(feedFolderDto.feed.id) // 키워드 추출 함수
+                    keywords = feedFolderDto.feed.keywords.map { it.content },
                 )
             } ?: emptyList()
 
@@ -92,8 +95,7 @@ class FeedService(
     @Throws(ApplicationException::class)
     @Transactional(readOnly = true)
     fun getFeedDetail(userAccount: UserAccount, feedId: Long): FeedDetailDto {
-        val userId = userAccount.userId
-        val user = userRepository.findById(userId).orElseThrow {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
@@ -115,7 +117,10 @@ class FeedService(
 
 
     @Transactional
-    fun deleteFeed(user: UserInfoDto, feedId: Long) {
+    fun deleteFeed(userAccount: UserAccount, feedId: Long) {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
         val feed = feedRepository.findById(feedId)
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
         if (feed.folder!!.user.id != user.id) {
@@ -126,7 +131,11 @@ class FeedService(
     }
 
     @Transactional
-    fun changeIsMarked(user: UserInfoDto, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+    fun changeIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+        val userId = userAccount.userId
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
         val feed = feedRepository.findById(feedId)
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
         if (feed.folder!!.user.id != user.id) {
@@ -150,11 +159,14 @@ class FeedService(
         .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
 
     @Transactional(readOnly = true)
-    fun getFeedsByType(user: UserInfoDto, type: FeedType, page: Int, size: Int): List<FeedTypeDto> {
+    fun getFeedsByType(userAccount: UserAccount, type: FeedType, page: Int, size: Int): List<FeedTypeDto> {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
         val pageable = PageRequest.of(page, size)
         val feedList =  when (type) {
-            FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id, pageable).content
-            FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id, pageable).content
+            FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id!!, pageable).content
+            FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id!!, pageable).content
         }
         if (feedList.size > 0) logger().info("feedList = ${feedList[0]}")
         return feedList.map { feed ->
@@ -165,17 +177,17 @@ class FeedService(
                 platform = feed.platform ?: "",
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.content }, // 키워드 추출 함수
-                recommendedFolder = getRecommendFoldersByFeedId(feed.id)
+                keywords = feed.keywords.map { it.content },
+                recommendedFolder = if (type == FeedType.UNCLASSIFIED) getRecommendFoldersByFeedId(feed.id) else null
             )
         }
     }
 
     @Transactional(readOnly = true)
-    fun searchFeeds(user: UserInfoDto, query: String, page: Int, size: Int): List<FeedResultDto> {
+    fun searchFeeds(userAccount: UserAccount, query: String, page: Int, size: Int): List<FeedResultDto> {
         val fetchSize = size * 5 // 5배로 fetch
         val pageable = PageRequest.of(page / 5, fetchSize) // 실제 페이징 계산 (page/5)
-        val feedList = feedRepository.findFeedByQuery(user.id, query, pageable).content
+        val feedList = feedRepository.findFeedByQuery(userAccount.userId, query, pageable).content
 
         // DB에서 가져온 데이터를 가중치에 따라 정렬
         val sortedFeeds = searchAndSortFeeds(query, feedList)

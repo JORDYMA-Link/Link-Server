@@ -14,12 +14,10 @@ import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
-import org.springframework.http.HttpStatus
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -49,15 +47,8 @@ class FeedController(
         @RequestParam("yearMonth") yearMonth: String,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedCalendarResponseDto> {
-        logger().info("getFeedsByDate called : yearMonth = $yearMonth")
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        try {
-            val response = feedService.getFeedsByMonth(user = userDto, yrMonth = yearMonth)
-            return ResponseEntity.ok(response)
-        } catch (e: Exception){
-            logger().error("Error in getFeedsByMonth: ", e)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null)
-        }
+        val response = feedService.getFeedsByMonth(userAccount = userAccount, yrMonth = yearMonth)
+        return ResponseEntity.ok(response)
     }
 
     @Tag(name = "link", description = "링크 API")
@@ -140,8 +131,7 @@ class FeedController(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<Unit> {
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        feedService.deleteFeed(user = userDto, feedId = feedId)
+        feedService.deleteFeed(userAccount = userAccount, feedId = feedId)
         return ResponseEntity.noContent().build()
     }
 
@@ -153,8 +143,7 @@ class FeedController(
         @RequestParam setMarked: Boolean,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        val responseDto = feedService.changeIsMarked(user = userDto, feedId = feedId, setMarked = setMarked)
+        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 
@@ -167,9 +156,8 @@ class FeedController(
         @RequestParam("size") size: Int,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedTypeResponseDto> {
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
         val feedType = FeedType.valueOf(type.uppercase())
-        val response = feedService.getFeedsByType(user = userDto, type = feedType, page = page, size = size)
+        val response = feedService.getFeedsByType(userAccount = userAccount, type = feedType, page = page, size = size)
         return ResponseEntity.ok(FeedTypeResponseDto(feedList = response))
     }
 
@@ -183,8 +171,7 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedSearchResponseDto> {
         logger().info("searchFeeds called : query = $query")
-        val userDto: UserInfoDto = userService.find(userAccount.userId)
-        val responseDto = feedService.searchFeeds(user = userDto, query = query, page = page, size = size)
+        val responseDto = feedService.searchFeeds(userAccount = userAccount, query = query, page = page, size = size)
         return ResponseEntity.ok(FeedSearchResponseDto(query = query, result = responseDto))
     }
 

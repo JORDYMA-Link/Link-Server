@@ -23,7 +23,7 @@ class CustomFeedRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomFeedRepository {
     override fun findFeedFolderDtoByUserIdAndBetweenDate(
-        userId: Long,
+        user: User,
         startOfMonth: LocalDateTime,
         endOfMonth: LocalDateTime
     ): List<FeedFolderVo> {
@@ -42,7 +42,7 @@ class CustomFeedRepositoryImpl(
             .from(feed)
             .join(feed.folder, folder)
             .where(
-                folder.user.id.eq(userId)
+                folder.user.id.eq(user.id)
                     .and(feed.createdAt.between(startOfMonth, endOfMonth))
             )
             .fetch()
