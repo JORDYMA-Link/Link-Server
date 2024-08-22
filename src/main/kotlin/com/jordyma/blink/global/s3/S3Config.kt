@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Primary
 
 @Configuration
 class S3Config {
-    @Value("\${cloud.aws.credentials.access-key}")
+    @Value("\${spring.cloud.aws.credentials.access-key}")
     private val accessKey: String? = null
 
-    @Value("\${cloud.aws.credentials.secret-key}")
+    @Value("\${spring.cloud.aws.credentials.secret-key}")
     private val secretKey: String? = null
 
-    @Value("\${cloud.aws.region.static}")
+    @Value("\${spring.cloud.aws.region.static}")
     private val region: String? = null
 
     @Bean

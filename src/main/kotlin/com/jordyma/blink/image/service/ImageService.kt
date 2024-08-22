@@ -13,8 +13,7 @@ import java.io.IOException
 class ImageService (
     private val s3Uploader: S3Uploader,
     private val feedRepository: FeedRepository,
-    ){
-
+){
     // 썸네일 이미지 업로드
     @Throws(IOException::class)
     fun uploadThumbnailImage(image: MultipartFile, feedId: Long): String {
