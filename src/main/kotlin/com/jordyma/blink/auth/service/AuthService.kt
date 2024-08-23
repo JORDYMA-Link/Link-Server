@@ -9,6 +9,7 @@ import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -294,10 +295,23 @@ class AuthService(
             ApplicationException(ErrorCode.NOT_FOUND, "해당 리프레시 토큰이 존재하지 않습니다", Throwable())
         }
         userRefreshToken!!.expire(LocalDateTime.now())
+        userRefreshTokenRepository.save(userRefreshToken)
+    }
+
+    fun signout(userAccount: UserAccount) {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
+        user.updateDeletedAt()
+        userRepository.save(user)
+
+        val userRefreshToken = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshToken.expire(LocalDateTime.now())
+        userRefreshTokenRepository.save(userRefreshToken)
     }
 
     private fun getExpirationDateTime(): LocalDateTime {
         val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
         return LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
     }
+
 }
