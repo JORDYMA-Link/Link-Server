@@ -1,14 +1,11 @@
 package com.jordyma.blink.auth.service
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
-
-import com.jordyma.blink.user.entity.SocialType
-import com.jordyma.blink.user.entity.User
-import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
@@ -18,6 +15,9 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.user.entity.Role
+import com.jordyma.blink.user.entity.SocialType
+import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
 import com.jordyma.blink.user_refresh_token.repository.UserRefreshTokenRepository
 import io.jsonwebtoken.Claims
@@ -33,13 +33,12 @@ import java.io.InputStreamReader
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
 import java.security.Key
 import java.security.KeyFactory
-import java.security.NoSuchAlgorithmException
 import java.security.PublicKey
-import java.security.spec.InvalidKeySpecException
 import java.security.spec.RSAPublicKeySpec
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -76,7 +75,10 @@ class AuthService(
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
-        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+
+        val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+        val expirationTime = LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, expirationTime))
 
         return TokenResponseDto(accessToken, refreshToken);
     }
@@ -116,6 +118,10 @@ class AuthService(
 
         val userRefreshToken: UserRefreshToken = userRefreshTokenRepository.findByRefreshToken(token)
             ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.")
+        if(userRefreshToken.tokenExpirationTime!!.isBefore(LocalDateTime.now())){
+            throw ApplicationException(ErrorCode.TOKEN_EXPIRED, "만료된 refresh token 입니다.")
+        }
+
         val subject = claims.body.subject
         val user: User = userRepository.findById(subject.toLong())
             .orElseThrow { ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.") }
@@ -151,7 +157,7 @@ class AuthService(
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
-        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
 
         return TokenResponseDto(accessToken, refreshToken)
     }
@@ -191,7 +197,7 @@ class AuthService(
 
             val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
             val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
-            userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+            userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
 
             return TokenResponseDto(accessToken, refreshToken);
         }
@@ -280,5 +286,18 @@ class AuthService(
         } .getOrElse {
             exception -> throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.", exception)
         }
+    }
+
+    fun logout(refreshToken: String) {
+        val userRefreshToken: UserRefreshToken? = userRefreshTokenRepository.findByRefreshToken(refreshToken)
+        if(userRefreshToken == null){
+            ApplicationException(ErrorCode.NOT_FOUND, "해당 리프레시 토큰이 존재하지 않습니다", Throwable())
+        }
+        userRefreshToken!!.expire(LocalDateTime.now())
+    }
+
+    private fun getExpirationDateTime(): LocalDateTime {
+        val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+        return LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
     }
 }
