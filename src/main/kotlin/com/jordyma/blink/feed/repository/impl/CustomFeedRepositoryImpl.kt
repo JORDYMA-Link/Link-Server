@@ -44,7 +44,8 @@ class CustomFeedRepositoryImpl(
             .join(feed.folder, folder)
             .where(
                 folder.user.id.eq(userId)
-                    .and(feed.createdAt.between(startOfMonth, endOfMonth))
+                    .and(feed.createdAt.between(startOfMonth, endOfMonth)),
+                feed.deletedAt.isNull
             )
             .fetch()
     }
@@ -78,8 +79,9 @@ class CustomFeedRepositoryImpl(
 
     override fun deleteAllByFolder(folder: Folder): Long {
         return queryFactory
-            .delete(QFeed.feed)
+            .update(QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
+            .set(QFeed.feed.deletedAt, LocalDateTime.now())
             .execute()
     }
 
@@ -98,7 +100,8 @@ class CustomFeedRepositoryImpl(
             .join(feed.folder, QFolder.folder)
             .fetchJoin()
             .where(
-                condition.and(feed.folder.eq(folder))
+                condition.and(feed.folder.eq(folder)),
+                feed.deletedAt.isNull
             )
             .limit(pageSize)
             .orderBy(feed.id.desc())
