@@ -4,8 +4,8 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.QFeed
 import com.jordyma.blink.feed.entity.QFeed.feed
 import com.jordyma.blink.feed.entity.Status
+import com.jordyma.blink.feed.repository.FeedRepositoryCustom
 import com.jordyma.blink.feed.vo.FeedFolderVo
-import com.jordyma.blink.feed.repository.CustomFeedRepository
 import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
@@ -20,9 +20,9 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
-class CustomFeedRepositoryImpl(
+class FeedRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
-) : CustomFeedRepository {
+) : FeedRepositoryCustom {
     override fun findFeedFolderDtoByUserIdAndBetweenDate(
         userId: Long,
         startOfMonth: LocalDateTime,

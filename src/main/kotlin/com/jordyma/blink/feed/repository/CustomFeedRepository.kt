@@ -9,7 +9,7 @@ import com.jordyma.blink.user.entity.User
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-interface CustomFeedRepository {
+interface FeedRepositoryCustom {
     fun findFeedFolderDtoByUserIdAndBetweenDate(userId: Long, startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): List<FeedFolderVo>
 
     fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo?

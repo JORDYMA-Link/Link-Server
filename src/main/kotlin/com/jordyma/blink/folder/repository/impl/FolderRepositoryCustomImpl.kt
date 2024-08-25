@@ -6,6 +6,7 @@ import com.jordyma.blink.folder.repository.FolderRepositoryCustom
 import com.jordyma.blink.user.entity.User
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -33,6 +34,13 @@ class FolderRepositoryCustomImpl (
                 )
                 .fetchOne()
         )
+    }
+
+    override fun delete(folder: Folder) {
+        queryFactory.update(QFolder.folder)
+            .where(QFolder.folder.eq(folder))
+            .set(QFolder.folder.deletedAt, LocalDateTime.now())
+            .execute()
     }
 
 }

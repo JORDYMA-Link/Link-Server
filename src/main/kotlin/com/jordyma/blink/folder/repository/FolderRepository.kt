@@ -19,4 +19,6 @@ interface FolderRepository : FolderRepositoryCustom, JpaRepository<Folder, Long>
     fun findFailed(user: User?, status: String): Folder?
 
     override fun findById(id: Long): Optional<Folder>
+
+    override fun delete(folder: Folder): Unit
 }

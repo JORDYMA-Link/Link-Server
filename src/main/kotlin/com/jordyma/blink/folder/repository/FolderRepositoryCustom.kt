@@ -9,4 +9,6 @@ interface FolderRepositoryCustom {
     fun findAllByUser(user: User): List<Folder>
 
     fun findById(id: Long): Optional<Folder>
+
+    fun delete(folder: Folder): Unit
 }
