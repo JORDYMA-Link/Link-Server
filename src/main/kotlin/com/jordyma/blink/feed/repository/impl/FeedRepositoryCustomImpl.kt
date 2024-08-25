@@ -10,7 +10,6 @@ import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.folder.entity.QFolder.folder
-import com.jordyma.blink.keyword.entity.QKeyword
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
 import com.querydsl.core.BooleanBuilder
