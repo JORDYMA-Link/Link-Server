@@ -292,6 +292,8 @@ class FeedService(
 
         // 기존 폴더 확인 or 새 폴더 생성
         val folder = checkFolder(user, request.folderName)
+        folder!!.increaseCount()
+        folderRepository.save(folder)
 
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
