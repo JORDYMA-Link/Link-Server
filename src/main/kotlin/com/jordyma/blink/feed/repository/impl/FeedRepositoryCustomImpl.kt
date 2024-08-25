@@ -59,7 +59,7 @@ class FeedRepositoryCustomImpl(
                 Projections.constructor(
                     FeedDetailVo::class.java,
                     qFeed.id,
-                    qFeed.thumbnailImage,
+                    qFeed.thumbnailImageUrl,
                     qFeed.title,
                     qFeed.createdAt.`as`("date"),
                     qFeed.summary,

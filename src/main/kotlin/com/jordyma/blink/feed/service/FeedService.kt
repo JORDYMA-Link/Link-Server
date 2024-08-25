@@ -57,7 +57,7 @@ class FeedService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
-        val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user, startOfMonth, endOfMonth)
+        val feeds = feedRepository.findFeedFolderDtoByUserIdAndBetweenDate(user.id!!, startOfMonth, endOfMonth)
         val feedsByDate = feeds.groupBy { it.feed.createdAt?.toLocalDate() }
 
         val response = mutableMapOf<String, FeedCalendarListDto>() //
@@ -94,7 +94,7 @@ class FeedService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
-        val feedDetail = feedRepository.findFeedDetail(user, feedId)
+        val feedDetail = feedRepository.findFeedDetail(user.id!!, feedId)
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
