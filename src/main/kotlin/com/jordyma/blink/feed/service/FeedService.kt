@@ -164,8 +164,9 @@ class FeedService(
             FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id!!, pageable).content
             FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id!!, pageable).content
         }
-        if (feedList.size > 0) logger().info("feedList = ${feedList[0]}")
+        if (feedList.isNotEmpty()) logger().info("feedList = ${feedList[0]}")
         return feedList.map { feed ->
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 null입니다. Feed ID=${feed.id}")
             FeedTypeDto(
                 feedId = feed.id!!,
                 title = feed.title,
@@ -174,7 +175,9 @@ class FeedService(
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (type == FeedType.UNCLASSIFIED) getRecommendFoldersByFeedId(feed.id) else null
+                recommendedFolder = if (type == FeedType.UNCLASSIFIED) getRecommendFoldersByFeedId(feed.id) else null,
+                folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
+                folderName = folder.name
             )
         }
     }

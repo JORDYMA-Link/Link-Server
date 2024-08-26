@@ -31,5 +31,11 @@ data class FeedTypeDto(
     val keywords: List<String>,
 
     @Schema(description = "추천 폴더 리스트 (미분류 대상에만 존재, 이외는 Null)")
-    val recommendedFolder: List<String>? = null
+    val recommendedFolder: List<String>? = null,
+
+    @Schema(description = "폴더 id")
+    val folderId: Long,
+
+    @Schema(description = "폴더 이름")
+    val folderName: String,
 )
