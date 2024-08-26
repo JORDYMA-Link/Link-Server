@@ -8,6 +8,7 @@ import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
@@ -62,8 +63,11 @@ class FolderService(
         folderRepository.delete(folder)
     }
 
-    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long): GetFeedsByFolderRequestDto {
+    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long, getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto): GetFeedsByFolderResponseDto {
         val userId = userAccount.userId;
+        val cursor = getFeedsByFolderRequestDto.cursor;
+        val pageSize = getFeedsByFolderRequestDto.pageSize;
+
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
@@ -75,7 +79,8 @@ class FolderService(
             throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 조회 권한이 없습니다.")
         }
 
-        val feeds = feedRepository.findAllByFolder(folder)
+
+        val feeds = feedRepository.findAllByFolder(folder, cursor, pageSize!!);
         val feedList = feeds.map { feed ->
             FeedDto(
                 folderId = feed.folder!!.id,
@@ -84,14 +89,13 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.platform ?: "",
-                sourceUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
+                platformUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
             )
         }
-        checkNotNull(folder.id)
 
-        return GetFeedsByFolderRequestDto(folderId=folder.id, folderName=folder.name, feedList=feedList)
+        return GetFeedsByFolderResponseDto(folderId=folder.id!!, folderName=folder.name, feedList=feedList)
     }
 
     @Transactional

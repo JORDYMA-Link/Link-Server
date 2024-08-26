@@ -23,7 +23,7 @@ class Feed(
     var memo: String? = "",
 
     @Column(name = "origin_url", length = 255)
-    val originUrl: String,
+    val originUrl: String = "",
 
     @Column(name = "thumbnail_image_url", length = 200)
     var thumbnailImageUrl: String? = "",
@@ -38,7 +38,7 @@ class Feed(
     @Enumerated(EnumType.STRING)
     var status: Status = Status.REQUESTED,
 
-    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
+    @ManyToOne(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY) @JoinColumn(name = "folder_id")
     var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")
@@ -51,7 +51,7 @@ class Feed(
     @Column(name = "id")
     val id: Long? = null
 
-    fun changeIsMarked(newIsMarked: Boolean){
+    fun updateIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
     }
 
@@ -59,6 +59,10 @@ class Feed(
         keywords: List<Keyword>
     ) {
         this.keywords = keywords
+    }
+
+    fun updateMemo(memo: String){
+        this.memo = memo
     }
 
     fun updateRecommendFolders(

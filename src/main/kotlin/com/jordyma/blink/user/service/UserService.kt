@@ -43,4 +43,11 @@ class UserService (
             nickName = user.nickname
         )
     }
+
+    @Transactional
+    fun isDeletedUser(userAccount: UserAccount): Boolean {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
+        return user.deletedAt != null
+    }
 }
