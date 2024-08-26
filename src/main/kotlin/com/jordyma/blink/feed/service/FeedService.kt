@@ -149,6 +149,35 @@ class FeedService(
         )
     }
 
+    @Transactional
+    fun updateMemo(userAccount: UserAccount, feedId: Long, memo: String): FeedDetailResponseDto {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val feed = feedRepository.findById(feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.folder!!.user.id != user.id) {
+            throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
+        }
+        feed.updateMemo(memo)
+        feed.modifyUpdatedDate(LocalDateTime.now())
+        feedRepository.save(feed)
+
+        return FeedDetailResponseDto(
+            feedId = feed.id!!,
+            thumnailImage = feed.thumbnailImageUrl,
+            platformImage = findBrunch(feed.platform ?: "").image,
+            title = feed.title,
+            date = localDateTimeToString(feed.updatedAt ?: LocalDateTime.now()),
+            summary = feed.summary,
+            keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
+            folderName = feed.folder!!.name,
+            memo = feed.memo ?: "",
+            isMarked = feed.isMarked,
+            originUrl = feed.originUrl
+        )
+    }
+
     @Transactional(readOnly = true)
     fun getFeed(feedId: Long): Feed
             = feedRepository.findById(feedId)
@@ -456,7 +485,8 @@ class FeedService(
     private fun getKeywordsByFeedId(feedId: Long): List<String> {
         val keywords = keywordRepository.findByFeedId(feedId)
         if (keywords.isEmpty()) {
-            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
+            logger().error("일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId")
+            return emptyList()
         }
         return keywords.map { it.content }
     }
