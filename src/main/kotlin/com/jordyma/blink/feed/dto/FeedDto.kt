@@ -23,7 +23,7 @@ data class FeedDto(
     val platform: String,
 
     @Schema(description = "피드 원본 URL")
-    val platformUrl: String,
+    val sourceUrl: String,
 
     @Schema(description = "북마크 여부")
     val isMarked: Boolean,

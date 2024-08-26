@@ -2,7 +2,6 @@ package com.jordyma.blink.user.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity(name = "user")
 class User(
@@ -27,9 +26,5 @@ class User(
 
     fun updateNickname(nickname: String) {
         this.nickname = nickname
-    }
-
-    fun updateDeletedAt(){
-        this.deletedAt = LocalDateTime.now()
     }
 }

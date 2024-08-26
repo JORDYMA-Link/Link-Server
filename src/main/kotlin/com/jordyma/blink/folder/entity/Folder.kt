@@ -3,7 +3,6 @@ package com.jordyma.blink.folder.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 class Folder(
