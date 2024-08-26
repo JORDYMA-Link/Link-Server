@@ -51,7 +51,7 @@ class Feed(
     @Column(name = "id")
     val id: Long? = null
 
-    fun changeIsMarked(newIsMarked: Boolean){
+    fun updateIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
     }
 

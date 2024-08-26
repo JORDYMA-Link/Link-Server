@@ -127,7 +127,7 @@ class FeedService(
     }
 
     @Transactional
-    fun changeIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+    fun updateIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
         val userId = userAccount.userId
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -137,7 +137,7 @@ class FeedService(
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
-        feed.changeIsMarked(setMarked)
+        feed.updateIsMarked(setMarked)
         feed.modifyUpdatedDate(LocalDateTime.now())
         feedRepository.save(feed)
 

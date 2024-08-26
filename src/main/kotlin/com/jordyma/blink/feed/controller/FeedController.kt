@@ -143,12 +143,12 @@ class FeedController(
 
     @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
     @PatchMapping("/bookmark/{feedId}")
-    fun changeFeedIsMarked(
+    fun updateFeedIsMarked(
         @PathVariable feedId: Long,
         @RequestParam setMarked: Boolean,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
+        val responseDto = feedService.updateIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 
@@ -184,7 +184,7 @@ class FeedController(
 
     @Operation(summary = "상세 피드 내 메모 수정 api", description = "피드 아이디와 메모 내용을 body로 넣어주면, 해당 피드의 메모가 수정됩니다.")
     @PostMapping("/memo")
-    fun changeFeedMemo(
+    fun updateFeedMemo(
         @Valid @RequestBody updateFeedMemoReqDto: UpdateFeedMemoReqDto,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedDetailResponseDto> {
