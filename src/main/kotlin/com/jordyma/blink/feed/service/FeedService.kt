@@ -193,8 +193,9 @@ class FeedService(
         val sortedFeeds = searchAndSortFeeds(query, feedList)
 
         // 클라이언트에서 요청한 데이터만큼만 반환
-        val start = (page / 5) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
+        val start = (page % 5) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
         val end = min(start + size, sortedFeeds.size) // 끝 인덱스는 정렬된 데이터 크기 내로 제한
+        if (start > end) return emptyList()
         return sortedFeeds.subList(start, end)
     }
 
@@ -295,6 +296,8 @@ class FeedService(
 
         // 기존 폴더 확인 or 새 폴더 생성
         val folder = checkFolder(user, request.folderName)
+        folder!!.increaseCount()
+        folderRepository.save(folder)
 
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
