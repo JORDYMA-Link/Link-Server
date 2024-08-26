@@ -174,8 +174,9 @@ class FeedService(
                 platform = feed.platform ?: "",
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
+                isUnclassified = folder.isUnclassified,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (type == FeedType.UNCLASSIFIED) getRecommendFoldersByFeedId(feed.id) else null,
+                recommendedFolder = getRecommendFoldersByFeedId(feed.id),
                 folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
                 folderName = folder.name
             )
@@ -461,7 +462,7 @@ class FeedService(
     private fun getRecommendFoldersByFeedId(feedId: Long): List<String> {
         val recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
         if (recommendFolders.isEmpty()) {
-            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 추천 폴더가 없습니다 : $feedId", Throwable())
+            return emptyList()
         }
         return recommendFolders.map { it.folderName }
     }
