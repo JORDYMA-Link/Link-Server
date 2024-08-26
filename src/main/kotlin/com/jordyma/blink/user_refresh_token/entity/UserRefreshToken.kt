@@ -1,36 +1,45 @@
 package com.jordyma.blink.user_refresh_token.entity
 
+import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
-import lombok.AccessLevel
-import lombok.Getter
-import lombok.NoArgsConstructor
+import java.time.LocalDateTime
 
 @Entity
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-class UserRefreshToken {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+class UserRefreshToken(
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private var id: Long? = null
+    val id: Long? = null,
 
     @Column(name = "refresh_token", columnDefinition = "VARCHAR(500)")
-    private var refreshToken: String? = null
+    var refreshToken: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private var user: User? = null
+    var user: User? = null,
+
+    @Column(name = "token_expiration_time", columnDefinition = "DATETIME")
+    var tokenExpirationTime: LocalDateTime? = null,
+
+): BaseTimeEntity(){
 
     fun updateRefreshToken(refreshToken: String?) {
         this.refreshToken = refreshToken
     }
 
+    fun expire(now: LocalDateTime) {
+        if (tokenExpirationTime!!.isAfter(now)) {
+            this.tokenExpirationTime = now
+        }
+    }
+
     companion object {
-        fun of(refreshToken: String?, user: User?): UserRefreshToken {
+        fun of(refreshToken: String?, user: User?, expirationTime: LocalDateTime): UserRefreshToken {
             val userRefreshToken = UserRefreshToken()
             userRefreshToken.refreshToken = refreshToken
             userRefreshToken.user = user
+            userRefreshToken.tokenExpirationTime = expirationTime
 
             return userRefreshToken
         }
