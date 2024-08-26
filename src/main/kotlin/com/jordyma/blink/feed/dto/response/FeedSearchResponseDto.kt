@@ -33,4 +33,7 @@ data class FeedResultDto(
 
     @Schema(description = "키워드 리스트")
     val keywords: List<String>,
+
+    @Schema(description = "생성 날짜시간 (yyyy-MM-dd HH:mm:ss)")
+    val dateTime: String
 )
