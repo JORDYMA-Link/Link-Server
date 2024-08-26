@@ -89,7 +89,7 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.platform ?: "",
-                sourceUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
+                platformUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
             )

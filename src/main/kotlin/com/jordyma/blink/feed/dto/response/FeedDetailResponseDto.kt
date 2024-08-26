@@ -1,6 +1,8 @@
 package com.jordyma.blink.feed.dto.response
 
+import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDateTime
 
 @Schema(description = "피드 상세 DTO")
 data class FeedDetailResponseDto(
@@ -14,26 +16,26 @@ data class FeedDetailResponseDto(
     val platformImage: String,
 
     @Schema(description = "피드 제목")
-    val title: String,
+    val title: String = "",
 
     @Schema(description = "생성 날짜 (yyyy-MM-dd 날짜 형식)")
-    val date: String,
+    val date: String = localDateTimeToString(LocalDateTime.now()),
 
     @Schema(description = "피드 요약 내용")
-    val summary: String,
+    val summary: String = "",
 
     @Schema(description = "keyword 리스트(3개)")
-    val keywords: List<String>,
+    val keywords: List<String> = emptyList(),
 
     @Schema(description = "피드가 속한 폴더 이름(1개)")
     val folderName: String,
 
     @Schema(description = "메모 (내용 없으면 ''으로 반환, 공백 포함 최대 1000자)")
-    val memo: String,
+    val memo: String = "",
 
     @Schema(description = "북마크 여부")
     val isMarked: Boolean,
 
     @Schema(description = "원본 주소 URL (공유하기에서 사용)")
-    val originUrl: String,
+    val originUrl: String? = "",
 )

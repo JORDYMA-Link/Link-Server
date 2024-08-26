@@ -7,6 +7,7 @@ import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
+import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Tag(name = "feed", description = "피드 API")
 @RequestMapping("/api/feeds")
 class FeedController(
     private val feedService: FeedService,
@@ -123,8 +125,6 @@ class FeedController(
         @PathVariable("feedId") @Parameter(description = "피드 아이디", required = true) feedId: Long,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedDetailResponseDto> {
-        logger().info("getFeedDetail called : feedId = $feedId")
-
         val feedDetailDto = feedService.getFeedDetail(userAccount = userAccount, feedId = feedId)
         return ResponseEntity.ok(feedDetailDto)
     }
@@ -143,12 +143,12 @@ class FeedController(
 
     @Operation(summary = "피드 중요(북마크) 여부 변경 api", description = "setMarked=true/false 에 따라 피드의 중요(북마크) 여부가 변경됩니다.")
     @PatchMapping("/bookmark/{feedId}")
-    fun changeFeedIsMarked(
+    fun updateFeedIsMarked(
         @PathVariable feedId: Long,
         @RequestParam setMarked: Boolean,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
+        val responseDto = feedService.updateIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 
@@ -182,4 +182,17 @@ class FeedController(
         return ResponseEntity.ok(FeedSearchResponseDto(query = query, result = responseDto))
     }
 
+    @Operation(summary = "상세 피드 내 메모 수정 api", description = "피드 아이디와 메모 내용을 body로 넣어주면, 해당 피드의 메모가 수정됩니다.")
+    @PostMapping("/memo")
+    fun updateFeedMemo(
+        @Valid @RequestBody updateFeedMemoReqDto: UpdateFeedMemoReqDto,
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<FeedDetailResponseDto> {
+        val responseDto = feedService.updateMemo(
+            userAccount = userAccount,
+            feedId = updateFeedMemoReqDto.feedId,
+            memo = updateFeedMemoReqDto.memo
+        )
+        return ResponseEntity.ok(responseDto)
+    }
 }

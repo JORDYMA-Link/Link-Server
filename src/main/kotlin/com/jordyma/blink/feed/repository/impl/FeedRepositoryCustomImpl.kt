@@ -23,7 +23,7 @@ class FeedRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
 ) : FeedRepositoryCustom {
     override fun findFeedFolderDtoByUserIdAndBetweenDate(
-        userId: Long,
+        user: User,
         startOfMonth: LocalDateTime,
         endOfMonth: LocalDateTime
     ): List<FeedFolderVo> {
@@ -42,7 +42,7 @@ class FeedRepositoryCustomImpl(
             .from(feed)
             .join(feed.folder, folder)
             .where(
-                folder.user.id.eq(userId)
+                folder.user.id.eq(user.id)
                     .and(feed.createdAt.between(startOfMonth, endOfMonth)),
                 feed.deletedAt.isNull
             )
@@ -50,7 +50,7 @@ class FeedRepositoryCustomImpl(
     }
 
 
-    override fun findFeedDetail(memberId: Long, feedId: Long): FeedDetailVo? {
+    override fun findFeedDetail(user: User, feedId: Long): FeedDetailVo? {
         val qFeed = QFeed.feed
         val qFolder = QFolder.folder
 
@@ -70,7 +70,7 @@ class FeedRepositoryCustomImpl(
             .from(qFeed)
             .join(qFolder).on(qFeed.folder.id.eq(qFolder.id))
             .where(
-                qFolder.user.id.eq(memberId),
+                qFolder.user.id.eq(user.id),
                 qFeed.id.eq(feedId)
             )
             .fetchOne()
