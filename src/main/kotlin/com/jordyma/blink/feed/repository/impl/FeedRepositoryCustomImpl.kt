@@ -43,8 +43,8 @@ class FeedRepositoryCustomImpl(
             .join(feed.folder, folder)
             .where(
                 folder.user.id.eq(user.id)
-                    .and(feed.createdAt.between(startOfMonth, endOfMonth)),
-                feed.deletedAt.isNull
+                    .and(feed.createdAt.between(startOfMonth, endOfMonth))
+                    .and(feed.deletedAt.isNull)
             )
             .fetch()
     }
@@ -58,20 +58,24 @@ class FeedRepositoryCustomImpl(
             .select(
                 Projections.constructor(
                     FeedDetailVo::class.java,
-                    qFeed.id,
+                    qFeed.id.`as`("feedId"),
                     qFeed.thumbnailImageUrl,
                     qFeed.title,
                     qFeed.createdAt.`as`("date"),
                     qFeed.summary,
+                    qFeed.platform,
                     qFolder.name.`as`("folderName"),
-                    qFeed.memo
+                    qFeed.memo,
+                    qFeed.isMarked,
+                    qFeed.originUrl
                 )
             )
             .from(qFeed)
             .join(qFolder).on(qFeed.folder.id.eq(qFolder.id))
             .where(
-                qFolder.user.id.eq(user.id),
-                qFeed.id.eq(feedId)
+                qFolder.user.id.eq(user.id)
+                    .and(qFeed.id.eq(feedId))
+                    .and(qFeed.deletedAt.isNull)
             )
             .fetchOne()
     }

@@ -17,7 +17,8 @@ interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
          "WHERE fdr.user.id = :userId "+
            "AND fd.isMarked = true " +
-           "AND fd.status = 'COMPLETED'"
+           "AND fd.status = 'COMPLETED'" +
+           "AND fd.deletedAt IS NULL"
     )
     fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
@@ -25,7 +26,8 @@ interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
          "WHERE fdr.user.id = :userId " +
            "AND fdr.isUnclassified = true " +
-           "AND fd.status = 'COMPLETED'"
+           "AND fd.status = 'COMPLETED'"+
+           "AND fd.deletedAt IS NULL"
     )
     fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
@@ -39,7 +41,8 @@ interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
            "AND (LOWER(f.title) LIKE LOWER(CONCAT('%', :query, '%')) " +  // title에 LIKE 검색
             "OR LOWER(f.summary) LIKE LOWER(CONCAT('%', :query, '%')) " +  // summary에 LIKE 검색
             "OR LOWER(f.memo) LIKE LOWER(CONCAT('%', :query, '%')) " +  // memo에 LIKE 검색
-            "OR LOWER(k.content) LIKE LOWER(CONCAT('%', :query, '%')))" // keyword에 LIKE 검색
+            "OR LOWER(k.content) LIKE LOWER(CONCAT('%', :query, '%')))" +// keyword에 LIKE 검색
+           "AND f.deletedAt IS NULL"
     )
     fun findFeedByQuery(
         @Param("userId") userId: Long,
