@@ -311,7 +311,7 @@ class FeedService(
     private fun makeAiSummaryResponse(content: PromptResponse?, source: Source, feedId: Long): AiSummaryResponseDto {
         return AiSummaryResponseDto(
             content = AiSummaryContent.from(content),
-            platformUrl = source.image,
+            platformImage = source.image,
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList(),
             feedId = feedId,

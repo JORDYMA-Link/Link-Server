@@ -19,11 +19,11 @@ data class FeedDto(
     @Schema(description = "피드 요약")
     val summary: String,
 
-    @Schema(description = "원본 플랫폼 URL")
+    @Schema(description = "플랫폼명(유튜브, 네이버 등)")
     val platform: String,
 
-    @Schema(description = "피드 원본 URL")
-    val platformUrl: String,
+    @Schema(description = "플랫폼 로고 이미지 URL")
+    val platformImage: String,
 
     @Schema(description = "북마크 여부")
     val isMarked: Boolean,
