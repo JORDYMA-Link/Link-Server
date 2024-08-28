@@ -33,4 +33,10 @@ data class FeedResultDto(
 
     @Schema(description = "키워드 리스트")
     val keywords: List<String>,
+
+    @Schema(description = "폴더 ID")
+    val folderId: Long,
+
+    @Schema(description = "폴더 이름")
+    val folderName: String,
 )

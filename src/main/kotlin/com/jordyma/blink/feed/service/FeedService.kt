@@ -95,7 +95,7 @@ class FeedService(
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
-            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
+            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
             thumnailImage = feedDetail.thumnailImageUrl,
@@ -119,6 +119,9 @@ class FeedService(
         }
         val feed = feedRepository.findById(feedId)
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.deletedAt != null) {
+            throw ApplicationException(ErrorCode.NOT_FOUND, "이미 삭제된 피드입니다 : $feedId", Throwable())
+        }
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 삭제할 권한이 없습니다", Throwable())
         }
@@ -233,6 +236,7 @@ class FeedService(
         val sortedFeeds = sortFeedsByRelevance(feeds, query)
         return sortedFeeds.map { scoredFeed ->
             val feed = scoredFeed.feed
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 존재하지 않습니다. feed ID=${feed.id}")
             FeedResultDto(
                 feedId = feed.id!!,
                 title = feed.title,
@@ -241,6 +245,8 @@ class FeedService(
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
+                folderId = folder.id!!,
+                folderName = folder.name
             )
         }
     }
@@ -311,7 +317,7 @@ class FeedService(
     private fun makeAiSummaryResponse(content: PromptResponse?, source: Source, feedId: Long): AiSummaryResponseDto {
         return AiSummaryResponseDto(
             content = AiSummaryContent.from(content),
-            platformUrl = source.image,
+            platformImage = source.image,
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList(),
             feedId = feedId,
