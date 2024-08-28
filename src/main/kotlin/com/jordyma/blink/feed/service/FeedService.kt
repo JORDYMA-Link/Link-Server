@@ -236,6 +236,7 @@ class FeedService(
         val sortedFeeds = sortFeedsByRelevance(feeds, query)
         return sortedFeeds.map { scoredFeed ->
             val feed = scoredFeed.feed
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 존재하지 않습니다. feed ID=${feed.id}")
             FeedResultDto(
                 feedId = feed.id!!,
                 title = feed.title,
@@ -244,6 +245,8 @@ class FeedService(
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
+                folderId = folder.id!!,
+                folderName = folder.name
             )
         }
     }

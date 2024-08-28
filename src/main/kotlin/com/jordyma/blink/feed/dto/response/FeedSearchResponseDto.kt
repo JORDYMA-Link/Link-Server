@@ -34,6 +34,14 @@ data class FeedResultDto(
     @Schema(description = "키워드 리스트")
     val keywords: List<String>,
 
+<<<<<<< HEAD
     @Schema(description = "생성 날짜시간 (yyyy-MM-dd HH:mm:ss)")
     val dateTime: String
+=======
+    @Schema(description = "폴더 ID")
+    val folderId: Long,
+
+    @Schema(description = "폴더 이름")
+    val folderName: String,
+>>>>>>> 8ec0c6d (feat/feed: 일반/키워드 검색에 folderId, folderName return값 추가)
 )
