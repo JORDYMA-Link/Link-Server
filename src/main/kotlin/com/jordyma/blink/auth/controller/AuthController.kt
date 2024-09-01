@@ -1,7 +1,8 @@
 package com.jordyma.blink.auth.controller
 import com.jordyma.blink.auth.dto.State
-import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
+import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
+import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.auth.service.AuthService
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import kotlinx.serialization.json.*
 import lombok.RequiredArgsConstructor
+import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -86,6 +88,34 @@ class AuthController(
         val headers = HttpHeaders()
         headers.location = uri.toUri()
         return ResponseEntity<Void>(headers, HttpStatus.FOUND)
+    }
+
+    @PostMapping("/apple-login-web/callback")
+    fun appleLoginWeb(
+        @RequestParam("code") code: String,
+        @RequestParam("state") state: String,
+        @RequestParam("id_token", required = false) idToken: String?,
+        @RequestBody(required = false) user: String?
+    ): ResponseEntity<String> {
+
+        // 최초 인증 O
+        if (user != null) {
+            // val appleUserInfo = parseUserJson(user)
+            idToken?.let {
+                val appleLoginRequest = AppleLoginRequestDto(idToken = it)
+                authService.appleLogin(appleLoginRequest)
+            }
+        // 최초 인증 X
+        } else{
+            val exchangedIdToken = authService.exchangeCodeForToken(code)
+            authService.appleLogin(AppleLoginRequestDto(idToken = exchangedIdToken.toString()))
+        }
+
+        return ResponseEntity.ok("Apple authentication successful")
+    }
+
+    fun parseUserJson(userJson: String): AppleUserInfo {
+        return Json.decodeFromString(userJson)
     }
 
     @PostMapping("/logout")

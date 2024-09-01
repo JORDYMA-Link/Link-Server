@@ -77,10 +77,16 @@ dependencies {
 
     // json
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
-     implementation("com.google.code.gson:gson:2.8.7")
+    implementation("com.google.code.gson:gson:2.8.7")
+    implementation ("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    implementation ("io.jsonwebtoken:jjwt-api:0.11.5")
+    implementation ("io.jsonwebtoken:jjwt-impl:0.11.5")
 
     // logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+
+    // jwt
+    implementation("com.auth0:java-jwt:4.2.1")
 
     // s3
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
