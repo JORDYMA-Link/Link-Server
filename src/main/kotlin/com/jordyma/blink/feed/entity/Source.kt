@@ -18,5 +18,9 @@ enum class Source(val source: String, val image: String){
         fun getBrunchByName(brunchName: String): Source? {
             return values().firstOrNull { it.source == brunchName }
         }
+
+        fun getImageByName(brunchName: String): String? {
+            return values().firstOrNull { it.source == brunchName }!!.image
+        }
     }
 }

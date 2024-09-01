@@ -36,6 +36,7 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.stream.Collectors
 import kotlin.math.min
 
 @Service
@@ -345,6 +346,32 @@ class FeedService(
 
         feedRepository.save(feed)
         return FeedUpdateResDto(feed.id!!)
+    }
+
+    // 요약 결과 조회 (저장 전)
+    @Transactional
+    fun getSummaryRes(userAccount: UserAccount, feedId: Long): AiSummaryResponseDto? {
+
+        val feed = feedRepository.findById(feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+
+        val aiSummaryContent = AiSummaryContent(
+            subject = feed.title,
+            summary = feed.summary,
+            keywords = feed.keywords.stream().map { it.content }.toList(),
+            folders = feed.recommendFolders.stream().map { it.folderName }.toList()
+        )
+
+        val summaryResponseDto = AiSummaryResponseDto(
+            feedId = feedId,
+            content = aiSummaryContent,
+            platformImage = Source.getImageByName(feed.platform!!)!!,
+            recommendFolder = recommendRepository.findRecommendFirst(feedId, 1).folderName,
+            recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
+                .stream().map { it.folderName }.toList()
+        )
+
+        return summaryResponseDto
     }
 
     // 요약 중인 링크 조회
