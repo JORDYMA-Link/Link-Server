@@ -87,6 +87,16 @@ dependencies {
 
     // jwt
     implementation("com.auth0:java-jwt:4.2.1")
+
+    // s3
+    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
+
+    // jsoup
+    implementation("org.jsoup:jsoup:1.15.3")
+
+    implementation("org.seleniumhq.selenium:selenium-java:4.1.0")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.1.0")
+
 }
 
 configurations.forEach {

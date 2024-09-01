@@ -3,6 +3,7 @@ package com.jordyma.blink.folder.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 class Folder(
@@ -18,7 +19,15 @@ class Folder(
 
     @Column(name = "count")
     var count: Int,
+
+    @Column(name = "is_unclassified", columnDefinition = "BIT")
+    var isUnclassified: Boolean = false
+
 ): BaseTimeEntity() {
+
+    fun changeIsUnclassified(newIsUnclassified: Boolean){
+        this.isUnclassified = newIsUnclassified
+    }
 
     fun increaseCount() {
         count++
