@@ -11,6 +11,7 @@ import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
+import com.jordyma.blink.global.util.HtmlParserService
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
@@ -37,6 +38,7 @@ class FeedController(
     private val userService: UserService,
     private val folderService: FolderService,
     private val geminiService: GeminiService,
+    private val htmlParserService: HtmlParserService,
     private val imageService: ImageService
 ) {
 
@@ -60,15 +62,18 @@ class FeedController(
         @RequestBody requestDto: TempReqDto,
     ): ResponseEntity<AiSummaryResponseDto> {
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(
+        val content: String = requestDto.content.ifEmpty {
+            htmlParserService.fetchHtmlContent(requestDto.link)
+        }
+        val promptResponse = geminiService.getContents(
             link = requestDto.link,
             folders = folderNames.joinToString(separator = " "),
             userAccount,
-            requestDto.content
+            content
         )
         val brunch = feedService.findBrunch(requestDto.link)
 
-        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
+        val response = feedService.makeFeedAndResponse(promptResponse, brunch, userAccount, requestDto.link)
         return ResponseEntity.ok(response)
     }
 
