@@ -88,8 +88,10 @@ dependencies {
     // jsoup
     implementation("org.jsoup:jsoup:1.18.1")
 
-    implementation("org.seleniumhq.selenium:selenium-java:4.1.0")
-    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.1.0")
+    // selenium
+    implementation("org.seleniumhq.selenium:selenium-java:4.14.1")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.14.1")
+    implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
 
 }
 
