@@ -95,8 +95,7 @@ class FeedService(
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
-            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
-        return FeedDetailResponseDto(
+            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
             thumnailImage = feedDetail.thumnailImageUrl,
             platformImage = findBrunch(feedDetail.platform).image,
@@ -105,7 +104,7 @@ class FeedService(
             summary = feedDetail.summary,
             keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
             folderName = feedDetail.folderName,
-            memo = feedDetail.memo,
+            memo = feedDetail.memo ?: "",
             isMarked = feedDetail.isMarked,
             originUrl = feedDetail.originUrl
         )

@@ -10,7 +10,7 @@ data class FeedDetailVo(
     val summary: String,
     val platform: String,
     val folderName: String,
-    val memo: String = "",
+    val memo: String? = "",
     val isMarked: Boolean,
     val originUrl: String,
 )
