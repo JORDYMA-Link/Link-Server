@@ -125,7 +125,7 @@ class FeedService(
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 삭제할 권한이 없습니다", Throwable())
         }
-        feed.modifyDeletedDate(LocalDateTime.now())
+        feed.updateDeletedAt(LocalDateTime.now())
         feedRepository.save(feed)
     }
 
@@ -141,7 +141,7 @@ class FeedService(
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
         feed.updateIsMarked(setMarked)
-        feed.modifyUpdatedDate(LocalDateTime.now())
+        feed.updateUpdatedAt(LocalDateTime.now())
         feedRepository.save(feed)
 
         val newFeed = getFeed(feedId)
@@ -163,7 +163,7 @@ class FeedService(
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
         feed.updateMemo(memo)
-        feed.modifyUpdatedDate(LocalDateTime.now())
+        feed.updateUpdatedAt(LocalDateTime.now())
         feedRepository.save(feed)
 
         return FeedDetailResponseDto(

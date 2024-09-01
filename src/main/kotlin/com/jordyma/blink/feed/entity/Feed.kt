@@ -75,10 +75,6 @@ class Feed(
         this.isChecked = true
     }
 
-    fun updateDeletedAt(){
-        this.deletedAt = LocalDateTime.now()
-    }
-
     fun updateThumbnailImageUrl(imageUrl: String){
         this.thumbnailImageUrl = imageUrl
     }
