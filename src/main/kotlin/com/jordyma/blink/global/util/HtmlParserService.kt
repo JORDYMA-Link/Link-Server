@@ -40,21 +40,8 @@ class HtmlParserService {
         return document.title()  // HTML에서 <title> 태그의 내용을 가져옴
     }
 
-    private fun ajaxTest(url: String): String? {
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(url)
-            .build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("Unexpected code $response")
-
-            val body = response.body?.string()
-            return body?.let { Jsoup.parse(it).html() }
-        }
-    }
-
-    // #document와 같은 동적 컨텐츠를 가져오기 위해 Selenium WebDriver를 사용
+    // 동적 컨텐츠를 가져오기 위해 Selenium WebDriver를 사용
     private fun fetchDynamicContent(url: String): String {
         var content = ""
 
