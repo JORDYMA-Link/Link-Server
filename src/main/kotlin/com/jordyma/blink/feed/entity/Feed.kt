@@ -5,7 +5,6 @@ import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "feed")

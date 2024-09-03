@@ -2,7 +2,6 @@ package com.jordyma.blink.folder.controller
 
 import com.jordyma.blink.folder.dto.response.OnboardingResDto
 import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -10,9 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.folder.dto.*
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.OnboardingReqDto
