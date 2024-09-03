@@ -18,6 +18,9 @@ import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
+import com.jordyma.blink.user.entity.SocialType
+import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
 import com.jordyma.blink.user_refresh_token.repository.UserRefreshTokenRepository
 import com.nimbusds.oauth2.sdk.TokenResponse
