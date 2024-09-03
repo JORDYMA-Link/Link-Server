@@ -8,6 +8,7 @@ import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
@@ -84,7 +85,7 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.platform ?: "",
-                sourceUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
+                platformImage = Source.getBrunchByName(feed.platform ?: "")!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
             )
