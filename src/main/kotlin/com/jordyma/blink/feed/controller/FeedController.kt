@@ -164,7 +164,7 @@ class FeedController(
         @RequestParam setMarked: Boolean,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
+        val responseDto = feedService.updateIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 

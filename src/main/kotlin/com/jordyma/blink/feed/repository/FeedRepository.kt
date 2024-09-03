@@ -8,11 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
-interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
-
-    override fun deleteAllByFolder(folder: Folder): Long
-
-    override fun findAllByFolder(folder: Folder): List<Feed>
+interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
 
     @Query(
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +

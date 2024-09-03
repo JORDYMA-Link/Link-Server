@@ -7,7 +7,6 @@ import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Status
-import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.folder.repository.FolderRepository
@@ -24,6 +23,7 @@ import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
+import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.logger
@@ -36,7 +36,6 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.math.min
 
 @Service
