@@ -18,6 +18,7 @@ import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.OnboardingReqDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -69,8 +70,14 @@ class FolderController(
     fun getFeedsByFolder(
         @PathVariable("folderId") folderId: Long,
         @AuthenticationPrincipal userAccount: UserAccount,
-    ): ResponseEntity<GetFeedsByFolderRequestDto> {
-        val response = folderService.getFeedsByFolder(userAccount = userAccount, folderId = folderId)
+        @ModelAttribute getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto
+    ): ResponseEntity<GetFeedsByFolderResponseDto> {
+        val response = folderService.getFeedsByFolder(
+            userAccount = userAccount,
+            folderId = folderId,
+            getFeedsByFolderRequestDto = getFeedsByFolderRequestDto,
+        )
+
         return ResponseEntity.ok(response)
     }
 

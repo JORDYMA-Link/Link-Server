@@ -3,7 +3,7 @@ package com.jordyma.blink.folder.service
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.entity.Source
-import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.repository.FeedRepositoryCustom
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class FolderService(
     private val folderRepository: FolderRepository,
-    private val feedRepository: FeedRepository,
+    private val feedRepository: FeedRepositoryCustom,
     private val userRepository: UserRepository,
 ) {
     fun getFolders(userAccount: UserAccount): GetFolderListResponseDto {
@@ -63,8 +63,11 @@ class FolderService(
         folderRepository.delete(folder)
     }
 
-    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long): GetFeedsByFolderRequestDto {
+    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long, getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto): GetFeedsByFolderResponseDto {
         val userId = userAccount.userId;
+        val cursor = getFeedsByFolderRequestDto.cursor;
+        val pageSize = getFeedsByFolderRequestDto.pageSize;
+
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
@@ -76,7 +79,8 @@ class FolderService(
             throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 조회 권한이 없습니다.")
         }
 
-        val feeds = feedRepository.findAllByFolder(folder)
+
+        val feeds = feedRepository.findAllByFolder(folder, cursor, pageSize!!);
         val feedList = feeds.map { feed ->
             FeedDto(
                 folderId = feed.folder!!.id,
@@ -84,15 +88,14 @@ class FolderService(
                 feedId = feed.id!!,
                 title = feed.title,
                 summary = feed.summary,
-                platform = feed.platform ?: "",
-                platformImage = Source.getBrunchByName(feed.platform ?: "")!!.image,
+                platform = feed.platform!!,
+                platformImage = Source.getBrunchByName(feed.platform)!!.image,
                 isMarked = feed.isMarked,
-                keywords = feed.keywords.map { it.content },
+                keywords = feed.keywords!!.map { it.content },
             )
         }
-        checkNotNull(folder.id)
 
-        return GetFeedsByFolderRequestDto(folderId=folder.id, folderName=folder.name, feedList=feedList)
+        return GetFeedsByFolderResponseDto(folderId=folder.id!!, folderName=folder.name, feedList=feedList)
     }
 
     @Transactional
