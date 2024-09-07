@@ -104,11 +104,11 @@ class CustomFeedRepositoryImpl(
             .where(
                 ((feed.status.eq(Status.PROCESSING)).and(feed.folder.user.eq(user)))
                     .or((feed.status.eq(Status.COMPLETED).and(feed.isChecked.isFalse))
-                        .and(feed.folder.user.eq(user)))
+                        .and(feed.folder.user.eq(findUser)))
                     .or((feed.status.eq(Status.REQUESTED)
-                        .and(feed.folder.user.eq(user)))
+                        .and(feed.folder.user.eq(findUser)))
                     .or((feed.status.eq(Status.FAILED).and(feed.deletedAt.isNotNull))
-                        .and(feed.folder.user.eq(user)))))
+                        .and(feed.folder.user.eq(findUser)))))
             .fetch()
     }
 }
