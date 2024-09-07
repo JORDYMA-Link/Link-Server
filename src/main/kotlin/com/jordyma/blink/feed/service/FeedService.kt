@@ -332,9 +332,9 @@ class FeedService(
             feedId = feedId,
             content = aiSummaryContent,
             sourceUrl = Source.getImageByName(feed.platform!!)!!,
-            recommendFolder = recommendRepository.findRecommendFirst(feedId, 1).folderName,
+            recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-                .stream().map { it.folderName }.toList()
+                ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList()
         )
     }
 
@@ -489,9 +489,9 @@ class FeedService(
 
     private fun getRecommendFoldersByFeedId(feedId: Long): List<String> {
         val recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-        if (recommendFolders.isEmpty()) {
+        if (recommendFolders?.isEmpty() == true) {
             throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 추천 폴더가 없습니다 : $feedId", Throwable())
         }
-        return recommendFolders.map { it.folderName }
+        return recommendFolders?.map { it.folderName } ?: emptyList()
     }
 }
