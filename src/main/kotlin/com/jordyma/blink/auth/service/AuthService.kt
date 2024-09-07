@@ -1,4 +1,6 @@
 package com.jordyma.blink.auth.service
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -17,29 +19,40 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
+import com.jordyma.blink.user.entity.SocialType
+import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
 import com.jordyma.blink.user_refresh_token.repository.UserRefreshTokenRepository
+import com.nimbusds.oauth2.sdk.TokenResponse
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import lombok.RequiredArgsConstructor
 import org.apache.coyote.BadRequestException
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.web.client.RestTemplate
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLEncoder
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.security.Key
 import java.security.KeyFactory
-import java.security.NoSuchAlgorithmException
 import java.security.PublicKey
-import java.security.spec.InvalidKeySpecException
+import java.security.interfaces.ECPrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -50,11 +63,16 @@ class AuthService(
     private val userRepository: UserRepository,
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
+    private val restTemplate: RestTemplate,
     @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
     @Value("\${kakao.auth.jwt.iss}") val iss: String? = null,
     @Value("\${kakao.auth.jwt.client-id}") val kakaoClientId: String,
     @Value("\${kakao.auth.jwt.redirect-uri}") val kakaoRedirectUri: String,
     @Value("\${jwt.secret}") val jwtSecret: String,
+    @Value("\${apple.team-id}") val teamId: String? = null,
+    @Value("\${apple.login-key}") val loginKey: String? = null,
+    @Value("\${apple.client-id}") val clientId: String? = null,
+    @Value("\${apple.key-path}") val keyPath: String? = null,
 ) {
 
     @Transactional
@@ -180,9 +198,9 @@ class AuthService(
         val socialUserId = userInfoObject["sub"].asString
         val name = if (userInfoObject.has("name")) userInfoObject["name"].asString else ""
 
-        // 첫 가입인 경우
         val findUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
 
+        // 첫 가입인 경우
         if (findUser == null) {
             val socialId = userInfo["sub"] as String
 
@@ -265,6 +283,58 @@ class AuthService(
         } catch (e: IOException) {
             throw Exception("URL 파싱 실패")
         }
+    }
+
+    // 최초 로그인이 아닌 경우 > code와 id_token 교환
+    fun exchangeCodeForToken(code: String): TokenResponse {
+        val tokenUrl = "https://appleid.apple.com/auth/token"
+        val clientId = "CLIENT_ID" // TODO: 추가
+        val clientSecret = generateClientSecret()
+
+        val body = LinkedMultiValueMap<String, String>().apply {
+            add("client_id", clientId)
+            add("client_secret", clientSecret)
+            add("code", code)
+            add("grant_type", "authorization_code")
+        }
+
+        val response = restTemplate.postForObject(tokenUrl, HttpEntity(body, HttpHeaders()), TokenResponse::class.java)
+        return response ?: throw ApplicationException(ErrorCode.TOKEN_EXCHANGE_FAILED, "apple token 교환 실패")
+    }
+
+    fun generateClientSecret(): String {
+        val teamId = teamId
+        val clientId = clientId
+        val keyId = loginKey
+        val privateKeyPath = keyPath
+
+        // 현재 시간과 만료 시간 설정 (기본적으로 클라이언트 시크릿은 6개월간 유효)
+        val now = Instant.now()
+        val expirationTime = now.plusSeconds(180 * 24 * 60 * 60) // 180일(6개월) 유효
+
+        // 개인 키 파일 로드
+        // val privateKeyBytes = Files.readAllBytes(Paths.get(privateKeyPath!!))
+        // val privateKey = String(privateKeyBytes)
+        logger().info("privateKey : ${privateKeyPath!!.take(5)}******")
+        val privateKey: ECPrivateKey = convertStringToECPrivateKey(privateKeyPath)!!
+
+
+        // JWT 생성
+        return JWT.create()
+            .withIssuer(teamId)
+            .withIssuedAt(Date.from(now))
+            .withExpiresAt(Date.from(expirationTime))
+            .withAudience("https://appleid.apple.com")
+            .withSubject(clientId)
+            .sign(Algorithm.ECDSA256(null, privateKey))
+    }
+
+    @Throws(java.lang.Exception::class)
+    fun convertStringToECPrivateKey(privateKeyStr: String?): ECPrivateKey? {
+        val privateKeyBytes = Base64.getDecoder().decode(privateKeyStr)
+        val keySpec = PKCS8EncodedKeySpec(privateKeyBytes)
+        val keyFactory = KeyFactory.getInstance("EC")
+        return keyFactory.generatePrivate(keySpec) as ECPrivateKey
     }
 
     private fun getRSAPublicKey(modulus: String?, exponent: String?): Key {
