@@ -83,6 +83,10 @@ class Feed(
         this.thumbnailImageUrl = imageUrl
     }
 
+    fun updateFolder(folder: Folder){
+        this.folder = folder
+    }
+
     fun update(title: String,
                summary: String,
                memo: String,
