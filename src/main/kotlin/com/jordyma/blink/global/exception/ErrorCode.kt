@@ -13,6 +13,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
     UNAUTHORIZED("A000", HttpStatus.UNAUTHORIZED),
     TOKEN_VERIFICATION_EXCEPTION("A001", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("A002", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXCHANGE_FAILED("A003", HttpStatus.UNAUTHORIZED),
 
     // External
     OPENKEY_NOT_MATCHED("E000", HttpStatus.INTERNAL_SERVER_ERROR),

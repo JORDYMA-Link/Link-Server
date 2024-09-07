@@ -36,4 +36,17 @@ data class FeedDetailResponseDto(
 
     @Schema(description = "원본 주소 URL (공유하기에서 사용)")
     val originUrl: String,
+
+    @Schema(description = "플랫폼")
+    val platform: String,
+
+    @Schema(description = "미분류 여부")
+    val isUnclassified: Boolean,
+
+    @Schema(description = "추천 폴더 리스트 (미분류 대상에만 존재, 이외는 Null)")
+    val recommendedFolder: List<String>? = null,
+
+    @Schema(description = "폴더 id")
+    val folderId: Long,
+
 )

@@ -36,7 +36,6 @@ import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.math.min
 
 @Service
@@ -95,6 +94,9 @@ class FeedService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
+        val feed = feedRepository.findById(feedId).orElseThrow(){
+            ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
+        }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
@@ -108,7 +110,12 @@ class FeedService(
             folderName = feedDetail.folderName,
             memo = feedDetail.memo,
             isMarked = feedDetail.isMarked,
-            originUrl = feedDetail.originUrl
+            originUrl = feedDetail.originUrl,
+            // new
+            folderId = feed.folder?.id!!,
+            platform = Source.getBrunchByImage(feed.thumbnailImageUrl.toString()).toString(),
+            isUnclassified = feed.folder!!.isUnclassified,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null
         )
     }
 
@@ -321,16 +328,14 @@ class FeedService(
             folders = feed.recommendFolders.stream().map { it.folderName }.toList()
         )
 
-        val summaryResponseDto = AiSummaryResponseDto(
+        return AiSummaryResponseDto(
             feedId = feedId,
             content = aiSummaryContent,
-            platformImage = Source.getImageByName(feed.platform!!)!!,
+            sourceUrl = Source.getImageByName(feed.platform!!)!!,
             recommendFolder = recommendRepository.findRecommendFirst(feedId, 1).folderName,
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
                 .stream().map { it.folderName }.toList()
         )
-
-        return summaryResponseDto
     }
 
     // 요약 중인 링크 조회
