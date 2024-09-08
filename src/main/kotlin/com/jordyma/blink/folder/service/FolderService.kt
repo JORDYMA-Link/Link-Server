@@ -10,7 +10,7 @@ import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
-import com.jordyma.blink.folder.dto.response.TempResponseDto
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
@@ -64,7 +64,7 @@ class FolderService(
         folderRepository.delete(folder)
     }
 
-    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long, getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto): TempResponseDto {
+    fun getFeedsByFolder(userAccount: UserAccount, folderId: Long, getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto): GetFeedsByFolderResponseDto {
         val userId = userAccount.userId;
         val cursor = getFeedsByFolderRequestDto.cursor;
         val pageSize = getFeedsByFolderRequestDto.pageSize;
@@ -97,7 +97,7 @@ class FolderService(
             )
         }
 
-        return TempResponseDto(folderId=folder.id!!, folderName=folder.name, feedList=feedList)
+        return GetFeedsByFolderResponseDto(folderId=folder.id!!, folderName=folder.name, feedList=feedList)
     }
 
     @Transactional

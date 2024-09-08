@@ -1,7 +1,6 @@
 package com.jordyma.blink.folder.controller
 
 import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -65,7 +64,7 @@ class FolderController(
         @PathVariable("folderId") folderId: Long,
         @AuthenticationPrincipal userAccount: UserAccount,
         @ModelAttribute getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto
-    ): ResponseEntity<TempResponseDto> {
+    ): ResponseEntity<GetFeedsByFolderResponseDto> {
         val response = folderService.getFeedsByFolder(
             userAccount = userAccount,
             folderId = folderId,

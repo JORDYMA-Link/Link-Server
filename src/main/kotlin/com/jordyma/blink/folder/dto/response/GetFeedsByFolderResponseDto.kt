@@ -3,7 +3,7 @@ package com.jordyma.blink.folder.dto.response
 import com.jordyma.blink.feed.dto.FeedDto
 import io.swagger.v3.oas.annotations.media.Schema
 
-data class TempResponseDto(
+data class GetFeedsByFolderResponseDto(
 
     @Schema(description = "폴더 ID", example = "1")
     val folderId: Long,
