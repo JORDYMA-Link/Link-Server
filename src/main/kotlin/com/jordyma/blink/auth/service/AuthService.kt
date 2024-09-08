@@ -43,13 +43,17 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.net.URLEncoder
 import java.security.Key
 import java.security.KeyFactory
+import java.security.NoSuchAlgorithmException
 import java.security.PublicKey
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -91,7 +95,10 @@ class AuthService(
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
-        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+
+        val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+        val expirationTime = LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, expirationTime))
 
         return TokenResponseDto(accessToken, refreshToken);
     }
@@ -131,6 +138,10 @@ class AuthService(
 
         val userRefreshToken: UserRefreshToken = userRefreshTokenRepository.findByRefreshToken(token)
             ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.")
+        if(userRefreshToken.tokenExpirationTime!!.isBefore(LocalDateTime.now())){
+            throw ApplicationException(ErrorCode.TOKEN_EXPIRED, "만료된 refresh token 입니다.")
+        }
+
         val subject = claims.body.subject
         val user: User = userRepository.findById(subject.toLong())
             .orElseThrow { ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.") }
@@ -166,7 +177,7 @@ class AuthService(
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
 
-        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
 
         return TokenResponseDto(accessToken, refreshToken)
     }
@@ -195,9 +206,9 @@ class AuthService(
         val socialUserId = userInfoObject["sub"].asString
         val name = if (userInfoObject.has("name")) userInfoObject["name"].asString else ""
 
+        // 첫 가입인 경우
         val findUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
 
-        // 첫 가입인 경우
         if (findUser == null) {
             val socialId = userInfo["sub"] as String
 
@@ -206,7 +217,7 @@ class AuthService(
 
             val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
             val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
-            userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user))
+            userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
 
             return TokenResponseDto(accessToken, refreshToken);
         }
@@ -348,4 +359,30 @@ class AuthService(
             exception -> throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.", exception)
         }
     }
+
+    fun logout(refreshToken: String) {
+        val userRefreshToken: UserRefreshToken? = userRefreshTokenRepository.findByRefreshToken(refreshToken)
+        if(userRefreshToken == null){
+            ApplicationException(ErrorCode.NOT_FOUND, "해당 리프레시 토큰이 존재하지 않습니다", Throwable())
+        }
+        userRefreshToken!!.expire(LocalDateTime.now())
+        userRefreshTokenRepository.save(userRefreshToken)
+    }
+
+    fun signout(userAccount: UserAccount) {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
+        user.updateDeletedAt()
+        userRepository.save(user)
+
+        val userRefreshToken = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshToken.expire(LocalDateTime.now())
+        userRefreshTokenRepository.save(userRefreshToken)
+    }
+
+    private fun getExpirationDateTime(): LocalDateTime {
+        val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
+        return LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
+    }
+
 }

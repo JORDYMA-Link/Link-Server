@@ -17,7 +17,13 @@ class User(
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    var role: Role? = null
+    var role: Role? = null,
+
+    @Column(name = "iosPushToken")
+    var iosPushToken: String? = null,
+
+    @Column(name = "aosPushToken")
+    var aosPushToken: String? = null,
 
 ): BaseTimeEntity()  {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -44,6 +44,7 @@ class CustomFeedRepositoryImpl(
             .where(
                 folder.user.id.eq(user.id)
                     .and(feed.createdAt.between(startOfMonth, endOfMonth))
+                    .and(feed.deletedAt.isNull)
             )
             .fetch()
     }
@@ -72,8 +73,9 @@ class CustomFeedRepositoryImpl(
             .from(qFeed)
             .join(qFolder).on(qFeed.folder.id.eq(qFolder.id))
             .where(
-                qFolder.user.id.eq(user.id),
-                qFeed.id.eq(feedId)
+                qFolder.user.id.eq(user.id)
+                    .and(qFeed.id.eq(feedId))
+                    .and(qFeed.deletedAt.isNull)
             )
             .fetchOne()
     }
