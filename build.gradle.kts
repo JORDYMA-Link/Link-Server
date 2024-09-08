@@ -141,6 +141,7 @@ tasks.named("clean") {
 
 kapt {
     generateStubs = true
+    includeCompileClasspath = false
 }
 
 // Querydsl 설정부 추가 - end
