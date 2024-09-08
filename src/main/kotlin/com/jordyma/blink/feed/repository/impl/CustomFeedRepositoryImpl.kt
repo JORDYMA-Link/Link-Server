@@ -87,15 +87,8 @@ class CustomFeedRepositoryImpl(
             .execute()
     }
 
-    override fun findAllByFolder(folder: Folder): List<Feed> {
-        return queryFactory
-            .select(QFeed.feed)
-            .from(QFeed.feed)
-            .join(QFeed.feed.folder, QFolder.folder)
-            .join(QFeed.feed.keywords, QKeyword.keyword)
-            .fetchJoin()
-            .where(QFeed.feed.folder.eq(folder))
-            .fetch()
+    override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed> {
+        TODO("Not yet implemented")
     }
 
     override fun getProcessing(findUser: User): List<Feed> {

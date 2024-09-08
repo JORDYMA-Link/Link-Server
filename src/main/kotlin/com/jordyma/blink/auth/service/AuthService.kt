@@ -19,6 +19,7 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
+import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken

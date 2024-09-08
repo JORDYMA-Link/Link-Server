@@ -48,7 +48,7 @@ data class AiSummaryResponseDto(
     val folders: List<String>,
 
     @Schema(description = "플랫폼 이미지 url")
-    val sourceUrl: String,
+    val platformImage: String,
 
     @Schema(description = "AI 추천 폴더")
     val recommendFolder: String,

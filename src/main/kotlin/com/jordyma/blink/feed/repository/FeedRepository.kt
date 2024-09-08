@@ -12,7 +12,7 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
 
     override fun deleteAllByFolder(folder: Folder): Long
 
-    override fun findAllByFolder(folder: Folder): List<Feed>
+    // override fun findAllByFolder(folder: Folder): List<Feed>
 
     @Query(
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
@@ -51,5 +51,6 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
         pageable: Pageable
     ): Page<Feed>
 
+    override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
 }
 

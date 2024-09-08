@@ -8,6 +8,7 @@ import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.dto.FeedIdResponseDto
+import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
@@ -162,7 +163,7 @@ class FeedController(
         @RequestParam setMarked: Boolean,
         @AuthenticationPrincipal userAccount: UserAccount
     ): ResponseEntity<FeedIsMarkedResponseDto> {
-        val responseDto = feedService.updateIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
+        val responseDto = feedService.changeIsMarked(userAccount = userAccount, feedId = feedId, setMarked = setMarked)
         return ResponseEntity.ok(responseDto)
     }
 

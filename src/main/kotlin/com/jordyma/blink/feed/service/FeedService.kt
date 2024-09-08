@@ -30,14 +30,12 @@ import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.stream.Collectors
 import kotlin.math.min
 
 @Service
@@ -115,9 +113,9 @@ class FeedService(
             originUrl = feedDetail.originUrl,
             // new
             folderId = feed.folder?.id!!,
-            platform = Source.getBrunchByImage(feed.thumbnailImageUrl.toString()).toString(),
             isUnclassified = feed.folder!!.isUnclassified,
-            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
+            platform = feedDetail.platform
         )
     }
 
@@ -143,7 +141,7 @@ class FeedService(
     }
 
     @Transactional
-    fun updateIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+    fun changeIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
         val userId = userAccount.userId
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -153,7 +151,7 @@ class FeedService(
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
-        feed.updateIsMarked(setMarked)
+        feed.changeIsMarked(setMarked)
         feed.modifyUpdatedDate(LocalDateTime.now())
         feedRepository.save(feed)
 
@@ -190,7 +188,12 @@ class FeedService(
             folderName = feed.folder!!.name,
             memo = feed.memo ?: "",
             isMarked = feed.isMarked,
-            originUrl = feed.originUrl
+            originUrl = feed.originUrl,
+            folderId = feed.folder!!.id!!,
+            // new
+            isUnclassified = feed.folder!!.isUnclassified,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
+            platform = feed.platform.toString()
         )
     }
 
@@ -377,7 +380,7 @@ class FeedService(
         return AiSummaryResponseDto(
             feedId = feedId,
             // content = aiSummaryContent,
-            sourceUrl = Source.getImageByName(feed.platform!!)!!,
+            platformImage = Source.getImageByName(feed.platform!!)!!,
             recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
                 ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList(),
