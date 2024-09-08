@@ -302,6 +302,7 @@ class FeedService(
     }
 
     // 피드 수정
+    @Transactional
     fun update(userAccount: UserAccount, request: FeedUpdateReqDto, feedId: Long): FeedUpdateResDto {
         // 유저 확인
         val user = findUserOrElseThrow(userAccount.userId)
@@ -345,6 +346,7 @@ class FeedService(
     }
 
     // 요약 중인 링크 조회
+    @Transactional
     fun getProcessing(userAccount: UserAccount): ProcessingListDto? {
         val user = findUserOrElseThrow(userAccount.userId)
         val feeds = feedRepository.getProcessing(user)
@@ -362,6 +364,7 @@ class FeedService(
     }
 
     // 요약 실패 피드 삭제
+    @Transactional
     fun deleteProcessingFeed(userAccount: UserAccount, feedId: Long) {
         val user = findUserOrElseThrow(userAccount.userId)
         val feed = findFeedOrElseThrow(feedId)
@@ -398,6 +401,7 @@ class FeedService(
     }
 
     // 요약 실패 피드 생성
+    @Transactional
     fun createFailed(userAccount: UserAccount, link: String) {
         val user = findUserOrElseThrow(userAccount.userId)
         val failedFolder = folderService.getFailed(userAccount)
@@ -429,6 +433,7 @@ class FeedService(
         feed.recommendFolders = recommendFolders
     }
 
+    @Transactional
     fun createKeywords(feed: Feed, request: FeedUpdateReqDto) {
         val createdKeywords: MutableList<Keyword> = mutableListOf()
         for (keyword in request.keywords) {

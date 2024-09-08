@@ -14,8 +14,8 @@ import java.time.LocalDateTime
 @EntityListeners(AuditingEntityListener::class)
 open class BaseTimeEntity(
     @CreatedDate
-    @Column(name = "createdAt", nullable = false, updatable = false)
-    val createdAt: LocalDateTime? = null
+    @Column(name = "createdAt", updatable = false)
+    var createdAt: LocalDateTime? = null
 ) {
     @LastModifiedDate
     @Column(name = "updatedAt")
