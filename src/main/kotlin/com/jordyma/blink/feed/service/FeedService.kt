@@ -132,6 +132,9 @@ class FeedService(
         }
         feed.modifyDeletedDate(LocalDateTime.now())
         feedRepository.save(feed)
+
+        feed.folder!!.decreaseCount()
+        folderRepository.save(feed.folder!!)
     }
 
     @Transactional
