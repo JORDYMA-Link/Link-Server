@@ -1,11 +1,17 @@
 package com.jordyma.blink.folder.dto.request
 
+import com.jordyma.blink.feed.dto.FeedDto
 import io.swagger.v3.oas.annotations.media.Schema
 
-data class GetFeedsByFolderRequestDto(
-    @Schema(description = "무한 페이징 커서 (feed ID)", example = "1")
-    val cursor: Int?,
+@Schema(description = "폴더별 피드 리스트 요청 DTO")
+data class GetFeedsByFolderRequestDto (
 
-    @Schema(description = "페이지 크기", example = "10", defaultValue = "10")
-    val pageSize: Long = 10,
+    @Schema(description = "폴더 ID", example = "1")
+    val folderId: Long,
+
+    @Schema(description = "폴더 이름", example = "폴더 이름")
+    val folderName: String,
+
+    @Schema(description = "피드 리스트", type = "array", implementation = FeedDto::class)
+    val feedList: List<FeedDto> = mutableListOf<FeedDto>()
 )

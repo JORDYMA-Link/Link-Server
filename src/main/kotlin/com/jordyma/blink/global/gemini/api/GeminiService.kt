@@ -28,7 +28,7 @@ class GeminiService @Autowired constructor(
     private val userRepository: UserRepository,
 ) {
 
-    fun getContents(link: String, folders: String, userAccount: UserAccount, content: String): PromptResponse? {
+    fun getContents(link: String, folders: String, userAccount: UserAccount, content: String): PromptResponse {
         return try {
             // gemini 요청
             val requestUrl = "$apiUrl?key=$geminiApiKey"
@@ -71,7 +71,7 @@ class GeminiService @Autowired constructor(
                 "}\n"
     }
 
-    fun extractJsonAndParse(text: String): PromptResponse? {
+    fun extractJsonAndParse(text: String): PromptResponse {
         // JSON 부분 추출
         val regex = "\\{[^}]*\\}".toRegex()
         val matchResult = regex.find(text)
@@ -87,7 +87,7 @@ class GeminiService @Autowired constructor(
             Json.decodeFromString<PromptResponse>(fixedJson)
         } else {
             logger().info("jsonString is null !!!!!!!!!!")
-            null
+            throw ApplicationException(ErrorCode.JSON_PARSING_FAILED, "gemini json 파싱 실패")
         }
     }
 

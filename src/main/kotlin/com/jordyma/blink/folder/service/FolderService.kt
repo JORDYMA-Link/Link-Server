@@ -4,6 +4,7 @@ import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.folder.dto.request.CreateFeedFolderRequestDto
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
 import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
@@ -89,7 +90,7 @@ class FolderService(
                 title = feed.title,
                 summary = feed.summary,
                 platform = feed.platform ?: "",
-                platformImage = Source.getBrunchByName(feed.platform ?: "")!!.image,
+                platformUrl = Source.getBrunchByName(feed.platform ?: "")!!.image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
             )
@@ -141,6 +142,33 @@ class FolderService(
             id = savedFolder.id,
             name = savedFolder.name,
             feedCount = savedFolder.count
+        )
+    }
+
+    // 피드에 폴더 생성
+    @Transactional
+    fun createFeedFolder(userAccount: UserAccount, requestDto: CreateFeedFolderRequestDto): FolderDto? {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.") }
+
+        val feed = feedRepository.findById(requestDto.feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : ${requestDto.feedId}") }
+
+        val folder = folderRepository.findByName(requestDto.name, user) ?: folderRepository.save(
+            Folder(
+                name = requestDto.name,
+                user = user,
+                count = 0,
+                isUnclassified = false
+            )
+        )
+        feed.updateFolder(folder)
+        feedRepository.save(feed)
+
+        return FolderDto(
+            id = folder.id,
+            name = folder.name,
+            feedCount = folder.count,
         )
     }
 

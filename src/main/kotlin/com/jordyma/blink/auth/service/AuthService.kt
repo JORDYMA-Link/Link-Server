@@ -1,8 +1,6 @@
 package com.jordyma.blink.auth.service
-
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -16,7 +14,6 @@ import com.jordyma.blink.user.repository.UserRepository
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
-import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -44,6 +41,8 @@ import java.io.InputStreamReader
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.net.URLEncoder
 import java.security.Key
 import java.security.KeyFactory
@@ -210,7 +209,6 @@ class AuthService(
         // 첫 가입인 경우
         val findUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
 
-        // 첫 가입인 경우
         if (findUser == null) {
             val socialId = userInfo["sub"] as String
 

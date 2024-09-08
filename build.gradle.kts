@@ -97,6 +97,8 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-java:4.1.0")
     implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.1.0")
 
+    implementation("com.auth0:java-jwt:4.4.0")
+
 }
 
 configurations.forEach {
