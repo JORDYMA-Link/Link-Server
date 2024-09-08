@@ -282,7 +282,8 @@ class FeedService(
             summary = content?.summary ?: "",
             title = content?.subject ?: "",
             platform = brunch.source,
-            status = Status.REQUESTED,
+            status = Status.COMPLETED,  // TODO: 워커 이식하면서 수정하기
+            isChecked = false,
         )
         return feedRepository.save(feed)
     }
@@ -311,7 +312,7 @@ class FeedService(
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
         feed.update(request.title, request.summary, request.memo, folder!!)
-        feed.updateStatus(Status.COMPLETED)
+        // feed.updateStatus(Status.COMPLETED)
         feed.updateIsChecked()  // 요약 내용 확인 플래그
 
         // 키워드 업데이트
