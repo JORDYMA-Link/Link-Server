@@ -21,7 +21,8 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
    // NOT_FOUND("E0002", HttpStatus.NOT_FOUND),
 
     // Gemini
-    JSON_NOT_FOUND("G0000", HttpStatus.NO_CONTENT),
+    JSON_NOT_FOUND("G000", HttpStatus.NO_CONTENT),
+    JSON_PARSING_FAILED("G001", HttpStatus.NO_CONTENT),
 
     // User
     USER_NOT_FOUND("U000", HttpStatus.NOT_FOUND),

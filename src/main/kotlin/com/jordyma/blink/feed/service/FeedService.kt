@@ -30,6 +30,7 @@ import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -264,13 +265,13 @@ class FeedService(
 
 
     // 피드 생성
-    fun makeFeedAndResponse(content: PromptResponse?, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
+    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
         createRecommendFolders(feed, content)
         return makeAiSummaryResponse(content, brunch, feed.id!!)
     }
 
-    private fun makeFeed(userAccount: UserAccount, content: PromptResponse?, brunch: Source, link: String): Feed {
+    private fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
         val user = findUserOrElseThrow(userAccount.userId)
         val folder = folderService.getUnclassified(userAccount)
 
@@ -286,13 +287,16 @@ class FeedService(
         return feedRepository.save(feed)
     }
 
-    private fun makeAiSummaryResponse(content: PromptResponse?, source: Source, feedId: Long): AiSummaryResponseDto {
+    private fun makeAiSummaryResponse(content: PromptResponse, source: Source, feedId: Long): AiSummaryResponseDto {
         return AiSummaryResponseDto(
-            content = AiSummaryContent.from(content),
             sourceUrl = source.image,
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList(),
             feedId = feedId,
+            subject = content.subject ?: "",
+            summary = content.summary ?: "",
+            keywords = content.keyword ?: emptyList(),
+            folders = content.category ?: emptyList(),
         )
     }
 
@@ -321,23 +325,21 @@ class FeedService(
     @Transactional
     fun getSummaryRes(userAccount: UserAccount, feedId: Long): AiSummaryResponseDto? {
 
-        val feed = feedRepository.findById(feedId)
-            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
-
-        val aiSummaryContent = AiSummaryContent(
-            subject = feed.title,
-            summary = feed.summary,
-            keywords = feed.keywords.stream().map { it.content }.toList(),
-            folders = feed.recommendFolders.stream().map { it.folderName }.toList()
-        )
+        val feed = findFeedOrElseThrow(feedId)
+        val user = findUserOrElseThrow(userAccount.userId)
+        val folders = folderRepository.findAllByUser(user)
 
         return AiSummaryResponseDto(
             feedId = feedId,
-            content = aiSummaryContent,
+            // content = aiSummaryContent,
             sourceUrl = Source.getImageByName(feed.platform!!)!!,
             recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-                ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList()
+                ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList(),
+            subject = feed.title ?: "",
+            summary = feed.summary ?: "",
+            keywords = feed.keywords.stream().map { it.content }.toList() ?: emptyList(),
+            folders = folders.map { it -> it.name }.toList()
         )
     }
 
@@ -409,7 +411,7 @@ class FeedService(
         feedRepository.save(feed)
     }
 
-    fun createRecommendFolders(feed: Feed, content: PromptResponse?) {
+    fun createRecommendFolders(feed: Feed, content: PromptResponse) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
         logger().info("promt resonse ? " + (content?.summary ?: "nullllll"))
