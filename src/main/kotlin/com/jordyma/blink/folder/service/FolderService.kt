@@ -18,7 +18,6 @@ import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-@Transactional(readOnly = true)
 @Service
 class FolderService(
     private val folderRepository: FolderRepository,
