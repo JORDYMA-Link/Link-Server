@@ -30,7 +30,6 @@ import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
-import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -99,7 +98,7 @@ class FeedService(
             ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
-            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable())
+            ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
             thumnailImage = feedDetail.thumnailImageUrl,
@@ -114,9 +113,9 @@ class FeedService(
             originUrl = feedDetail.originUrl,
             // new
             folderId = feed.folder?.id!!,
-            platform = Source.getBrunchByImage(feed.thumbnailImageUrl.toString()).toString(),
             isUnclassified = feed.folder!!.isUnclassified,
-            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
+            platform = feedDetail.platform
         )
     }
 
@@ -128,6 +127,9 @@ class FeedService(
         }
         val feed = feedRepository.findById(feedId)
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.deletedAt != null) {
+            throw ApplicationException(ErrorCode.NOT_FOUND, "이미 삭제된 피드입니다 : $feedId", Throwable())
+        }
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 삭제할 권한이 없습니다", Throwable())
         }
@@ -161,6 +163,40 @@ class FeedService(
         )
     }
 
+    @Transactional
+    fun updateMemo(userAccount: UserAccount, feedId: Long, memo: String): FeedDetailResponseDto {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val feed = feedRepository.findById(feedId)
+            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        if (feed.folder!!.user.id != user.id) {
+            throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
+        }
+        feed.updateMemo(memo)
+        feed.modifyUpdatedDate(LocalDateTime.now())
+        feedRepository.save(feed)
+
+        return FeedDetailResponseDto(
+            feedId = feed.id!!,
+            thumnailImage = feed.thumbnailImageUrl,
+            platformImage = findBrunch(feed.platform ?: "").image,
+            title = feed.title,
+            date = localDateTimeToString(feed.updatedAt ?: LocalDateTime.now()),
+            summary = feed.summary,
+            keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
+            folderName = feed.folder!!.name,
+            memo = feed.memo ?: "",
+            isMarked = feed.isMarked,
+            originUrl = feed.originUrl,
+            folderId = feed.folder!!.id!!,
+            // new
+            isUnclassified = feed.folder!!.isUnclassified,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
+            platform = feed.platform.toString()
+        )
+    }
+
     @Transactional(readOnly = true)
     fun getFeed(feedId: Long): Feed
             = feedRepository.findById(feedId)
@@ -176,8 +212,9 @@ class FeedService(
             FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id!!, pageable).content
             FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id!!, pageable).content
         }
-        if (feedList.size > 0) logger().info("feedList = ${feedList[0]}")
+        if (feedList.isNotEmpty()) logger().info("feedList = ${feedList[0]}")
         return feedList.map { feed ->
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 null입니다. Feed ID=${feed.id}")
             FeedTypeDto(
                 feedId = feed.id!!,
                 title = feed.title,
@@ -185,8 +222,11 @@ class FeedService(
                 platform = feed.platform ?: "",
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
+                isUnclassified = folder.isUnclassified,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (type == FeedType.UNCLASSIFIED) getRecommendFoldersByFeedId(feed.id) else null
+                recommendedFolder = getRecommendFoldersByFeedId(feed.id),
+                folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
+                folderName = folder.name
             )
         }
     }
@@ -201,8 +241,9 @@ class FeedService(
         val sortedFeeds = searchAndSortFeeds(query, feedList)
 
         // 클라이언트에서 요청한 데이터만큼만 반환
-        val start = ((page-1) % 5 ) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
+        val start = (page % 5) * size  // 클라이언트가 요청한 페이지의 시작 인덱스
         val end = min(start + size, sortedFeeds.size) // 끝 인덱스는 정렬된 데이터 크기 내로 제한
+        if (start > end) return emptyList()
         return sortedFeeds.subList(start, end)
     }
 
@@ -211,6 +252,7 @@ class FeedService(
         val sortedFeeds = sortFeedsByRelevance(feeds, query)
         return sortedFeeds.map { scoredFeed ->
             val feed = scoredFeed.feed
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 존재하지 않습니다. feed ID=${feed.id}")
             FeedResultDto(
                 feedId = feed.id!!,
                 title = feed.title,
@@ -219,7 +261,8 @@ class FeedService(
                 platformImage = findBrunch(feed.platform ?: "").image,
                 isMarked = feed.isMarked,
                 keywords = feed.keywords.map { it.content },
-                dateTime = localDateTimeToString(feed.createdAt?: LocalDateTime.now(), "yyyy-MM-dd HH:mm:ss")
+                folderId = folder.id!!,
+                folderName = folder.name
             )
         }
     }
@@ -290,7 +333,8 @@ class FeedService(
 
     private fun makeAiSummaryResponse(content: PromptResponse, source: Source, feedId: Long): AiSummaryResponseDto {
         return AiSummaryResponseDto(
-            sourceUrl = source.image,
+           // content = AiSummaryContent.from(content),
+            platformImage = source.image,
             recommendFolder = content?.category?.get(0) ?: "",
             recommendFolders = content?.category ?: emptyList(),
             feedId = feedId,
@@ -309,6 +353,8 @@ class FeedService(
 
         // 기존 폴더 확인 or 새 폴더 생성
         val folder = checkFolder(user, request.folderName)
+        folder!!.increaseCount()
+        folderRepository.save(folder)
 
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
@@ -334,7 +380,7 @@ class FeedService(
         return AiSummaryResponseDto(
             feedId = feedId,
             // content = aiSummaryContent,
-            sourceUrl = Source.getImageByName(feed.platform!!)!!,
+            platformImage = Source.getImageByName(feed.platform!!)!!,
             recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
                 ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList(),
@@ -493,16 +539,17 @@ class FeedService(
     private fun getKeywordsByFeedId(feedId: Long): List<String> {
         val keywords = keywordRepository.findByFeedId(feedId)
         if (keywords.isEmpty()) {
-            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId", Throwable())
+            logger().error("일치하는 feedId에 해당하는 keywords가 없습니다 : $feedId")
+            return emptyList()
         }
         return keywords.map { it.content }
     }
 
     private fun getRecommendFoldersByFeedId(feedId: Long): List<String> {
         val recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-        if (recommendFolders?.isEmpty() == true) {
-            throw ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId에 해당하는 추천 폴더가 없습니다 : $feedId", Throwable())
+        if (recommendFolders.isEmpty()) {
+            return emptyList()
         }
-        return recommendFolders?.map { it.folderName } ?: emptyList()
+        return recommendFolders.map { it.folderName }
     }
 }

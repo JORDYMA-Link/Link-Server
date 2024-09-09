@@ -2,6 +2,7 @@ package com.jordyma.blink.feed.dto.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 
+
 @Schema(description = "피드 상세 DTO")
 data class FeedDetailResponseDto(
     @Schema(description = "피드 ID")
@@ -49,4 +50,4 @@ data class FeedDetailResponseDto(
     @Schema(description = "폴더 id")
     val folderId: Long,
 
-)
+    )
