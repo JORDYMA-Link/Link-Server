@@ -2,6 +2,7 @@ package com.jordyma.blink.user.entity
 
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity(name = "user")
 class User(
@@ -17,7 +18,13 @@ class User(
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    var role: Role? = null
+    var role: Role? = null,
+
+    @Column(name = "iosPushToken")
+    var iosPushToken: String? = null,
+
+    @Column(name = "aosPushToken")
+    var aosPushToken: String? = null,
 
 ): BaseTimeEntity()  {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +33,9 @@ class User(
 
     fun updateNickname(nickname: String) {
         this.nickname = nickname
+    }
+
+    fun updateDeletedAt(){
+        this.deletedAt = LocalDateTime.now()
     }
 }
