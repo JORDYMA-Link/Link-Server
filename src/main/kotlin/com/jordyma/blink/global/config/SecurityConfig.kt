@@ -52,7 +52,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
                 val corsAllowList = listOf("http://localhost:3000", "https://don8l2wodvwyx.cloudfront.net")
                 val configuration = CorsConfiguration()
                 configuration.allowedOrigins = corsAllowList
-                configuration.allowedMethods = listOf("POST", "GET", "DELETE", "PUT")
+                configuration.allowedMethods = listOf("POST", "GET", "DELETE", "PUT", "PATCH")
                 configuration.allowedHeaders = listOf("*")
                 val source = UrlBasedCorsConfigurationSource()
                 source.registerCorsConfiguration("/**", configuration)

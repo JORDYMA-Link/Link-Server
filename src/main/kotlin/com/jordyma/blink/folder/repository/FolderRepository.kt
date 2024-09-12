@@ -15,4 +15,7 @@ interface FolderRepository : JpaRepository<Folder, Long> {
 
     @Query("select f from Folder f where f.user =:user and f.name =:status")
     fun findFailed(user: User?, status: String): Folder?
+
+    @Query("select f from Folder f where f.user =:user and f.name =:name")
+    fun findByName(name: String, user: User): Folder?
 }

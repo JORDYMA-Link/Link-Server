@@ -308,7 +308,6 @@ class FeedService(
         return Regex(query, RegexOption.IGNORE_CASE).findAll(text).count()
     }
 
-
     // 피드 생성
     fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): Long {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장

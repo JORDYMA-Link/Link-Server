@@ -35,7 +35,7 @@ data class FeedItemDto(
     @Schema(description = "피드 요약 내용")
     val summary: String,
 
-    @Schema(description = "플랫폼(유튜브, 네이버 등)")
+    @Schema(description = "플랫폼명(유튜브, 네이버 등)")
     val platform: String,
 
     @Schema(description = "플랫폼 로고 이미지 URL")

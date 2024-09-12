@@ -1,8 +1,6 @@
 package com.jordyma.blink.folder.controller
 
-import com.jordyma.blink.folder.dto.response.OnboardingResDto
 import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -13,12 +11,8 @@ import org.springframework.web.bind.annotation.RestController
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.folder.dto.*
-import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
-import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
-import com.jordyma.blink.folder.dto.request.OnboardingReqDto
-import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
-import com.jordyma.blink.folder.dto.response.FolderDto
-import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
+import com.jordyma.blink.folder.dto.request.*
+import com.jordyma.blink.folder.dto.response.*
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
@@ -69,8 +63,14 @@ class FolderController(
     fun getFeedsByFolder(
         @PathVariable("folderId") folderId: Long,
         @AuthenticationPrincipal userAccount: UserAccount,
-    ): ResponseEntity<GetFeedsByFolderRequestDto> {
-        val response = folderService.getFeedsByFolder(userAccount = userAccount, folderId = folderId)
+        @ModelAttribute getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto
+    ): ResponseEntity<GetFeedsByFolderResponseDto> {
+        val response = folderService.getFeedsByFolder(
+            userAccount = userAccount,
+            folderId = folderId,
+            getFeedsByFolderRequestDto = getFeedsByFolderRequestDto,
+        )
+
         return ResponseEntity.ok(response)
     }
 
@@ -81,6 +81,16 @@ class FolderController(
         @RequestBody requestDto: CreateFolderRequestDto,
     ): ResponseEntity<FolderDto> {
         val response = folderService.create(userAccount = userAccount, requestDto = requestDto)
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "피드에 폴더 지정", description = "선택한 폴더가 존재하면 지정, 존재하지 않으면 생성")
+    @PatchMapping("/feed")
+    fun createFeedFolder(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestBody requestDto: CreateFeedFolderRequestDto,
+    ): ResponseEntity<FolderDto> {
+        val response = folderService.createFeedFolder(userAccount = userAccount, requestDto = requestDto)
         return ResponseEntity.ok(response)
     }
 
