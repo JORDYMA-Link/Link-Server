@@ -61,6 +61,10 @@ class Feed(
         this.keywords = keywords
     }
 
+    fun updateMemo(memo: String){
+        this.memo = memo
+    }
+
     fun updateRecommendFolders(
         recommendFolders: List<Recommend>
     ) {
@@ -81,6 +85,10 @@ class Feed(
 
     fun updateThumbnailImageUrl(imageUrl: String){
         this.thumbnailImageUrl = imageUrl
+    }
+
+    fun updateFolder(folder: Folder){
+        this.folder = folder
     }
 
     fun update(title: String,
