@@ -3,11 +3,11 @@ package com.jordyma.blink.feed.controller
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
+import com.jordyma.blink.feed.dto.FeedIdResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.TempReqDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
-import com.jordyma.blink.feed.dto.FeedIdResponseDto
 import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
@@ -69,10 +69,11 @@ class FeedController(
             requestDto.content
         )
         val brunch = feedService.findBrunch(requestDto.link)
-        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
+        val feedId = feedService.makeFeedAndResponse(content!!, brunch, userAccount, requestDto.link)
         val feedIdResponseDto = FeedIdResponseDto(
-            feedId = response!!.feedId
+            feedId = feedId
         )
+        val response = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
         return ResponseEntity.ok(feedIdResponseDto)
     }
 

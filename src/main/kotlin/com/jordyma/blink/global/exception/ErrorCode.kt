@@ -19,7 +19,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
     // External
     OPENKEY_NOT_MATCHED("E000", HttpStatus.INTERNAL_SERVER_ERROR),
     NONCE_NOT_MATCHED("E0001", HttpStatus.INTERNAL_SERVER_ERROR),
-   // NOT_FOUND("E0002", HttpStatus.NOT_FOUND),
+    // NOT_FOUND("E0002", HttpStatus.NOT_FOUND),
 
     // Gemini
     JSON_NOT_FOUND("G000", HttpStatus.NO_CONTENT),

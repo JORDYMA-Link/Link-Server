@@ -357,7 +357,7 @@ class AuthService(
         return kotlin.runCatching {
             keyFactory.generatePublic(keySpec)
         } .getOrElse {
-            exception -> throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.", exception)
+                exception -> throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 인증에 실패하였습니다.", exception)
         }
     }
 

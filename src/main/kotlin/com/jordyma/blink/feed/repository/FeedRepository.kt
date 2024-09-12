@@ -18,8 +18,7 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
          "WHERE fdr.user.id = :userId "+
            "AND fd.isMarked = true " +
-           "AND fd.status = 'COMPLETED'" +
-                "AND fdr.isUnclassified = false AND fd.deletedAt IS NULL"
+           "AND fd.status = 'COMPLETED' AND fdr.isUnclassified = false AND fd.deletedAt IS NULL"
     )
     fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
@@ -27,8 +26,7 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
         "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
          "WHERE fdr.user.id = :userId " +
            "AND fdr.isUnclassified = true " +
-           "AND fd.status = 'COMPLETED'"+
-                "AND fdr.isUnclassified = true AND fd.deletedAt IS NULL"
+           "AND fd.status = 'COMPLETED' AND fdr.isUnclassified = true AND fd.deletedAt IS NULL"
     )
     fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
@@ -51,6 +49,6 @@ interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
         pageable: Pageable
     ): Page<Feed>
 
-    override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
+    //override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
 }
 
