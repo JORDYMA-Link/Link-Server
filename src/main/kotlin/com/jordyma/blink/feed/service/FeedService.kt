@@ -26,6 +26,7 @@ import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
@@ -41,6 +42,7 @@ import kotlin.math.min
 @Service
 class FeedService(
     private val folderService: FolderService,
+    private val keywordService: KeywordService,
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
     private val userRepository: UserRepository,
@@ -308,10 +310,12 @@ class FeedService(
 
 
     // 피드 생성
-    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
+    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): Long {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
         createRecommendFolders(feed, content)
-        return makeAiSummaryResponse(content, brunch, feed.id!!)
+        keywordService.createKeywords(feed, content.keyword)
+        //return makeAiSummaryResponse(content, brunch, feed.id!!)
+        return feed.id!!
     }
 
     private fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {

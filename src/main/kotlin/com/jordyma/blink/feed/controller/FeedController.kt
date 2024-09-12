@@ -69,9 +69,9 @@ class FeedController(
             requestDto.content
         )
         val brunch = feedService.findBrunch(requestDto.link)
-        val response = feedService.makeFeedAndResponse(content!!, brunch, userAccount, requestDto.link)
+        val feedId = feedService.makeFeedAndResponse(content!!, brunch, userAccount, requestDto.link)
         val feedIdResponseDto = FeedIdResponseDto(
-            feedId = response!!.feedId
+            feedId = feedId
         )
         return ResponseEntity.ok(feedIdResponseDto)
     }
