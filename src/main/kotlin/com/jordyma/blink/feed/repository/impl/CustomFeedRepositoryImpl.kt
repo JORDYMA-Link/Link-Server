@@ -13,6 +13,7 @@ import com.jordyma.blink.folder.entity.QFolder.folder
 import com.jordyma.blink.keyword.entity.QKeyword
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
+import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.stereotype.Repository
@@ -88,7 +89,25 @@ class CustomFeedRepositoryImpl(
     }
 
     override fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed> {
-        TODO("Not yet implemented")
+        val condition = BooleanBuilder()
+
+        if (cursor != null) {
+            condition.and(feed.id.lt(cursor.toLong()))
+        }
+
+        // TODO 쿼리 튜닝 필요 (N+1 문제)
+        return queryFactory
+            .select(feed)
+            .from(feed)
+            .join(feed.folder, QFolder.folder)
+            .fetchJoin()
+            .where(
+                condition.and(feed.folder.eq(folder)),
+                feed.deletedAt.isNull
+            )
+            .limit(pageSize)
+            .orderBy(feed.id.desc())
+            .fetch()
     }
 
     override fun getProcessing(findUser: User): List<Feed> {
