@@ -9,24 +9,24 @@ import org.springframework.data.repository.query.Param
 
 interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
 
-    @Query(
-        "SELECT f FROM Feed f " +
-          "JOIN f.keywords k " +
-          "JOIN f.folder fo " +
-         "WHERE fo.user.id = :userId " +  // userId로 필터링
-           "AND f.folder.id = fo.id " +  // feed와 folder 연결
-           "AND k.feed.id = f.id " +  // keyword와 feed 연결
-           "AND (LOWER(f.title) LIKE LOWER(CONCAT('%', :query, '%')) " +  // title에 LIKE 검색
-            "OR LOWER(f.summary) LIKE LOWER(CONCAT('%', :query, '%')) " +  // summary에 LIKE 검색
-            "OR LOWER(f.memo) LIKE LOWER(CONCAT('%', :query, '%')) " +  // memo에 LIKE 검색
-            "OR LOWER(k.content) LIKE LOWER(CONCAT('%', :query, '%')))" +// keyword에 LIKE 검색
-           "AND f.deletedAt IS NULL"
-    )
-    fun findFeedByQuery(
-        @Param("userId") userId: Long,
-        @Param("query") query: String,
-        pageable: Pageable
-    ): Page<Feed>
+//    @Query(
+//        "SELECT f FROM Feed f " +
+//          "JOIN f.keywords k " +
+//          "JOIN f.folder fo " +
+//         "WHERE fo.user.id = :userId " +  // userId로 필터링
+//           "AND f.folder.id = fo.id " +  // feed와 folder 연결
+//           "AND k.feed.id = f.id " +  // keyword와 feed 연결
+//           "AND (LOWER(f.title) LIKE LOWER(CONCAT('%', :query, '%')) " +  // title에 LIKE 검색
+//            "OR LOWER(f.summary) LIKE LOWER(CONCAT('%', :query, '%')) " +  // summary에 LIKE 검색
+//            "OR LOWER(f.memo) LIKE LOWER(CONCAT('%', :query, '%')) " +  // memo에 LIKE 검색
+//            "OR LOWER(k.content) LIKE LOWER(CONCAT('%', :query, '%')))" +// keyword에 LIKE 검색
+//           "AND f.deletedAt IS NULL"
+//    )
+//    fun findFeedByQuery(
+//        @Param("userId") userId: Long,
+//        @Param("query") query: String,
+//        pageable: Pageable
+//    ): Page<Feed>
 
 }
 

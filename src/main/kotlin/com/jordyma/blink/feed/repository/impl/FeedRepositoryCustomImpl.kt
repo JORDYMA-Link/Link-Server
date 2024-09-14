@@ -10,6 +10,7 @@ import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.folder.entity.QFolder.folder
+import com.jordyma.blink.keyword.entity.QKeyword
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
 import com.querydsl.core.BooleanBuilder
@@ -202,6 +203,59 @@ class FeedRepositoryCustomImpl(
             .fetchOne() ?: 0
 
         return PageableExecutionUtils.getPage(feeds, pageable) { total }
+    }
+
+    override fun findFeedByQuery(userId: Long, query: String, pageable: Pageable): Page<Feed> {
+        val feed = QFeed.feed
+        val keyword = QKeyword.keyword
+        val folder = QFolder.folder
+
+        // 기본 쿼리 작성
+        val jpaQuery = queryFactory
+            .selectFrom(feed)
+            .distinct() // 중복 제거를 위해 distinct 사용
+            .join(feed.keywords, keyword)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(feed.folder.id.eq(folder.id))
+                    .and(keyword.feed.id.eq(feed.id))
+                    .and(
+                        feed.title.lower().like("%${query.lowercase()}%")
+                            .or(feed.summary.lower().like("%${query.lowercase()}%"))
+                            .or(feed.memo.lower().like("%${query.lowercase()}%"))
+                            .or(keyword.content.lower().like("%${query.lowercase()}%"))
+                    )
+                    .and(feed.deletedAt.isNull)
+            )
+
+        // 페이징 적용 및 결과 가져오기
+        val feeds = jpaQuery
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .fetch()
+
+        // 총 개수 조회 (페이징 최적화를 위해 카운트 쿼리 재사용 가능)
+        val countQuery = queryFactory
+            .select(feed.countDistinct())
+            .from(feed)
+            .join(feed.keywords, keyword)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(feed.folder.id.eq(folder.id))
+                    .and(keyword.feed.id.eq(feed.id))
+                    .and(
+                        feed.title.lower().like("%${query.lowercase()}%")
+                            .or(feed.summary.lower().like("%${query.lowercase()}%"))
+                            .or(feed.memo.lower().like("%${query.lowercase()}%"))
+                            .or(keyword.content.lower().like("%${query.lowercase()}%"))
+                    )
+                    .and(feed.deletedAt.isNull)
+            )
+
+        return PageableExecutionUtils.getPage(feeds, pageable) { countQuery.fetchOne() ?: 0 }
+
     }
 
 }
