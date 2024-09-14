@@ -220,13 +220,14 @@ class FeedRepositoryCustomImpl(
                 folder.user.id.eq(userId)
                     .and(feed.folder.id.eq(folder.id))
                     .and(keyword.feed.id.eq(feed.id))
+                    .and(feed.deletedAt.isNull)
                     .and(
                         feed.title.lower().like("%${query.lowercase()}%")
                             .or(feed.summary.lower().like("%${query.lowercase()}%"))
                             .or(feed.memo.lower().like("%${query.lowercase()}%"))
                             .or(keyword.content.lower().like("%${query.lowercase()}%"))
                     )
-                    .and(feed.deletedAt.isNull)
+
             )
 
         // 페이징 적용 및 결과 가져오기
@@ -245,13 +246,13 @@ class FeedRepositoryCustomImpl(
                 folder.user.id.eq(userId)
                     .and(feed.folder.id.eq(folder.id))
                     .and(keyword.feed.id.eq(feed.id))
+                    .and(feed.deletedAt.isNull)
                     .and(
                         feed.title.lower().like("%${query.lowercase()}%")
                             .or(feed.summary.lower().like("%${query.lowercase()}%"))
                             .or(feed.memo.lower().like("%${query.lowercase()}%"))
                             .or(keyword.content.lower().like("%${query.lowercase()}%"))
                     )
-                    .and(feed.deletedAt.isNull)
             )
 
         return PageableExecutionUtils.getPage(feeds, pageable) { countQuery.fetchOne() ?: 0 }
