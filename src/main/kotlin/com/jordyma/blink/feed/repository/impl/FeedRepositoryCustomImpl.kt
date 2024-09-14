@@ -168,4 +168,40 @@ class FeedRepositoryCustomImpl(
         return PageableExecutionUtils.getPage(feeds, pageable) { total }
     }
 
+    override fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed> {
+        val feed = QFeed.feed
+        val folder = QFolder.folder
+
+        // 기본 쿼리 작성
+        val query = queryFactory
+            .selectFrom(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(feed.isMarked.isTrue)
+                    .and(feed.status.eq(Status.COMPLETED)) // status가 Enum인 경우
+                    .and(feed.deletedAt.isNull)
+            )
+
+        // 페이징 적용 및 결과 가져오기
+        val feeds = query
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .fetch()
+
+        // 총 개수 조회 및 Page 객체 생성
+        val total = queryFactory.select(feed.count())
+            .from(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(feed.isMarked.isTrue)
+                    .and(feed.status.eq(Status.COMPLETED))
+                    .and(feed.deletedAt.isNull)
+            )
+            .fetchOne() ?: 0
+
+        return PageableExecutionUtils.getPage(feeds, pageable) { total }
+    }
+
 }

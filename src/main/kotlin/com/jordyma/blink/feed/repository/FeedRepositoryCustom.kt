@@ -21,4 +21,7 @@ interface FeedRepositoryCustom {
     fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
 
     fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed>
+
+    fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
+
 }

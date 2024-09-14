@@ -10,15 +10,6 @@ import org.springframework.data.repository.query.Param
 interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {
 
     @Query(
-        "SELECT fd FROM Feed fd JOIN Folder fdr ON fd.folder = fdr " +
-         "WHERE fdr.user.id = :userId "+
-           "AND fd.isMarked = true " +
-           "AND fd.status = 'COMPLETED'" +
-           "AND fd.deletedAt IS NULL"
-    )
-    fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
-
-    @Query(
         "SELECT f FROM Feed f " +
           "JOIN f.keywords k " +
           "JOIN f.folder fo " +
