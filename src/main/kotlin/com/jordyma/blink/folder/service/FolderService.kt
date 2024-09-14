@@ -61,6 +61,9 @@ class FolderService(
             throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 삭제 권한이 없습니다.")
         }
 
+        // TODO: repository 옮기기
+        feedRepository.deleteKeywords(folder)
+        feedRepository.deleteRecommend(folder)
         feedRepository.deleteAllByFolder(folder)
 
         folderRepository.delete(folder)

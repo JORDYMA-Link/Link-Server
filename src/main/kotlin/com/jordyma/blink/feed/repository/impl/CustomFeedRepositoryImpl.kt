@@ -10,6 +10,7 @@ import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.folder.entity.QFolder.folder
+import com.jordyma.blink.folder.entity.QRecommend
 import com.jordyma.blink.keyword.entity.QKeyword
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
@@ -85,6 +86,20 @@ class CustomFeedRepositoryImpl(
         return queryFactory
             .delete(QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
+            .execute()
+    }
+
+    override fun deleteKeywords(folder: Folder): Long {
+        return queryFactory
+            .delete(QKeyword.keyword)
+            .where(QKeyword.keyword.feed.folder.eq(folder))
+            .execute()
+    }
+
+    override fun deleteRecommend(folder: Folder): Long {
+        return queryFactory
+            .delete(QRecommend.recommend)
+            .where(QRecommend.recommend.feed.folder.eq(folder))
             .execute()
     }
 
