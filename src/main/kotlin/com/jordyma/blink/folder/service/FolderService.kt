@@ -33,7 +33,9 @@ class FolderService(
         }
         val folders = folderRepository.findAllByUser(user)
 
-        folders.map { folder ->
+        folders.filter { folder ->
+            !folder.isUnclassified
+        }.map { folder ->
             FolderDto(
                 id = folder.id,
                 name = folder.name,
