@@ -56,6 +56,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.log
 
 @Service
 @Transactional(readOnly = true)
@@ -129,7 +130,7 @@ class AuthService(
     }
 
     private fun upsertApple(socialUserId: String, nickname: String): User {
-        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
+        return userRepository.findAppleUser(socialUserId)
             ?: userRepository.save(
                 User(
                     nickname = nickname,
@@ -236,11 +237,16 @@ class AuthService(
         }
 
         // 이미 가입한 경우
-        val socialId = userInfo["sub"] as String
         val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
-        //  .orElseThrow { throw Exception("유저를 찾을 수 없습니다.") }
+            ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
 
-        return regenerateToken(appleLoginRequestDto.idToken)
+        return generateTokenDto(requestUser)
+    }
+
+    fun generateTokenDto(user: User): TokenResponseDto{
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
+        return TokenResponseDto(accessToken, refreshToken)
     }
 
     fun getPublicKey(kid: JsonElement, alg: JsonElement): PublicKey {

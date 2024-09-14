@@ -14,6 +14,7 @@ enum class ErrorCode(val errorCode: String, val statusCode: HttpStatus) {
     UNAUTHORIZED("A000", HttpStatus.UNAUTHORIZED),
     TOKEN_VERIFICATION_EXCEPTION("A001", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("A002", HttpStatus.UNAUTHORIZED),
+    REFRESH_TOKEN_NOT_FOUND("A003", HttpStatus.UNAUTHORIZED),
     //TOKEN_EXCHANGE_FAILED("A003", HttpStatus.UNAUTHORIZED),
 
     // External
