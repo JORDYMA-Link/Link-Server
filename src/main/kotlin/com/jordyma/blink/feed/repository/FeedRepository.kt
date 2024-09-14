@@ -1,13 +1,14 @@
 package com.jordyma.blink.feed.repository
 
 import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.folder.entity.Folder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import org.springframework.stereotype.Repository
 
+@Repository
 interface FeedRepository : JpaRepository<Feed, Long>, CustomFeedRepository {
 
     // override fun deleteAllByFolder(folder: Folder): Long

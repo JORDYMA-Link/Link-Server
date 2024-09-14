@@ -84,8 +84,9 @@ class CustomFeedRepositoryImpl(
 
     override fun deleteAllByFolder(folder: Folder): Long {
         return queryFactory
-            .delete(QFeed.feed)
+            .update(QFeed.feed)
             .where(QFeed.feed.folder.eq(folder))
+            .set(QFeed.feed.deletedAt, LocalDateTime.now())
             .execute()
     }
 
