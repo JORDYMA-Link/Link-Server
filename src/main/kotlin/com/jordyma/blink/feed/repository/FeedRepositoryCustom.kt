@@ -5,6 +5,8 @@ import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.feed.vo.FeedFolderVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.user.entity.User
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import java.time.LocalDateTime
 
 interface FeedRepositoryCustom {
@@ -17,4 +19,6 @@ interface FeedRepositoryCustom {
     fun getProcessing(user: User): List<Feed>
 
     fun findAllByFolder(folder: Folder, cursor: Int?, pageSize: Long): List<Feed>
+
+    fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 }

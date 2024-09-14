@@ -15,6 +15,9 @@ import com.jordyma.blink.user.entity.User
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
@@ -126,4 +129,43 @@ class FeedRepositoryCustomImpl(
                             .and(feed.folder.user.eq(user)))))
             .fetch()
     }
+
+
+    override fun findUnclassifiedFeeds(userId: Long, pageable: Pageable): Page<Feed> {
+        val feed = QFeed.feed
+        val folder = QFolder.folder
+
+        // 기본 쿼리 작성
+        val query = queryFactory
+            .selectFrom(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(folder.isUnclassified.isTrue)
+                    .and(feed.status.eq(Status.COMPLETED)) // 상태가 ENUM인 경우
+                    .and(feed.deletedAt.isNull)
+            )
+
+        // 페이징 적용 및 결과 가져오기
+        val feeds = query
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .fetch()
+
+        // 총 개수 조회 및 Page 객체 생성
+        val total = queryFactory
+            .select(feed.count())
+            .from(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(folder.isUnclassified.isTrue)
+                    .and(feed.status.eq(Status.COMPLETED))
+                    .and(feed.deletedAt.isNull)
+            )
+            .fetchOne() ?: 0
+
+        return PageableExecutionUtils.getPage(feeds, pageable) { total }
+    }
+
 }
