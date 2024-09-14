@@ -26,6 +26,7 @@ import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
@@ -41,6 +42,7 @@ import kotlin.math.min
 @Service
 class FeedService(
     private val folderService: FolderService,
+    private val keywordService: KeywordService,
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
     private val userRepository: UserRepository,
@@ -94,6 +96,9 @@ class FeedService(
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
+        val feed = feedRepository.findById(feedId).orElseThrow(){
+            ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
+        }
         val feedDetail = feedRepository.findFeedDetail(user, feedId)
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
@@ -107,7 +112,12 @@ class FeedService(
             folderName = feedDetail.folderName,
             memo = feedDetail.memo ?: "",
             isMarked = feedDetail.isMarked,
-            originUrl = feedDetail.originUrl
+            originUrl = feedDetail.originUrl,
+            // new
+            folderId = feed.folder?.id!!,
+            isUnclassified = feed.folder!!.isUnclassified,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
+            platform = feedDetail.platform
         )
     }
 
@@ -127,6 +137,9 @@ class FeedService(
         }
         feed.updateDeletedAt(LocalDateTime.now())
         feedRepository.save(feed)
+
+        feed.folder!!.decreaseCount()
+        folderRepository.save(feed.folder!!)
     }
 
     @Transactional
@@ -177,7 +190,12 @@ class FeedService(
             folderName = feed.folder!!.name,
             memo = feed.memo ?: "",
             isMarked = feed.isMarked,
-            originUrl = feed.originUrl
+            originUrl = feed.originUrl,
+            folderId = feed.folder!!.id!!,
+            // new
+            isUnclassified = feed.folder!!.isUnclassified,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
+            platform = feed.platform.toString()
         )
     }
 
@@ -290,15 +308,16 @@ class FeedService(
         return Regex(query, RegexOption.IGNORE_CASE).findAll(text).count()
     }
 
-
     // 피드 생성
-    fun makeFeedAndResponse(content: PromptResponse?, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
+    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): Long {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
         createRecommendFolders(feed, content)
-        return makeAiSummaryResponse(content, brunch, feed.id!!)
+        keywordService.createKeywords(feed, content.keyword)
+        //return makeAiSummaryResponse(content, brunch, feed.id!!)
+        return feed.id!!
     }
 
-    private fun makeFeed(userAccount: UserAccount, content: PromptResponse?, brunch: Source, link: String): Feed {
+    private fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
         val user = findUserOrElseThrow(userAccount.userId)
         val folder = folderService.getUnclassified(userAccount)
 
@@ -309,22 +328,14 @@ class FeedService(
             summary = content?.summary ?: "",
             title = content?.subject ?: "",
             platform = brunch.source,
-            status = Status.REQUESTED,
+            status = Status.COMPLETED,  // TODO: 워커 이식하면서 수정하기
+            isChecked = false,
         )
         return feedRepository.save(feed)
     }
 
-    private fun makeAiSummaryResponse(content: PromptResponse?, source: Source, feedId: Long): AiSummaryResponseDto {
-        return AiSummaryResponseDto(
-            content = AiSummaryContent.from(content),
-            platformImage = source.image,
-            recommendFolder = content?.category?.get(0) ?: "",
-            recommendFolders = content?.category ?: emptyList(),
-            feedId = feedId,
-        )
-    }
-
     // 피드 수정
+    @Transactional
     fun update(userAccount: UserAccount, request: FeedUpdateReqDto, feedId: Long): FeedUpdateResDto {
         // 유저 확인
         val user = findUserOrElseThrow(userAccount.userId)
@@ -337,7 +348,7 @@ class FeedService(
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
         feed.update(request.title, request.summary, request.memo, folder!!)
-        feed.updateStatus(Status.COMPLETED)
+        // feed.updateStatus(Status.COMPLETED)
         feed.updateIsChecked()  // 요약 내용 확인 플래그
 
         // 키워드 업데이트
@@ -351,29 +362,27 @@ class FeedService(
     @Transactional
     fun getSummaryRes(userAccount: UserAccount, feedId: Long): AiSummaryResponseDto? {
 
-        val feed = feedRepository.findById(feedId)
-            .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
+        val feed = findFeedOrElseThrow(feedId)
+        val user = findUserOrElseThrow(userAccount.userId)
+        val folders = folderRepository.findAllByUser(user)
 
-        val aiSummaryContent = AiSummaryContent(
-            subject = feed.title,
-            summary = feed.summary,
-            keywords = feed.keywords.stream().map { it.content }.toList(),
-            folders = feed.recommendFolders.stream().map { it.folderName }.toList()
-        )
-
-        val summaryResponseDto = AiSummaryResponseDto(
+        return AiSummaryResponseDto(
             feedId = feedId,
-            content = aiSummaryContent,
+            // content = aiSummaryContent,
             platformImage = Source.getImageByName(feed.platform!!)!!,
-            recommendFolder = recommendRepository.findRecommendFirst(feedId, 1).folderName,
+            recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-                .stream().map { it.folderName }.toList()
+                ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList(),
+            subject = feed.title ?: "",
+            summary = feed.summary ?: "",
+            keywords = feed.keywords.stream().map { it.content }.toList() ?: emptyList(),
+            folders = folders.map { it -> it.name }.toList(),
+            date = feed.createdAt!!.toLocalDate()
         )
-
-        return summaryResponseDto
     }
 
     // 요약 중인 링크 조회
+    @Transactional
     fun getProcessing(userAccount: UserAccount): ProcessingListDto? {
         val user = findUserOrElseThrow(userAccount.userId)
         val feeds = feedRepository.getProcessing(user)
@@ -391,6 +400,7 @@ class FeedService(
     }
 
     // 요약 실패 피드 삭제
+    @Transactional
     fun deleteProcessingFeed(userAccount: UserAccount, feedId: Long) {
         val user = findUserOrElseThrow(userAccount.userId)
         val feed = findFeedOrElseThrow(feedId)
@@ -427,6 +437,7 @@ class FeedService(
     }
 
     // 요약 실패 피드 생성
+    @Transactional
     fun createFailed(userAccount: UserAccount, link: String) {
         val user = findUserOrElseThrow(userAccount.userId)
         val failedFolder = folderService.getFailed(userAccount)
@@ -441,7 +452,7 @@ class FeedService(
         feedRepository.save(feed)
     }
 
-    fun createRecommendFolders(feed: Feed, content: PromptResponse?) {
+    fun createRecommendFolders(feed: Feed, content: PromptResponse) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
         logger().info("promt resonse ? " + (content?.summary ?: "nullllll"))
@@ -458,6 +469,7 @@ class FeedService(
         feed.recommendFolders = recommendFolders
     }
 
+    @Transactional
     fun createKeywords(feed: Feed, request: FeedUpdateReqDto) {
         val createdKeywords: MutableList<Keyword> = mutableListOf()
         for (keyword in request.keywords) {

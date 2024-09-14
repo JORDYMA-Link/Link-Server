@@ -77,7 +77,6 @@ dependencies {
 
     // json
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
-     implementation("com.google.code.gson:gson:2.8.7")
     implementation("com.google.code.gson:gson:2.8.7")
     implementation ("io.jsonwebtoken:jjwt-jackson:0.11.5")
     implementation ("io.jsonwebtoken:jjwt-api:0.11.5")
@@ -85,6 +84,9 @@ dependencies {
 
     // logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
+
+    // jwt
+    implementation("com.auth0:java-jwt:4.2.1")
 
     // s3
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
@@ -97,9 +99,8 @@ dependencies {
     implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.14.1")
     implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
 
+    implementation("com.auth0:java-jwt:4.4.0")
 
-    // jwt
-    implementation("com.auth0:java-jwt:4.2.1")
 }
 
 configurations.forEach {
@@ -142,6 +143,7 @@ tasks.named("clean") {
 
 kapt {
     generateStubs = true
+    includeCompileClasspath = false
 }
 
 // Querydsl 설정부 추가 - end

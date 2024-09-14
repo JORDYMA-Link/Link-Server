@@ -122,8 +122,8 @@ class FeedRepositoryCustomImpl(
                         .and(feed.folder.user.eq(user)))
                     .or((feed.status.eq(Status.REQUESTED)
                         .and(feed.folder.user.eq(user)))
-                    .or((feed.status.eq(Status.FAILED).and(feed.deletedAt.isNotNull))
-                        .and(feed.folder.user.eq(user)))))
+                        .or((feed.status.eq(Status.FAILED).and(feed.deletedAt.isNotNull))
+                            .and(feed.folder.user.eq(user)))))
             .fetch()
     }
 }

@@ -25,6 +25,9 @@ data class FeedDto(
     @Schema(description = "플랫폼 로고 이미지 URL")
     val platformImage: String,
 
+    @Schema(description = "피드 원본 URL")
+    val sourceUrl: String,
+
     @Schema(description = "북마크 여부")
     val isMarked: Boolean,
 

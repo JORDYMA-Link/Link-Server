@@ -2,6 +2,7 @@ package com.jordyma.blink.user.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.user.dto.request.UpdateUserProfileReqDto
+import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
 import com.jordyma.blink.user.dto.response.UserProfileResDto
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
@@ -34,6 +35,16 @@ class UserController (
     ): ResponseEntity<UserProfileResDto> {
         val response: UserProfileResDto = userService.updateProfile(userAccount, requestDto.nickname)
         return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "유저 푸시 토큰 갱신 api")
+    @PutMapping("/push-token")
+    fun updatePushToken(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestBody updateUserPushTokenRequestDto: UpdateUserPushTokenRequestDto,
+    ): ResponseEntity<Unit> {
+        userService.updatePushToken(userAccount, updateUserPushTokenRequestDto)
+        return ResponseEntity.ok().build()
     }
 
 }
