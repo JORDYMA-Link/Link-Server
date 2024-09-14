@@ -3,6 +3,7 @@ package com.jordyma.blink.feed.dto
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import io.swagger.v3.oas.annotations.media.Schema
 import lombok.NoArgsConstructor
+import java.time.LocalDate
 
 @NoArgsConstructor
 @Schema(description = "AI 요약 결과 내용 DTO")
@@ -55,6 +56,9 @@ data class AiSummaryResponseDto(
 
     @Schema(description = "AI 추천 폴더 리스트 (링크 저장 api request에 사용)")
     val recommendFolders: List<String>,
+
+    @Schema(description = "요약 날짜")
+    val date: LocalDate
 )
 
 @Schema(description = "피드 id response DTO")
