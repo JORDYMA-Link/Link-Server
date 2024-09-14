@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 data class FeedDetailVo(
     val feedId: Long,
-    val thumnailImageUrl: String?,
+    val thumbnailImageUrl: String?,
     val title: String,
     val date: LocalDateTime,
     val summary: String,
