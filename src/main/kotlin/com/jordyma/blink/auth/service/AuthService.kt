@@ -128,6 +128,18 @@ class AuthService(
             )
     }
 
+    private fun upsertApple(socialUserId: String, nickname: String): User {
+        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
+            ?: userRepository.save(
+                User(
+                    nickname = nickname,
+                    socialType = SocialType.APPLE,
+                    socialUserId = socialUserId,
+                    role = Role.USER
+                )
+            )
+    }
+
     @Transactional
     fun regenerateToken(token: String): TokenResponseDto {
         val claims = jwtTokenUtil.parseToken(token, jwtSecret);
@@ -213,7 +225,7 @@ class AuthService(
         if (findUser == null) {
             val socialId = userInfo["sub"] as String
 
-            val user: User = upsertUser(SocialType.APPLE, socialUserId, name)
+            val user: User = upsertApple(socialId, name)
             userRepository.save(user)
 
             val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
@@ -225,7 +237,6 @@ class AuthService(
 
         // 이미 가입한 경우
         val socialId = userInfo["sub"] as String
-
         val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
         //  .orElseThrow { throw Exception("유저를 찾을 수 없습니다.") }
 
