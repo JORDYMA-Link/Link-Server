@@ -28,6 +28,8 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             "/location/**",
             "/auth/kakao-login",
             "/auth/kakao-login-web/callback",
+            "/auth/apple-login",
+            "/auth/apple-login/callback",
             "/auth/regenerate-token",
             // TODO 수정 필요
             "/api/feed/**",
