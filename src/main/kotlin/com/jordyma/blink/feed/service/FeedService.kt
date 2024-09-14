@@ -26,6 +26,7 @@ import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
@@ -41,6 +42,7 @@ import kotlin.math.min
 @Service
 class FeedService(
     private val folderService: FolderService,
+    private val keywordService: KeywordService,
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
     private val userRepository: UserRepository,
@@ -306,12 +308,13 @@ class FeedService(
         return Regex(query, RegexOption.IGNORE_CASE).findAll(text).count()
     }
 
-
     // 피드 생성
-    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): AiSummaryResponseDto? {
+    fun makeFeedAndResponse(content: PromptResponse, brunch: Source, userAccount: UserAccount, link: String): Long {
         val feed = makeFeed(userAccount, content, brunch, link)  // 피드 저장
         createRecommendFolders(feed, content)
-        return makeAiSummaryResponse(content, brunch, feed.id!!)
+        keywordService.createKeywords(feed, content.keyword)
+        //return makeAiSummaryResponse(content, brunch, feed.id!!)
+        return feed.id!!
     }
 
     private fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
@@ -329,20 +332,6 @@ class FeedService(
             isChecked = false,
         )
         return feedRepository.save(feed)
-    }
-
-    private fun makeAiSummaryResponse(content: PromptResponse, source: Source, feedId: Long): AiSummaryResponseDto {
-        return AiSummaryResponseDto(
-           // content = AiSummaryContent.from(content),
-            platformImage = source.image,
-            recommendFolder = content?.category?.get(0) ?: "",
-            recommendFolders = content?.category ?: emptyList(),
-            feedId = feedId,
-            subject = content.subject ?: "",
-            summary = content.summary ?: "",
-            keywords = content.keyword ?: emptyList(),
-            folders = content.category ?: emptyList(),
-        )
     }
 
     // 피드 수정
@@ -387,7 +376,8 @@ class FeedService(
             subject = feed.title ?: "",
             summary = feed.summary ?: "",
             keywords = feed.keywords.stream().map { it.content }.toList() ?: emptyList(),
-            folders = folders.map { it -> it.name }.toList()
+            folders = folders.map { it -> it.name }.toList(),
+            date = feed.createdAt!!.toLocalDate()
         )
     }
 

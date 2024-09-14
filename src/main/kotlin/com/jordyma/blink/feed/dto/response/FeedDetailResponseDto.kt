@@ -49,5 +49,4 @@ data class FeedDetailResponseDto(
 
     @Schema(description = "폴더 id")
     val folderId: Long,
-
-    )
+)
