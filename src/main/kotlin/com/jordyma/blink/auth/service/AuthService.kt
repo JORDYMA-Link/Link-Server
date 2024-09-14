@@ -121,7 +121,7 @@ class AuthService(
             ?: userRepository.save(
                 User(
                     nickname = nickname,
-                    socialType = SocialType.KAKAO,
+                    socialType = socialType,
                     socialUserId = socialUserId,
                     role = Role.USER
                 )
