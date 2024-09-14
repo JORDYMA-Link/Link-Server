@@ -103,7 +103,7 @@ class FeedService(
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
-            thumnailImage = feedDetail.thumnailImageUrl,
+            thumbnailImage = feedDetail.thumbnailImageUrl,
             platformImage = findBrunch(feedDetail.platform).image,
             title = feedDetail.title,
             date = localDateTimeToString(feedDetail.date),
@@ -181,7 +181,7 @@ class FeedService(
 
         return FeedDetailResponseDto(
             feedId = feed.id!!,
-            thumnailImage = feed.thumbnailImageUrl,
+            thumbnailImage = feed.thumbnailImageUrl,
             platformImage = findBrunch(feed.platform ?: "").image,
             title = feed.title,
             date = localDateTimeToString(feed.updatedAt ?: LocalDateTime.now()),
