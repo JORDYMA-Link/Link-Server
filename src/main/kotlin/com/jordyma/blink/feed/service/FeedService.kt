@@ -7,7 +7,6 @@ import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Status
-import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.folder.repository.FolderRepository
@@ -24,6 +23,7 @@ import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
+import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.keyword.service.KeywordService
@@ -103,14 +103,14 @@ class FeedService(
             ?: throw ApplicationException(ErrorCode.NOT_FOUND, "피드가 존재하지 않습니다 : $feedId", Throwable())
         return FeedDetailResponseDto(
             feedId = feedDetail.feedId,
-            thumnailImage = feedDetail.thumnailImageUrl,
+            thumbnailImage = feedDetail.thumbnailImageUrl,
             platformImage = findBrunch(feedDetail.platform).image,
             title = feedDetail.title,
             date = localDateTimeToString(feedDetail.date),
             summary = feedDetail.summary,
             keywords = getKeywordsByFeedId(feedId), // 키워드 추출 함수
             folderName = feedDetail.folderName,
-            memo = feedDetail.memo,
+            memo = feedDetail.memo ?: "",
             isMarked = feedDetail.isMarked,
             originUrl = feedDetail.originUrl,
             // new
@@ -135,7 +135,7 @@ class FeedService(
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 삭제할 권한이 없습니다", Throwable())
         }
-        feed.modifyDeletedDate(LocalDateTime.now())
+        feed.updateDeletedAt(LocalDateTime.now())
         feedRepository.save(feed)
 
         feed.folder!!.decreaseCount()
@@ -143,7 +143,7 @@ class FeedService(
     }
 
     @Transactional
-    fun changeIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
+    fun updateIsMarked(userAccount: UserAccount, feedId: Long, setMarked: Boolean): FeedIsMarkedResponseDto {
         val userId = userAccount.userId
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -153,8 +153,8 @@ class FeedService(
         if (feed.folder!!.user.id != user.id) {
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
-        feed.changeIsMarked(setMarked)
-        feed.modifyUpdatedDate(LocalDateTime.now())
+        feed.updateIsMarked(setMarked)
+        feed.updateUpdatedAt(LocalDateTime.now())
         feedRepository.save(feed)
 
         val newFeed = getFeed(feedId)
@@ -176,12 +176,12 @@ class FeedService(
             throw ApplicationException(ErrorCode.FORBIDDEN, "해당 피드를 수정할 권한이 없습니다", Throwable())
         }
         feed.updateMemo(memo)
-        feed.modifyUpdatedDate(LocalDateTime.now())
+        feed.updateUpdatedAt(LocalDateTime.now())
         feedRepository.save(feed)
 
         return FeedDetailResponseDto(
             feedId = feed.id!!,
-            thumnailImage = feed.thumbnailImageUrl,
+            thumbnailImage = feed.thumbnailImageUrl,
             platformImage = findBrunch(feed.platform ?: "").image,
             title = feed.title,
             date = localDateTimeToString(feed.updatedAt ?: LocalDateTime.now()),
@@ -333,21 +333,6 @@ class FeedService(
         )
         return feedRepository.save(feed)
     }
-
-//    private fun makeAiSummaryResponse(content: PromptResponse, source: Source, feedId: Long): AiSummaryResponseDto {
-//        return AiSummaryResponseDto(
-//            // content = AiSummaryContent.from(content),
-//            platformImage = source.image,
-//            recommendFolder = content?.category?.get(0) ?: "",
-//            recommendFolders = content?.category ?: emptyList(),
-//            feedId = feedId,
-//            subject = content.subject ?: "",
-//            summary = content.summary ?: "",
-//            keywords = content.keyword ?: emptyList(),
-//            folders = content.category ?: emptyList(),
-//            date =
-//        )
-//    }
 
     // 피드 수정
     @Transactional

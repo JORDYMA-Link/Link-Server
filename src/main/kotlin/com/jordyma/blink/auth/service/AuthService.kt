@@ -7,7 +7,6 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
-
 import com.jordyma.blink.user.entity.SocialType
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository

@@ -92,10 +92,12 @@ dependencies {
     implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
 
     // jsoup
-    implementation("org.jsoup:jsoup:1.15.3")
+    implementation("org.jsoup:jsoup:1.18.1")
 
-    implementation("org.seleniumhq.selenium:selenium-java:4.1.0")
-    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.1.0")
+    // selenium
+    implementation("org.seleniumhq.selenium:selenium-java:4.14.1")
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.14.1")
+    implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
 
     implementation("com.auth0:java-jwt:4.4.0")
 

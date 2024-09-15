@@ -1,5 +1,4 @@
 package com.jordyma.blink.keyword.service
-
 import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.keyword.entity.Keyword
