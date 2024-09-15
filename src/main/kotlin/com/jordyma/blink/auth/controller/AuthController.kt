@@ -6,6 +6,7 @@ import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.auth.service.AuthService
+import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.CommonUtil
@@ -29,7 +30,8 @@ import java.util.*
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 class AuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val folderService: FolderService,
 ) {
 
     @PostMapping("/kakao-login")
@@ -119,9 +121,10 @@ class AuthController(
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "refresh token으로만 요청 가능, 로그아웃 처리 시 db에 저장된 refresh token 만료 처리")
     fun logout(
+        @AuthenticationPrincipal userAccount: UserAccount,
         @RequestHeader(value = "Authorization") refreshToken: String
     ): ResponseEntity<String> {
-        authService.logout(refreshToken)
+        authService.logout(refreshToken, userAccount)
         return ResponseEntity.ok().body("로그아웃이 완료되었습니다.")
     }
 
@@ -130,6 +133,7 @@ class AuthController(
     fun logout(
         @AuthenticationPrincipal userAccount: UserAccount,
     ): ResponseEntity<String> {
+        folderService.signOutDelete(userAccount)
         authService.signout(userAccount)
         return ResponseEntity.ok().body("탈퇴가 완료되었습니다.")
     }

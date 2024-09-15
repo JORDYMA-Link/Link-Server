@@ -20,6 +20,8 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
+import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
@@ -64,6 +66,7 @@ import kotlin.math.log
 class AuthService(
     private val jwtTokenUtil: JwtTokenUtil,
     private val userRepository: UserRepository,
+    private val folderRepository: FolderRepository,
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
@@ -118,7 +121,7 @@ class AuthService(
     }
 
     private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
-        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
+        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId).takeIf { user -> user?.deletedAt == null }
             ?: userRepository.save(
                 User(
                     nickname = nickname,
@@ -152,6 +155,8 @@ class AuthService(
 
         val userRefreshToken: UserRefreshToken = userRefreshTokenRepository.findByRefreshToken(token)
             ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.")
+
+        logger().info("refresh token expired ???? : ${userRefreshToken.tokenExpirationTime}")
         if(userRefreshToken.tokenExpirationTime!!.isBefore(LocalDateTime.now())){
             throw ApplicationException(ErrorCode.TOKEN_EXPIRED, "만료된 refresh token 입니다.")
         }
@@ -378,24 +383,29 @@ class AuthService(
         }
     }
 
-    fun logout(refreshToken: String) {
-        val userRefreshToken: UserRefreshToken? = userRefreshTokenRepository.findByRefreshToken(refreshToken)
-        if(userRefreshToken == null){
-            ApplicationException(ErrorCode.NOT_FOUND, "해당 리프레시 토큰이 존재하지 않습니다", Throwable())
+    @Transactional
+    fun logout(refreshToken: String, userAccount: UserAccount) {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
+        val userRefreshTokens = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshTokens.forEach { refreshToken ->
+            refreshToken.expire()
+            userRefreshTokenRepository.save(refreshToken)
         }
-        userRefreshToken!!.expire(LocalDateTime.now())
-        userRefreshTokenRepository.save(userRefreshToken)
     }
 
+    @Transactional
     fun signout(userAccount: UserAccount) {
         val user = userRepository.findById(userAccount.userId)
             .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
         user.updateDeletedAt()
         userRepository.save(user)
 
-        val userRefreshToken = userRefreshTokenRepository.findByUserId(user.id!!)
-        userRefreshToken.expire(LocalDateTime.now())
-        userRefreshTokenRepository.save(userRefreshToken)
+        val userRefreshTokens = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshTokens.forEach { userRefreshToken ->
+            userRefreshToken.expire() // 토큰 만료 시간 설정
+            userRefreshTokenRepository.save(userRefreshToken) // 변경된 토큰 저장
+        }
     }
 
     private fun getExpirationDateTime(): LocalDateTime {

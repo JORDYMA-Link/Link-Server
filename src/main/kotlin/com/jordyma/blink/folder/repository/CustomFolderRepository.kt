@@ -7,5 +7,5 @@ interface CustomFolderRepository {
 
     fun findAllByUser(user: User): List<Folder>
 
-    fun delete(folder: Folder): Unit
+    fun deleteFolder(folder: Folder): Unit
 }

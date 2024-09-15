@@ -92,15 +92,17 @@ class CustomFeedRepositoryImpl(
 
     override fun deleteKeywords(folder: Folder): Long {
         return queryFactory
-            .delete(QKeyword.keyword)
+            .update(QKeyword.keyword)
             .where(QKeyword.keyword.feed.folder.eq(folder))
+            .set(QKeyword.keyword.deletedAt, LocalDateTime.now())
             .execute()
     }
 
     override fun deleteRecommend(folder: Folder): Long {
         return queryFactory
-            .delete(QRecommend.recommend)
+            .update(QRecommend.recommend)
             .where(QRecommend.recommend.feed.folder.eq(folder))
+            .set(QRecommend.recommend.deletedAt, LocalDateTime.now())
             .execute()
     }
 

@@ -19,7 +19,7 @@ class CustomFolderRepositoryImpl(
             .fetch()
     }
 
-    override fun delete(folder: Folder) {
+    override fun deleteFolder(folder: Folder) {
         queryFactory.update(QFolder.folder)
             .where(QFolder.folder.eq(folder))
             .set(QFolder.folder.deletedAt, LocalDateTime.now())

@@ -3,9 +3,11 @@ package com.jordyma.blink.user_refresh_token.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.user.entity.User
 import jakarta.persistence.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
+@Table(name = "user_refresh_token")
 class UserRefreshToken(
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +30,8 @@ class UserRefreshToken(
         this.refreshToken = refreshToken
     }
 
-    fun expire(now: LocalDateTime) {
-        if (tokenExpirationTime!!.isAfter(now)) {
-            this.tokenExpirationTime = now
-        }
+    fun expire() {
+        this.tokenExpirationTime = LocalDateTime.now()
     }
 
     companion object {
