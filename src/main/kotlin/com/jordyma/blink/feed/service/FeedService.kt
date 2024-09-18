@@ -334,6 +334,21 @@ class FeedService(
         return feedRepository.save(feed)
     }
 
+//    private fun makeAiSummaryResponse(content: PromptResponse, source: Source, feedId: Long): AiSummaryResponseDto {
+//        return AiSummaryResponseDto(
+//            // content = AiSummaryContent.from(content),
+//            platformImage = source.image,
+//            recommendFolder = content?.category?.get(0) ?: "",
+//            recommendFolders = content?.category ?: emptyList(),
+//            feedId = feedId,
+//            subject = content.subject ?: "",
+//            summary = content.summary ?: "",
+//            keywords = content.keyword ?: emptyList(),
+//            folders = content.category ?: emptyList(),
+//            date =
+//        )
+//    }
+
     // 피드 수정
     @Transactional
     fun update(userAccount: UserAccount, request: FeedUpdateReqDto, feedId: Long): FeedUpdateResDto {

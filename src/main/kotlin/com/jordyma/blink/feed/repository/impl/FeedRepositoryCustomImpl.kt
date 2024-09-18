@@ -10,6 +10,7 @@ import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.folder.entity.QFolder.folder
+import com.jordyma.blink.folder.entity.QRecommend
 import com.jordyma.blink.keyword.entity.QKeyword
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
@@ -257,6 +258,22 @@ class FeedRepositoryCustomImpl(
 
         return PageableExecutionUtils.getPage(feeds, pageable) { countQuery.fetchOne() ?: 0 }
 
+    }
+
+    override fun deleteKeywords(folder: Folder): Long {
+        return queryFactory
+            .update(QKeyword.keyword)
+            .where(QKeyword.keyword.feed.folder.eq(folder))
+            .set(QKeyword.keyword.deletedAt, LocalDateTime.now())
+            .execute()
+    }
+
+    override fun deleteRecommend(folder: Folder): Long {
+        return queryFactory
+            .update(QRecommend.recommend)
+            .where(QRecommend.recommend.feed.folder.eq(folder))
+            .set(QRecommend.recommend.deletedAt, LocalDateTime.now())
+            .execute()
     }
 
 }

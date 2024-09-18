@@ -33,7 +33,9 @@ class FolderService(
         }
         val folders = folderRepository.findAllByUser(user)
 
-        folders.map { folder ->
+        folders.filter { folder ->
+            !folder.isUnclassified
+        }.map { folder ->
             FolderDto(
                 id = folder.id,
                 name = folder.name,
@@ -59,9 +61,30 @@ class FolderService(
             throw ApplicationException(ErrorCode.UNAUTHORIZED, "폴더 삭제 권한이 없습니다.")
         }
 
+        // TODO: repository 옮기기
+        feedRepository.deleteKeywords(folder)
+        feedRepository.deleteRecommend(folder)
         feedRepository.deleteAllByFolder(folder)
 
-        folderRepository.delete(folder)
+        folderRepository.deleteFolder(folder)
+    }
+
+    // 탈퇴하기 feed delete
+    @Transactional
+    fun signOutDelete(userAccount: UserAccount): Unit {
+        val userId = userAccount.userId
+        val user = userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+
+        val folders = folderRepository.findAllByUser(user)
+        folders.forEach { folder ->
+            feedRepository.deleteKeywords(folder)
+            feedRepository.deleteRecommend(folder)
+            feedRepository.deleteAllByFolder(folder)
+
+            folderRepository.deleteFolder(folder)
+        }
     }
 
     fun getFeedsByFolder(userAccount: UserAccount, folderId: Long, getFeedsByFolderRequestDto: GetFeedsByFolderRequestDto): GetFeedsByFolderResponseDto {

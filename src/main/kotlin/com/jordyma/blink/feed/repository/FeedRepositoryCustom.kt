@@ -25,4 +25,8 @@ interface FeedRepositoryCustom {
     fun findBookmarkedFeeds(userId: Long, pageable: Pageable): Page<Feed>
 
     fun findFeedByQuery(userId: Long, query: String, pageable: Pageable): Page<Feed>
+
+    fun deleteKeywords(folder: Folder): Long
+
+    fun deleteRecommend(folder: Folder): Long
 }
