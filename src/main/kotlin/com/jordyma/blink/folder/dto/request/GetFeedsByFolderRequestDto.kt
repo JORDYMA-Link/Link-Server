@@ -1,6 +1,5 @@
 package com.jordyma.blink.folder.dto.request
 
-import com.jordyma.blink.feed.dto.FeedDto
 import io.swagger.v3.oas.annotations.media.Schema
 
 data class GetFeedsByFolderRequestDto(

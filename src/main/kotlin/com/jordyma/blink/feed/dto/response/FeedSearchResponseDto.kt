@@ -39,4 +39,5 @@ data class FeedResultDto(
 
     @Schema(description = "폴더 이름")
     val folderName: String,
+
 )

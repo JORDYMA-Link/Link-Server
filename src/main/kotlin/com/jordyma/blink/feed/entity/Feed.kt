@@ -5,7 +5,6 @@ import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "feed")
@@ -38,7 +37,8 @@ class Feed(
     @Enumerated(EnumType.STRING)
     var status: Status = Status.REQUESTED,
 
-    @ManyToOne(cascade = [CascadeType.PERSIST]) @JoinColumn(name = "folder_id")
+    @ManyToOne(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY)
+    @JoinColumn(name = "folder_id")
     var folder: Folder? = null,
 
     @OneToMany(mappedBy = "feed")
@@ -51,7 +51,7 @@ class Feed(
     @Column(name = "id")
     val id: Long? = null
 
-    fun changeIsMarked(newIsMarked: Boolean){
+    fun updateIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
     }
 
@@ -77,10 +77,6 @@ class Feed(
 
     fun updateIsChecked(){
         this.isChecked = true
-    }
-
-    fun updateDeletedAt(){
-        this.deletedAt = LocalDateTime.now()
     }
 
     fun updateThumbnailImageUrl(imageUrl: String){

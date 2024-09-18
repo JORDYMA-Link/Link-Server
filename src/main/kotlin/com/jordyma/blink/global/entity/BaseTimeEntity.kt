@@ -26,12 +26,11 @@ open class BaseTimeEntity(
     var deletedAt: LocalDateTime? = null
         protected set
 
-    fun modifyUpdatedDate(dateTime: LocalDateTime){
+    fun updateUpdatedAt(dateTime: LocalDateTime? = LocalDateTime.now()){
         updatedAt = dateTime
     }
 
-
-    fun modifyDeletedDate(dateTime: LocalDateTime){
+    fun updateDeletedAt(dateTime: LocalDateTime? = LocalDateTime.now()){
         deletedAt = dateTime
     }
 }

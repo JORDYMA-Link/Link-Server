@@ -7,7 +7,6 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
-
 import com.jordyma.blink.user.entity.SocialType
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
@@ -20,6 +19,8 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
+import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
@@ -56,6 +57,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.log
 
 @Service
 @Transactional(readOnly = true)
@@ -63,6 +65,7 @@ import java.util.*
 class AuthService(
     private val jwtTokenUtil: JwtTokenUtil,
     private val userRepository: UserRepository,
+    private val folderRepository: FolderRepository,
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
@@ -117,11 +120,23 @@ class AuthService(
     }
 
     private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
-        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId)
+        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId).takeIf { user -> user?.deletedAt == null }
             ?: userRepository.save(
                 User(
                     nickname = nickname,
-                    socialType = SocialType.KAKAO,
+                    socialType = socialType,
+                    socialUserId = socialUserId,
+                    role = Role.USER
+                )
+            )
+    }
+
+    private fun upsertApple(socialUserId: String, nickname: String): User {
+        return userRepository.findAppleUser(socialUserId)
+            ?: userRepository.save(
+                User(
+                    nickname = nickname,
+                    socialType = SocialType.APPLE,
                     socialUserId = socialUserId,
                     role = Role.USER
                 )
@@ -139,6 +154,8 @@ class AuthService(
 
         val userRefreshToken: UserRefreshToken = userRefreshTokenRepository.findByRefreshToken(token)
             ?: throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "올바르지 않은 토큰입니다.")
+
+        logger().info("refresh token expired ???? : ${userRefreshToken.tokenExpirationTime}")
         if(userRefreshToken.tokenExpirationTime!!.isBefore(LocalDateTime.now())){
             throw ApplicationException(ErrorCode.TOKEN_EXPIRED, "만료된 refresh token 입니다.")
         }
@@ -213,7 +230,7 @@ class AuthService(
         if (findUser == null) {
             val socialId = userInfo["sub"] as String
 
-            val user: User = upsertUser(SocialType.APPLE, socialUserId, name)
+            val user: User = upsertApple(socialId, name)
             userRepository.save(user)
 
             val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
@@ -224,12 +241,16 @@ class AuthService(
         }
 
         // 이미 가입한 경우
-        val socialId = userInfo["sub"] as String
-
         val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
-        //  .orElseThrow { throw Exception("유저를 찾을 수 없습니다.") }
+            ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
 
-        return regenerateToken(appleLoginRequestDto.idToken)
+        return generateTokenDto(requestUser)
+    }
+
+    fun generateTokenDto(user: User): TokenResponseDto{
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
+        return TokenResponseDto(accessToken, refreshToken)
     }
 
     fun getPublicKey(kid: JsonElement, alg: JsonElement): PublicKey {
@@ -361,24 +382,29 @@ class AuthService(
         }
     }
 
-    fun logout(refreshToken: String) {
-        val userRefreshToken: UserRefreshToken? = userRefreshTokenRepository.findByRefreshToken(refreshToken)
-        if(userRefreshToken == null){
-            ApplicationException(ErrorCode.NOT_FOUND, "해당 리프레시 토큰이 존재하지 않습니다", Throwable())
+    @Transactional
+    fun logout(refreshToken: String, userAccount: UserAccount) {
+        val user = userRepository.findById(userAccount.userId)
+            .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
+        val userRefreshTokens = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshTokens.forEach { refreshToken ->
+            refreshToken.expire()
+            userRefreshTokenRepository.save(refreshToken)
         }
-        userRefreshToken!!.expire(LocalDateTime.now())
-        userRefreshTokenRepository.save(userRefreshToken)
     }
 
+    @Transactional
     fun signout(userAccount: UserAccount) {
         val user = userRepository.findById(userAccount.userId)
             .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
         user.updateDeletedAt()
         userRepository.save(user)
 
-        val userRefreshToken = userRefreshTokenRepository.findByUserId(user.id!!)
-        userRefreshToken.expire(LocalDateTime.now())
-        userRefreshTokenRepository.save(userRefreshToken)
+        val userRefreshTokens = userRefreshTokenRepository.findByUserId(user.id!!)
+        userRefreshTokens.forEach { userRefreshToken ->
+            userRefreshToken.expire() // 토큰 만료 시간 설정
+            userRefreshTokenRepository.save(userRefreshToken) // 변경된 토큰 저장
+        }
     }
 
     private fun getExpirationDateTime(): LocalDateTime {
