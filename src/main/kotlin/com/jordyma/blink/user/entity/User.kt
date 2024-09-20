@@ -14,7 +14,7 @@ class User(
     val socialType: SocialType? = null,
 
     @Column(name = "socialUserId")
-    val socialUserId: String? = null,
+    var socialUserId: String? = null,
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
@@ -37,5 +37,9 @@ class User(
 
     fun updateDeletedAt(){
         this.deletedAt = LocalDateTime.now()
+    }
+
+    fun updateSocialId(){
+        this.socialUserId = this.socialUserId + "deleted"
     }
 }

@@ -5,7 +5,7 @@ import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.FeedIdResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
-import com.jordyma.blink.feed.dto.request.TempReqDto
+import com.jordyma.blink.feed.dto.request.LinkRequestDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
@@ -13,6 +13,7 @@ import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
+import com.jordyma.blink.global.util.HtmlParserService
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
@@ -39,7 +40,8 @@ class FeedController(
     private val userService: UserService,
     private val folderService: FolderService,
     private val geminiService: GeminiService,
-    private val imageService: ImageService
+    private val imageService: ImageService,
+    private val htmlParserService: HtmlParserService
 ) {
 
     @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 날짜를 Key로 반환해줍니다.")
@@ -58,18 +60,18 @@ class FeedController(
     @PostMapping("/summary")
     fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
-        // @RequestParam("link") link: String,
-        @RequestBody requestDto: TempReqDto,
+        @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
+        val parseContent = htmlParserService.fetchHtmlContent(requestDto.link)
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
         val content = geminiService.getContents(
             link = requestDto.link,
             folders = folderNames.joinToString(separator = " "),
             userAccount,
-            requestDto.content
+            parseContent
         )
         val brunch = feedService.findBrunch(requestDto.link)
-        val feedId = feedService.makeFeedAndResponse(content!!, brunch, userAccount, requestDto.link)
+        val feedId = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feedId
         )
