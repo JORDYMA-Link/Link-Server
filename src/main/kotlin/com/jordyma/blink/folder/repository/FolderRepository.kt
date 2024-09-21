@@ -21,5 +21,8 @@ interface FolderRepository : JpaRepository<Folder, Long>, CustomFolderRepository
     @Query("select f from Folder f where f.user =:user and f.name =:name")
     fun findByName(name: String, user: User): Folder?
 
+    @Query("select f from Folder f where f.user =:user")
+    fun findFoldersByUser(user: User): List<Folder>
+
     // override fun delete(folder: Folder): Unit
 }

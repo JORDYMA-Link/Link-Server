@@ -15,6 +15,7 @@ import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -77,7 +78,7 @@ class FolderService(
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
 
-        val folders = folderRepository.findAllByUser(user)
+        val folders = folderRepository.findFoldersByUser(user)
         folders.forEach { folder ->
             feedRepository.deleteKeywords(folder)
             feedRepository.deleteRecommend(folder)
