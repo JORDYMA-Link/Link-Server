@@ -398,6 +398,7 @@ class AuthService(
         val user = userRepository.findById(userAccount.userId)
             .orElseThrow { ApplicationException(ErrorCode.USER_NOT_FOUND, "일치하는 유저가 없습니다 : ${userAccount.userId}", Throwable()) }
         user.updateDeletedAt()
+        user.updateSocialId()
         userRepository.save(user)
 
         val userRefreshTokens = userRefreshTokenRepository.findByUserId(user.id!!)
