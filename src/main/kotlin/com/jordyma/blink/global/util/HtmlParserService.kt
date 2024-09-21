@@ -47,6 +47,7 @@ class HtmlParserService {
 
         // Set up Selenium WebDriver (ChromeDriver in this case)
         // WebDriverManager.chromedriver().clearDriverCache().setup()
+        // TODO 브라우저 버전 하드코딩 말고 환경변수같은걸로 빼야 관리에 용이할것 같아요
         WebDriverManager.chromedriver().clearDriverCache().browserVersion("127.0.6533.72").setup()
 
         val options = ChromeOptions()
