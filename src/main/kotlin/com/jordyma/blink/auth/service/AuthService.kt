@@ -250,6 +250,7 @@ class AuthService(
     fun generateTokenDto(user: User): TokenResponseDto{
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
         return TokenResponseDto(accessToken, refreshToken)
     }
 
