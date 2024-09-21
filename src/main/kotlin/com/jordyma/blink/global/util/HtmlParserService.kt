@@ -61,7 +61,7 @@ class HtmlParserService {
             "--disable-popup-blocking",
             "--blink-settings=imagesEnabled=false"
         )
-        var driver: WebDriver = ChromeDriver()
+        var driver: WebDriver = ChromeDriver(options)
 
         try {
             // Load the page and wait for JavaScript execution
