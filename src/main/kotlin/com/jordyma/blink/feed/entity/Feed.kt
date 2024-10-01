@@ -3,6 +3,7 @@ package com.jordyma.blink.feed.entity
 import com.jordyma.blink.global.entity.BaseTimeEntity
 import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.entity.Recommend
+import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.entity.Keyword
 import jakarta.persistence.*
 
@@ -16,7 +17,7 @@ class Feed(
     var title: String,
 
     @Column(name = "platform", length = 100)
-    val platform: String? = "",
+    var platform: String? = "",
 
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
@@ -95,5 +96,13 @@ class Feed(
         this.summary = summary
         this.memo = memo
         this.folder = folder
+    }
+
+    fun updateSummarizedContent(summary: String, title: String, brunch: Source) {
+        this.summary = summary
+        this.title = title
+        this.platform = brunch.source
+        this.thumbnailImageUrl = brunch.image
+        this.status = Status.COMPLETED
     }
 }

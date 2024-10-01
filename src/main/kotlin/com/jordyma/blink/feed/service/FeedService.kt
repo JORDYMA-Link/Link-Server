@@ -317,7 +317,24 @@ class FeedService(
         return feed.id!!
     }
 
-    private fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
+    // gemini 요약 결과 업데이트
+    @Transactional
+    fun updateSummarizedFeed(content: PromptResponse, brunch: Source, feedId: Long, userAccount: UserAccount) {
+
+        val feed = findFeedOrElseThrow(feedId)
+        val folder = folderService.getUnclassified(userAccount)
+
+        // 요약 결과 업데이트 (status: COMPLETE 포함)
+        feed.updateSummarizedContent(content.summary, content.subject, brunch)
+        feed.updateFolder(folder)
+        feedRepository.save(feed)
+
+        createRecommendFolders(feed, content)
+        keywordService.createKeywords(feed, content.keyword)
+    }
+
+    @Transactional
+    fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
         val user = findUserOrElseThrow(userAccount.userId)
         val folder = folderService.getUnclassified(userAccount)
 
@@ -334,6 +351,20 @@ class FeedService(
         return feedRepository.save(feed)
     }
 
+    @Transactional
+    fun makeFeedFirst(userId: Long, link: String): Long {
+        val user = findUserOrElseThrow(userId)
+        val feed = Feed(
+            originUrl = link,
+            summary = "",
+            title =  "",
+            platform = "",
+            status = Status.REQUESTED,
+            isChecked = false,
+        )
+        return feedRepository.save(feed).id!!
+    }
+
     // 피드 수정
     @Transactional
     fun update(userAccount: UserAccount, request: FeedUpdateReqDto, feedId: Long): FeedUpdateResDto {
@@ -347,12 +378,14 @@ class FeedService(
 
         // 피드 업데이트
         val feed = findFeedOrElseThrow(feedId)
-        feed.update(request.title, request.summary, request.memo, folder!!)
-        // feed.updateStatus(Status.COMPLETED)
+        feed.update(request.title, request.summary, request.memo, folder)
         feed.updateIsChecked()  // 요약 내용 확인 플래그
 
         // 키워드 업데이트
         updateKeywords(feed, request.keywords)
+
+        // status: SAVED
+        feed.updateStatus(Status.SAVED)
 
         feedRepository.save(feed)
         return FeedUpdateResDto(feed.id!!)
@@ -452,10 +485,10 @@ class FeedService(
         feedRepository.save(feed)
     }
 
+    @Transactional
     fun createRecommendFolders(feed: Feed, content: PromptResponse) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
-        logger().info("promt resonse ? " + (content?.summary ?: "nullllll"))
         for (folderName in content!!.category) {
             val recommend = Recommend(
                 feed = feed,

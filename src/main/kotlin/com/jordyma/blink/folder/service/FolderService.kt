@@ -198,7 +198,7 @@ class FolderService(
     }
 
     // 유저의 미분류 폴더 찾기
-    fun getUnclassified(userAccount: UserAccount): Folder?{
+    fun getUnclassified(userAccount: UserAccount): Folder{
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }

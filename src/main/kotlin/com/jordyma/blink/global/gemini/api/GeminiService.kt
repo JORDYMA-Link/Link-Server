@@ -1,6 +1,9 @@
 package com.jordyma.blink.global.gemini.api
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.feed.entity.Status
+import com.jordyma.blink.feed.repository.FeedRepository
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -26,9 +29,10 @@ class GeminiService @Autowired constructor(
     @Value("\${gemini.api.key}") private val geminiApiKey: String,
     private val feedService: FeedService,
     private val userRepository: UserRepository,
+    private val feedRepository: FeedRepository
 ) {
 
-    fun getContents(link: String, folders: String, userAccount: UserAccount, content: String): PromptResponse {
+    fun getContents(link: String, folders: String, userAccount: UserAccount, content: String, feedId: Long): PromptResponse {
         return try {
             // gemini 요청
             val requestUrl = "$apiUrl?key=$geminiApiKey"
@@ -49,8 +53,11 @@ class GeminiService @Autowired constructor(
                 throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
             }
         } catch (e: Exception) {
-            // 요약 실패 feed 생성
-            feedService.createFailed(userAccount, link)
+            // 요약 실패 update
+            val feed = findFeedOrElseThrow(feedId)
+            feed.updateStatus(Status.FAILED)
+            feedRepository.save(feed)
+
             throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini 요청 처리 중 오류 발생: ${e.message}")
         }
     }
@@ -95,5 +102,11 @@ class GeminiService @Autowired constructor(
         return input
             .replace('“', '"')  // 왼쪽 큰 따옴표를 표준 쌍따옴표로 교체
             .replace('”', '"')  // 오른쪽 큰 따옴표를 표준 쌍따옴표로 교체
+    }
+
+    fun findFeedOrElseThrow(feedId: Long): Feed {
+        return feedRepository.findById(feedId).orElseThrow {
+            ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
+        }
     }
 }

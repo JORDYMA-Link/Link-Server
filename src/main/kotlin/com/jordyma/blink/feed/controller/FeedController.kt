@@ -62,21 +62,26 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
+        val feedId = feedService.makeFeedFirst(userAccount.userId, requestDto.link)
         val parseContent = htmlParserService.fetchHtmlContent(requestDto.link)
         val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
         val content = geminiService.getContents(
             link = requestDto.link,
             folders = folderNames.joinToString(separator = " "),
             userAccount,
-            parseContent
+            parseContent,
+            feedId,
         )
         val brunch = feedService.findBrunch(requestDto.link)
-        val feedId = feedService.makeFeedAndResponse(content, brunch, userAccount, requestDto.link)
+
+        feedService.updateSummarizedFeed(content, brunch, feedId, userAccount)
+
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feedId
         )
         return ResponseEntity.ok(feedIdResponseDto)
     }
+
 
     @Tag(name = "link", description = "링크 API")
     @Operation(summary = "[링크 요약 3] 링크 요약 결과 조회 api", description = "ai 요약 결과 확인 (저장버튼 누르기 전)")

@@ -105,7 +105,7 @@ class AuthController(
                 authService.appleLogin(appleLoginRequest)
             }
         // 최초 인증 X
-        } else{
+        } else {
             val exchangedIdToken = authService.exchangeCodeForToken(code)
             authService.appleLogin(AppleLoginRequestDto(idToken = exchangedIdToken.toString()))
         }
