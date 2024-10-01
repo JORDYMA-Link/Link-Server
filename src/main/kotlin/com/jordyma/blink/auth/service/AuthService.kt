@@ -274,6 +274,7 @@ class AuthService(
             platform = Source.ONBOARDING.source,
             status = Status.COMPLETED,
             isChecked = true,
+            isMarked = true,
         )
         feedRepository.save(onboardingFeed)
 
