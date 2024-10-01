@@ -48,8 +48,9 @@ class FeedRepositoryCustomImpl(
             .join(feed.folder, folder)
             .where(
                 folder.user.id.eq(user.id)
-                    .and(feed.createdAt.between(startOfMonth, endOfMonth))
                     .and(feed.deletedAt.isNull)
+                    .and(feed.status.eq(Status.COMPLETED))
+                    .and(feed.createdAt.between(startOfMonth, endOfMonth))
             )
             .fetch()
     }
@@ -80,7 +81,8 @@ class FeedRepositoryCustomImpl(
             .where(
                 qFolder.user.id.eq(user.id)
                     .and(qFeed.id.eq(feedId))
-                    .and(qFeed.deletedAt.isNull)
+                    .and(feed.deletedAt.isNull)
+                    .and(feed.status.eq(Status.COMPLETED))
             )
             .fetchOne()
     }
@@ -124,9 +126,9 @@ class FeedRepositoryCustomImpl(
             .where(
                 ((feed.deletedAt.isNull).and(feed.folder.user.eq(findUser)))
                     .and((feed.status.eq(Status.PROCESSING))
-                    .or((feed.status.eq(Status.COMPLETED).and(feed.isChecked.isFalse)))
-                    .or((feed.status.eq(Status.REQUESTED))
-                        .or((feed.status.eq(Status.FAILED))))))
+                        .or((feed.status.eq(Status.COMPLETED).and(feed.isChecked.isFalse)))
+                        .or((feed.status.eq(Status.REQUESTED))
+                            .or((feed.status.eq(Status.FAILED))))))
             .fetch()
     }
 
