@@ -51,7 +51,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
 
         @Bean
         fun corsConfigurationSource(): CorsConfigurationSource {
-                val corsAllowList = listOf("http://localhost:3000", "https://don8l2wodvwyx.cloudfront.net")
+                val corsAllowList = listOf("http://localhost:3000", "https://don8l2wodvwyx.cloudfront.net", "https://blink-archive.com", "http://blink-archive.com/")
                 val configuration = CorsConfiguration()
                 configuration.allowedOrigins = corsAllowList
                 configuration.allowedMethods = listOf("POST", "GET", "DELETE", "PUT", "PATCH")
