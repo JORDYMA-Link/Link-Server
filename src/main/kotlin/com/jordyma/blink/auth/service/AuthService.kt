@@ -19,8 +19,14 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
+import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.feed.entity.Source
+import com.jordyma.blink.feed.entity.Status
+import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
+import com.jordyma.blink.keyword.entity.Keyword
+import com.jordyma.blink.keyword.repository.KeywordRepository
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.entity.Role
 import com.jordyma.blink.user_refresh_token.entity.UserRefreshToken
@@ -43,12 +49,8 @@ import java.io.InputStreamReader
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.net.URLEncoder
 import java.security.Key
 import java.security.KeyFactory
-import java.security.NoSuchAlgorithmException
 import java.security.PublicKey
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
@@ -57,7 +59,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.math.log
 
 @Service
 @Transactional(readOnly = true)
@@ -66,6 +67,8 @@ class AuthService(
     private val jwtTokenUtil: JwtTokenUtil,
     private val userRepository: UserRepository,
     private val folderRepository: FolderRepository,
+    private val feedRepository: FeedRepository,
+    private val keywordRepository: KeywordRepository,
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
@@ -95,6 +98,9 @@ class AuthService(
         val socialUserId: String = claims.body.get("sub", String::class.java)
 
         val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
+        if(folderRepository.findAllByUser(user).isEmpty()){
+            makeOnboardingFeed(user)
+        }
 
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
@@ -120,8 +126,8 @@ class AuthService(
     }
 
     private fun upsertUser(socialType: SocialType, socialUserId: String, nickname: String): User {
-        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId).takeIf { user -> user?.deletedAt == null }
-            ?: userRepository.save(
+        return userRepository.findBySocialTypeAndSocialUserId(socialType, socialUserId).takeIf { user -> user?.deletedAt == null } ?:
+            userRepository.save(
                 User(
                     nickname = nickname,
                     socialType = socialType,
@@ -191,6 +197,9 @@ class AuthService(
         val socialUserId: String = claims.body.get("sub", String::class.java)
 
         val user: User = upsertUser(SocialType.KAKAO, socialUserId, nickname)
+        if(folderRepository.findAllByUser(user).isEmpty()){
+            makeOnboardingFeed(user)
+        }
 
         val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
         val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
@@ -232,6 +241,7 @@ class AuthService(
 
             val user: User = upsertApple(socialId, name)
             userRepository.save(user)
+            makeOnboardingFeed(user)
 
             val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
             val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
@@ -245,6 +255,33 @@ class AuthService(
             ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
 
         return generateTokenDto(requestUser)
+    }
+
+    private fun makeOnboardingFeed(user: User){
+        val onboardingFolder = Folder(
+            name = "블링크 소개",
+            user = user,
+            count = 0,
+            isUnclassified = false
+        )
+        folderRepository.save(onboardingFolder)
+
+        val onboardingFeed = Feed(
+            folder = onboardingFolder,
+            originUrl = onboarding_title,
+            summary = onboarding_summary,
+            title =  onboarding_title,
+            platform = Source.ONBOARDING.source,
+            status = Status.COMPLETED,
+            isChecked = true,
+        )
+        feedRepository.save(onboardingFeed)
+
+        val onboardingKeyword = Keyword(
+            feed = onboardingFeed,
+            content = onboarding_keyword
+        )
+        keywordRepository.save(onboardingKeyword)
     }
 
     fun generateTokenDto(user: User): TokenResponseDto{
@@ -414,4 +451,9 @@ class AuthService(
         return LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
     }
 
+    companion object{
+        const val onboarding_summary = "블링크를 활용하는 방법을 정리했습니다. 글 추가부터 똑똑하게 활용하는 방법을 모두 알려드릴게요!"
+        const val onboarding_title = "어서오세요, 블링크는 처음이시죠"
+        const val onboarding_keyword = "블링크 설명서"
+    }
 }
