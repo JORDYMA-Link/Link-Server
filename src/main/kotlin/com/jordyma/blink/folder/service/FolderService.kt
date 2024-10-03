@@ -182,14 +182,23 @@ class FolderService(
         val feed = feedRepository.findById(requestDto.feedId)
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : ${requestDto.feedId}") }
 
-        val folder = folderRepository.findByName(requestDto.name, user) ?: folderRepository.save(
-            Folder(
+        // 기존 폴더 cnt--
+        if(feed.folder != null){
+            feed.folder!!.decreaseCount()
+            folderRepository.save(feed.folder!!)
+        }
+
+        val folder = folderRepository.findByName(requestDto.name, user)
+            ?: Folder(
                 name = requestDto.name,
                 user = user,
-                count = 0,
+                count = 1,
                 isUnclassified = false
             )
-        )
+
+        folder.increaseCount()
+        folderRepository.save(folder)
+
         feed.updateFolder(folder)
         feedRepository.save(feed)
 
