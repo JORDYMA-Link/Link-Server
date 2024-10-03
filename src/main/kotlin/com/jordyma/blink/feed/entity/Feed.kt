@@ -102,7 +102,6 @@ class Feed(
         this.summary = summary
         this.title = title
         this.platform = brunch.source
-        this.thumbnailImageUrl = brunch.image
         this.status = Status.COMPLETED
     }
 }
