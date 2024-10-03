@@ -49,7 +49,7 @@ class FeedRepositoryCustomImpl(
             .where(
                 folder.user.id.eq(user.id)
                     .and(feed.deletedAt.isNull)
-                    .and(feed.status.eq(Status.COMPLETED))
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
                     .and(feed.createdAt.between(startOfMonth, endOfMonth))
             )
             .fetch()
@@ -82,7 +82,7 @@ class FeedRepositoryCustomImpl(
                 qFolder.user.id.eq(user.id)
                     .and(qFeed.id.eq(feedId))
                     .and(feed.deletedAt.isNull)
-                    .and(feed.status.eq(Status.COMPLETED))
+                    .and(feed.status.`in`(Status.COMPLETED, Status.SAVED))
             )
             .fetchOne()
     }
@@ -144,8 +144,8 @@ class FeedRepositoryCustomImpl(
             .where(
                 folder.user.id.eq(userId)
                     .and(folder.isUnclassified.isTrue)
-                    .and(feed.status.eq(Status.COMPLETED)) // 상태가 ENUM인 경우
                     .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
             )
 
         // 페이징 적용 및 결과 가져오기
@@ -162,8 +162,8 @@ class FeedRepositoryCustomImpl(
             .where(
                 folder.user.id.eq(userId)
                     .and(folder.isUnclassified.isTrue)
-                    .and(feed.status.eq(Status.COMPLETED))
                     .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
             )
             .fetchOne() ?: 0
 
@@ -180,9 +180,9 @@ class FeedRepositoryCustomImpl(
             .join(feed.folder, folder)
             .where(
                 folder.user.id.eq(userId)
-                    .and(feed.isMarked.isTrue)
-                    .and(feed.status.eq(Status.COMPLETED)) // status가 Enum인 경우
                     .and(feed.deletedAt.isNull)
+                    .and(feed.isMarked.isTrue)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
             )
 
         // 페이징 적용 및 결과 가져오기
@@ -197,9 +197,9 @@ class FeedRepositoryCustomImpl(
             .join(feed.folder, folder)
             .where(
                 folder.user.id.eq(userId)
-                    .and(feed.isMarked.isTrue)
-                    .and(feed.status.eq(Status.COMPLETED))
                     .and(feed.deletedAt.isNull)
+                    .and(feed.isMarked.isTrue)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
             )
             .fetchOne() ?: 0
 
@@ -222,6 +222,7 @@ class FeedRepositoryCustomImpl(
                     .and(feed.folder.id.eq(folder.id))
                     .and(keyword.feed.id.eq(feed.id))
                     .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
                     .and(
                         feed.title.lower().like("%${query.lowercase()}%")
                             .or(feed.summary.lower().like("%${query.lowercase()}%"))
@@ -248,6 +249,7 @@ class FeedRepositoryCustomImpl(
                     .and(feed.folder.id.eq(folder.id))
                     .and(keyword.feed.id.eq(feed.id))
                     .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.`in`(Status.COMPLETED, Status.SAVED))
                     .and(
                         feed.title.lower().like("%${query.lowercase()}%")
                             .or(feed.summary.lower().like("%${query.lowercase()}%"))
