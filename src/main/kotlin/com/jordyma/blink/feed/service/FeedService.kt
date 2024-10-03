@@ -542,7 +542,13 @@ class FeedService(
             Source.TISTORY
         } else if (link.contains("eopla.net")){
             Source.EO
-        } else{
+        } else if (link.contains("youtube.com")) {
+            Source.YOUTUBE
+        } else if (link.contains("naver.com")) {
+            Source.NAVER
+        } else if (link.contains("google.com")) {
+            Source.GOOGLE
+        } else {
             Source.DEFAULT
         }
     }
