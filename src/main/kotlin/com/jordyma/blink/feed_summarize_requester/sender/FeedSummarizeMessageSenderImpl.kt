@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class FeedSummarizeMessageSenderImpl(
-    @Value("\${jwt.secret}") private val queueName: String,
+    @Value("\${spring.cloud.aws.sqs.summary-request-queue.name}") private val queueName: String,
     private val sqsTemplate: SqsTemplate,
 ): FeedSummarizeMessageSender {
 
