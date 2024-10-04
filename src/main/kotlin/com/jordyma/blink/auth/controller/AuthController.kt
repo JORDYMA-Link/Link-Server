@@ -5,6 +5,7 @@ import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.auth.service.AppleService
 import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
@@ -30,6 +31,7 @@ import java.util.*
 @RequiredArgsConstructor
 class AuthController(
     private val authService: AuthService,
+    private val appleService: AppleService,
     private val folderService: FolderService,
 ) {
 
@@ -89,28 +91,32 @@ class AuthController(
         return ResponseEntity<Void>(headers, HttpStatus.FOUND)
     }
 
-    @PostMapping("/apple-login-web/callback")
+    @GetMapping("/apple-login-web/callback")
     fun appleLoginWeb(
         @RequestParam("code") code: String,
         @RequestParam("state") state: String,
-        @RequestParam("id_token", required = false) idToken: String?,
-        @RequestBody(required = false) user: String?
-    ): ResponseEntity<String> {
-
-        // 최초 인증 O
-        if (user != null) {
-            // val appleUserInfo = parseUserJson(user)
-            idToken?.let {
-                val appleLoginRequest = AppleLoginRequestDto(idToken = it)
-                authService.appleLogin(appleLoginRequest)
-            }
-        // 최초 인증 X
-        } else {
-            val exchangedIdToken = authService.exchangeCodeForToken(code)
-            authService.appleLogin(AppleLoginRequestDto(idToken = exchangedIdToken.toString()))
+    ): ResponseEntity<Void> {
+        val base64Decoder = Base64.getUrlDecoder()
+        val jsonFormat = Json { prettyPrint = true }
+        val jsonString = base64Decoder.decode(state).toString(Charsets.UTF_8)
+        val stateInfo: State = runCatching {
+            jsonFormat.decodeFromString<State>(jsonString)
+        }.getOrElse {
+            State(
+                // TODO 수정
+                webRedirectUrl = "https://blink.jordyma.com",
+            )
         }
+        val webRedirectUrl = stateInfo.webRedirectUrl
+        val tokenInfo = authService.appleLoginWeb(code)
+        val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter("accessToken", tokenInfo?.accessToken)
+            .addQueryParameter("refreshToken", tokenInfo?.refreshToken)
+            .build()
 
-        return ResponseEntity.ok("Apple authentication successful")
+        val headers = HttpHeaders()
+        headers.location = uri.toUri()
+        return ResponseEntity<Void>(headers, HttpStatus.FOUND)
     }
 
     fun parseUserJson(userJson: String): AppleUserInfo {

@@ -72,6 +72,7 @@ class AuthService(
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
+    private val appleService: AppleService,
     @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
     @Value("\${kakao.auth.jwt.iss}") val iss: String? = null,
     @Value("\${kakao.auth.jwt.client-id}") val kakaoClientId: String,
@@ -252,6 +253,31 @@ class AuthService(
 
         // 이미 가입한 경우
         val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
+            ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
+
+        return generateTokenDto(requestUser)
+    }
+
+    fun appleLoginWeb(code: String): TokenResponseDto? {
+        val appleInfo = appleService.getAppleInfo(code)
+
+        // 첫 가입인 경우
+        val findUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, appleInfo.id.toString())
+
+        if (findUser == null) {
+            val user: User = upsertApple(appleInfo.id.toString(), appleInfo.email.toString())
+            userRepository.save(user)
+            makeOnboardingFeed(user)
+
+            val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+            val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
+            userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
+
+            return TokenResponseDto(accessToken, refreshToken);
+        }
+
+        // 이미 가입한 경우
+        val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, appleInfo.id.toString())
             ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
 
         return generateTokenDto(requestUser)
