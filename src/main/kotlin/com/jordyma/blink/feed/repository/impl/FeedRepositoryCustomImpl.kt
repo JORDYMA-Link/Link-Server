@@ -111,7 +111,8 @@ class FeedRepositoryCustomImpl(
             .fetchJoin()
             .where(
                 condition.and(feed.folder.eq(folder)),
-                feed.deletedAt.isNull
+                feed.deletedAt.isNull,
+                feed.status.eq(Status.SAVED)
             )
             .limit(pageSize)
             .orderBy(feed.id.desc())
