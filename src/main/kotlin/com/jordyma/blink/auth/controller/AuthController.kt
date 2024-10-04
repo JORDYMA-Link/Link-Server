@@ -5,7 +5,6 @@ import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.auth.service.AppleService
 import com.jordyma.blink.auth.service.AuthService
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
@@ -31,7 +30,6 @@ import java.util.*
 @RequiredArgsConstructor
 class AuthController(
     private val authService: AuthService,
-    private val appleService: AppleService,
     private val folderService: FolderService,
 ) {
 

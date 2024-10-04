@@ -11,6 +11,9 @@ import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.feed_summarize_requester.sender.FeedSummarizeMessageSender
+import com.jordyma.blink.feed_summarize_requester.sender.FeedSummarizeMessageSenderImpl
+import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.global.util.HtmlParserService
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.security.PrivateKey
 
 @RestController
 @RequestMapping("/api/feeds")
@@ -41,7 +45,8 @@ class FeedController(
     private val folderService: FolderService,
     private val geminiService: GeminiService,
     private val imageService: ImageService,
-    private val htmlParserService: HtmlParserService
+    private val htmlParserService: HtmlParserService,
+    private val feedSummarizeMessageSender: FeedSummarizeMessageSenderImpl,
 ) {
 
     @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 날짜를 Key로 반환해줍니다.")
@@ -63,19 +68,23 @@ class FeedController(
         @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
         val feedId = feedService.makeFeedFirst(userAccount.userId, requestDto.link)
-        val parseContent = htmlParserService.fetchHtmlContent(requestDto.link)
-        val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-        val content = geminiService.getContents(
-            link = requestDto.link,
-            folders = folderNames.joinToString(separator = " "),
-            userAccount,
-            parseContent,
-            feedId,
-        )
-        val brunch = feedService.findBrunch(requestDto.link)
+        val summarizeMessage = FeedSummarizeMessage(requestDto.link, userAccount.userId)
+        feedSummarizeMessageSender.send(summarizeMessage)
 
-        feedService.updateSummarizedFeed(content, brunch, feedId, userAccount)
-
+        // worker 이식
+//        val parseContent = htmlParserService.fetchHtmlContent(requestDto.link)
+//        val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
+//        val content = geminiService.getContents(
+//            link = requestDto.link,
+//            folders = folderNames.joinToString(separator = " "),
+//            userAccount,
+//            parseContent,
+//            feedId,
+//        )
+//        val brunch = feedService.findBrunch(requestDto.link)
+//
+//        feedService.updateSummarizedFeed(content, brunch, feedId, userAccount)
+//
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feedId
         )

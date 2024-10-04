@@ -4,7 +4,9 @@ import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessag
 import io.awspring.cloud.sqs.operations.SendResult
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 
+@Component
 class FeedSummarizeMessageSenderImpl(
     @Value("\${jwt.secret}") private val queueName: String,
     private val sqsTemplate: SqsTemplate,
