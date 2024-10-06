@@ -389,16 +389,16 @@ class AuthService(
 
     @Transactional
     fun makeOnboardingFeed(user: User){
-        val onboardingFolder = Folder(
-            name = "블링크 소개",
-            user = user,
-            count = 0,
-            isUnclassified = false
-        )
-        folderRepository.save(onboardingFolder)
+//        val onboardingFolder = Folder(
+//            name = "블링크 소개",
+//            user = user,
+//            count = 0,
+//            isUnclassified = false
+//        )
+//        folderRepository.save(onboardingFolder)
 
         val onboardingFeed = Feed(
-            folder = onboardingFolder,
+            folder = null,
             originUrl = onboarding_title,
             summary = onboarding_summary,
             title =  onboarding_title,
