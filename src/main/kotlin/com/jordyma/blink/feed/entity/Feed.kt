@@ -22,7 +22,7 @@ class Feed(
     @Column(name = "memo", columnDefinition = "TEXT")
     var memo: String? = "",
 
-    @Column(name = "origin_url", length = 255)
+    @Column(name = "origin_url", length = 512)
     val originUrl: String,
 
     @Column(name = "thumbnail_image_url", length = 200)
