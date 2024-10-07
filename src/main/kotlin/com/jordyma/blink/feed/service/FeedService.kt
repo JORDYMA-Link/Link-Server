@@ -352,9 +352,10 @@ class FeedService(
     }
 
     @Transactional
-    fun makeFeedFirst(userId: Long, link: String): Long {
-        val user = findUserOrElseThrow(userId)
+    fun makeFeedFirst(userAccount: UserAccount, link: String): Long {
+        val folder = folderService.getUnclassified(userAccount)
         val feed = Feed(
+            folder = folder,
             originUrl = link,
             summary = "",
             title =  "",

@@ -67,7 +67,7 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
-        val feedId = feedService.makeFeedFirst(userAccount.userId, requestDto.link)
+        val feedId = feedService.makeFeedFirst(userAccount, requestDto.link)
         val summarizeMessage = FeedSummarizeMessage(requestDto.link, feedId, userAccount.userId)
         feedSummarizeMessageSender.send(summarizeMessage)
 
