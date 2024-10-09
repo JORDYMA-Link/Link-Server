@@ -422,7 +422,7 @@ class FeedService(
         val feeds = feedRepository.getProcessing(user)
         var result: MutableList<ProcessingFeedResDto> = mutableListOf()
         for(feed in feeds){
-            if(feed.status.equals(Status.PROCESSING)){
+            if(feed.status.equals(Status.PROCESSING) || feed.status.equals(Status.REQUESTED)){
                 result.add(
                     ProcessingFeedResDto(
                         feedId = feed.id!!,
