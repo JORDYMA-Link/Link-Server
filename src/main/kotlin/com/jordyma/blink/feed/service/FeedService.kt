@@ -422,13 +422,32 @@ class FeedService(
         val feeds = feedRepository.getProcessing(user)
         var result: MutableList<ProcessingFeedResDto> = mutableListOf()
         for(feed in feeds){
-            result.add(
-                ProcessingFeedResDto(
-                    feedId = feed.id!!,
-                    title = feed.title,
-                    status = feed.status.toString()
+            if(feed.status.equals(Status.PROCESSING)){
+                result.add(
+                    ProcessingFeedResDto(
+                        feedId = feed.id!!,
+                        title = "블링크가 눈 깜짝할 새에 요약할게요",
+                        status = feed.status.toString()
+                    )
                 )
-            )
+            } else if (feed.status.equals(Status.FAILED)){
+                result.add(
+                    ProcessingFeedResDto(
+                        feedId = feed.id!!,
+                        title = " 링크에 텍스트가 없어 요약할 수 없거나," + "\n접근 권한이 없어요. 확인 후 다시 실행해 주세요",
+                        status = feed.status.toString()
+                    )
+                )
+            }
+            else {
+                result.add(
+                    ProcessingFeedResDto(
+                        feedId = feed.id!!,
+                        title = feed.title,
+                        status = feed.status.toString()
+                    )
+                )
+            }
         }
         return ProcessingListDto(processingFeedResDtos = result)
     }
