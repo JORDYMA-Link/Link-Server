@@ -226,7 +226,7 @@ class FeedService(
                 isMarked = feed.isMarked,
                 isUnclassified = folder.isUnclassified,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = getRecommendFoldersByFeedId(feed.id),
+                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
                 folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
                 folderName = folder.name
             )
