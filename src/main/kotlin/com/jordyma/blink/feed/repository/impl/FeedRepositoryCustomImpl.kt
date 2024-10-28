@@ -153,6 +153,7 @@ class FeedRepositoryCustomImpl(
         val feeds = query
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
+            .orderBy(QFeed.feed.id.desc())
             .fetch()
 
         // 총 개수 조회 및 Page 객체 생성
@@ -190,6 +191,7 @@ class FeedRepositoryCustomImpl(
         val feeds = query
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
+            .orderBy(QFeed.feed.id.desc())
             .fetch()
 
         // 총 개수 조회 및 Page 객체 생성
