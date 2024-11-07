@@ -183,6 +183,20 @@ class FeedController(
         return ResponseEntity.ok(responseDto)
     }
 
+    @Operation(summary = "전체 피드 리스트 조회 api", description = "유저가 저장한 모든 피드 저장")
+    @GetMapping("/all")
+    fun getAllFeeds(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestParam("page") page: Int,
+        @RequestParam("size") size: Int,
+    ): ResponseEntity<FeedTypeResponseDto> {
+        val response = feedService.getAllFeeds(
+            userAccount = userAccount,
+            page = page,
+            size = size,
+        )
+        return ResponseEntity.ok(FeedTypeResponseDto(feedList = response))
+    }
 
     @Operation(summary = "중요/미분류 피드 리스트 조회 api", description = "type은 BOOKMARKED / UNCLASSIFIED (String)으로 구분됩니다.")
     @PostMapping("/by-type")

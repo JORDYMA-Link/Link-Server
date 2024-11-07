@@ -31,6 +31,7 @@ import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.entity.User
 import com.jordyma.blink.user.repository.UserRepository
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -205,6 +206,31 @@ class FeedService(
         .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
 
     @Transactional(readOnly = true)
+    fun getAllFeeds(userAccount: UserAccount, page: Int, size: Int): List<FeedTypeDto> {
+        val user = userRepository.findById(userAccount.userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+        val pageable = PageRequest.of(page, size)
+        val feedList = feedRepository.findAllByUser(user, pageable).content
+        return feedList.map { feed ->
+            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 null입니다. Feed ID=${feed.id}")
+            FeedTypeDto(
+                feedId = feed.id!!,
+                title = feed.title,
+                summary = feed.summary,
+                platform = feed.platform ?: "",
+                platformImage = Source.getImageByName(feed.platform!!)!!,
+                isMarked = feed.isMarked,
+                isUnclassified = folder.isUnclassified,
+                keywords = feed.keywords.map { it.content },
+                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
+                folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
+                folderName = folder.name
+            )
+        }
+    }
+
+    @Transactional(readOnly = true)
     fun getFeedsByType(userAccount: UserAccount, type: FeedType, page: Int, size: Int): List<FeedTypeDto> {
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -226,7 +252,7 @@ class FeedService(
                 isMarked = feed.isMarked,
                 isUnclassified = folder.isUnclassified,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
+                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
                 folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
                 folderName = folder.name
             )

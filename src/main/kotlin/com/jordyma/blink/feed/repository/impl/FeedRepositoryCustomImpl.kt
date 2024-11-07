@@ -12,6 +12,7 @@ import com.jordyma.blink.folder.entity.QFolder
 import com.jordyma.blink.folder.entity.QFolder.folder
 import com.jordyma.blink.folder.entity.QRecommend
 import com.jordyma.blink.keyword.entity.QKeyword
+import com.jordyma.blink.user.entity.QUser
 import com.jordyma.blink.user.entity.QUser.user
 import com.jordyma.blink.user.entity.User
 import com.querydsl.core.BooleanBuilder
@@ -117,6 +118,42 @@ class FeedRepositoryCustomImpl(
             .limit(pageSize)
             .orderBy(feed.id.desc())
             .fetch()
+    }
+
+    override fun findAllByUser(user: User, pageable: Pageable): Page<Feed> {
+        val feed = QFeed.feed
+        val user = QUser.user
+
+        // 기본 쿼리 작성
+        val query = queryFactory
+            .selectFrom(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(user.id)
+                    .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.eq(Status.SAVED))
+            )
+
+        // 페이징 적용 및 결과 가져오기
+        val feeds = query
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong())
+            .orderBy(QFeed.feed.id.desc())
+            .fetch()
+
+        // 총 개수 조회 및 Page 객체 생성
+        val total = queryFactory
+            .select(feed.count())
+            .from(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(user.id)
+                    .and(feed.deletedAt.isNull)
+                    .and(QFeed.feed.status.eq(Status.SAVED))
+            )
+            .fetchOne() ?: 0
+
+        return PageableExecutionUtils.getPage(feeds, pageable) { total }
     }
 
     override fun getProcessing(findUser: User): List<Feed> {
