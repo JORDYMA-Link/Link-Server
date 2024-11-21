@@ -206,31 +206,6 @@ class FeedService(
         .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : $feedId", Throwable()) }
 
     @Transactional(readOnly = true)
-    fun getAllFeeds(userAccount: UserAccount, page: Int, size: Int): List<FeedTypeDto> {
-        val user = userRepository.findById(userAccount.userId).orElseThrow {
-            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
-        }
-        val pageable = PageRequest.of(page, size)
-        val feedList = feedRepository.findAllByUser(user, pageable).content
-        return feedList.map { feed ->
-            val folder = feed.folder ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder가 null입니다. Feed ID=${feed.id}")
-            FeedTypeDto(
-                feedId = feed.id!!,
-                title = feed.title,
-                summary = feed.summary,
-                platform = feed.platform ?: "",
-                platformImage = Source.getImageByName(feed.platform!!)!!,
-                isMarked = feed.isMarked,
-                isUnclassified = folder.isUnclassified,
-                keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
-                folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
-                folderName = folder.name
-            )
-        }
-    }
-
-    @Transactional(readOnly = true)
     fun getFeedsByType(userAccount: UserAccount, type: FeedType, page: Int, size: Int): List<FeedTypeDto> {
         val user = userRepository.findById(userAccount.userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -239,6 +214,7 @@ class FeedService(
         val feedList =  when (type) {
             FeedType.BOOKMARKED -> feedRepository.findBookmarkedFeeds(user.id!!, pageable).content
             FeedType.UNCLASSIFIED -> feedRepository.findUnclassifiedFeeds(user.id!!, pageable).content
+            FeedType.ALL -> feedRepository.findAllByUser(user.id!!, pageable).content
         }
         if (feedList.isNotEmpty()) logger().info("feedList = ${feedList[0]}")
         return feedList.map { feed ->

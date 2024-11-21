@@ -120,7 +120,7 @@ class FeedRepositoryCustomImpl(
             .fetch()
     }
 
-    override fun findAllByUser(user: User, pageable: Pageable): Page<Feed> {
+    override fun findAllByUser(userId: Long, pageable: Pageable): Page<Feed> {
         val feed = QFeed.feed
         val user = QUser.user
 
@@ -129,7 +129,7 @@ class FeedRepositoryCustomImpl(
             .selectFrom(feed)
             .join(feed.folder, folder)
             .where(
-                folder.user.id.eq(user.id)
+                folder.user.id.eq(userId)
                     .and(feed.deletedAt.isNull)
                     .and(QFeed.feed.status.eq(Status.SAVED))
             )
@@ -147,7 +147,7 @@ class FeedRepositoryCustomImpl(
             .from(feed)
             .join(feed.folder, folder)
             .where(
-                folder.user.id.eq(user.id)
+                folder.user.id.eq(userId)
                     .and(feed.deletedAt.isNull)
                     .and(QFeed.feed.status.eq(Status.SAVED))
             )

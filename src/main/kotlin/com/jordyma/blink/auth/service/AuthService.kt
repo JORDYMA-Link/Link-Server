@@ -403,7 +403,7 @@ class AuthService(
             summary = onboarding_summary,
             title =  onboarding_title,
             platform = Source.ONBOARDING.source,
-            status = Status.COMPLETED,
+            status = Status.SAVED,
             isChecked = true,
             isMarked = true,
         )
