@@ -87,7 +87,7 @@ class AuthService(
     @Value("\${apple.team-id}") private val appleTeamId: String,
     @Value("\${apple.login-key}") private val appleLoginKey: String,
     @Value("\${apple.client-id}") private val appleClientId: String,
-    // @Value("\${apple.redirect-url}") private val appleRedirectUrl: String,
+    @Value("\${apple.redirect-url}") private val appleWebRedirectUrl: String,
     @Value("\${apple.key-path}") private val appleKeyPath: String,
     @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
     @Value("\${kakao.auth.jwt.iss}") val iss: String? = null,
@@ -301,7 +301,7 @@ class AuthService(
     }
 
     fun getAppleInfo(code: String?): AppleDto {
-        if (code == null) throw Exception("Failed get authorization code")
+        if (code == null) throw Exception("code is null")
 
         val clientSecret = createClientSecret()
         var userId = ""
@@ -318,7 +318,7 @@ class AuthService(
                 add("client_id", appleClientId)
                 add("client_secret", clientSecret)
                 add("code", code)
-                add("redirect_uri", "https://blink.jordyma.com")
+                add("redirect_uri", appleWebRedirectUrl)
             }
 
             val restTemplate = RestTemplate()
@@ -346,7 +346,7 @@ class AuthService(
             userId = payload["sub"].toString()
             email = payload["email"].toString()
         } catch (e: Exception) {
-            throw Exception("API call failed")
+            throw Exception("/auth/token API call failed")
         }
 
         return AppleDto(
