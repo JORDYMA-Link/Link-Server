@@ -101,12 +101,12 @@ class AuthController(
             jsonFormat.decodeFromString<State>(jsonString)
         }.getOrElse {
             State(
-                // TODO 수정
-                webRedirectUrl = "https://blink.jordyma.com",
+                webRedirectUrl = "https://api.blink-archive.com",
             )
         }
         val webRedirectUrl = stateInfo.webRedirectUrl
         val tokenInfo = authService.appleLoginWeb(code)
+
         val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
             .addQueryParameter("accessToken", tokenInfo?.accessToken)
             .addQueryParameter("refreshToken", tokenInfo?.refreshToken)
