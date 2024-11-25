@@ -24,7 +24,6 @@ import com.jordyma.blink.feed.entity.Feed
 import com.jordyma.blink.feed.entity.Source
 import com.jordyma.blink.feed.entity.Status
 import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.folder.repository.FolderRepository
 import com.jordyma.blink.keyword.entity.Keyword
 import com.jordyma.blink.keyword.repository.KeywordRepository
@@ -86,7 +85,6 @@ class AuthService(
     private val restTemplate: RestTemplate,
     @Value("\${apple.team-id}") private val appleTeamId: String,
     @Value("\${apple.login-key}") private val appleLoginKey: String,
-    @Value("\${apple.client-id}") private val appleClientId: String,
     @Value("\${apple.redirect-url}") private val appleWebRedirectUrl: String,
     @Value("\${apple.key-path}") private val appleKeyPath: String,
     @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
@@ -96,7 +94,8 @@ class AuthService(
     @Value("\${jwt.secret}") val jwtSecret: String,
     @Value("\${apple.team-id}") val teamId: String? = null,
     @Value("\${apple.login-key}") val loginKey: String? = null,
-    @Value("\${apple.client-id}") val clientId: String? = null,
+    @Value("\${apple.client-id}") private val appleClientId: String,
+    @Value("\${apple.web-client-id}") val appleWebClientId: String? = null,
     @Value("\${apple.key-path}") val keyPath: String? = null,
 ) {
 
@@ -315,7 +314,7 @@ class AuthService(
 
             val params: MultiValueMap<String, String> = LinkedMultiValueMap<String, String>().apply {
                 add("grant_type", "authorization_code")
-                add("client_id", appleClientId)
+                add("client_id", appleWebClientId)
                 add("client_secret", clientSecret)
                 add("code", code)
                 add("redirect_uri", appleWebRedirectUrl)
@@ -365,7 +364,7 @@ class AuthService(
             .issueTime(now)
             .expirationTime(Date(now.time + 3600000))
             .audience(APPLE_AUTH_URL)
-            .subject(appleClientId)
+            .subject(appleWebClientId)
             .build()
 
         val jwt = SignedJWT(header, claimsSet)
@@ -504,7 +503,7 @@ class AuthService(
 
     fun generateClientSecret(): String {
         val teamId = teamId
-        val clientId = clientId
+        val clientId = appleClientId
         val keyId = loginKey
         val privateKeyPath = keyPath
 
