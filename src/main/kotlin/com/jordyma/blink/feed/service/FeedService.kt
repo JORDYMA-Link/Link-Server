@@ -404,13 +404,12 @@ class FeedService(
 
         return AiSummaryResponseDto(
             feedId = feedId,
-            // content = aiSummaryContent,
             platformImage = Source.getImageByName(feed.platform!!)!!,
-            recommendFolder = recommendRepository.findRecommendFirst(feedId, 0)?.folderName ?: "",
+            recommendFolder = recommendRepository.findRecommendFirst(feedId, 0).folderName,
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
-                ?.map { it.folderName ?: "" }?.ifEmpty { listOf() } ?: emptyList(),
-            subject = feed.title ?: "",
-            summary = feed.summary ?: "",
+                .map { it.folderName}.ifEmpty { listOf() },
+            subject = feed.title,
+            summary = feed.summary,
             keywords = feed.keywords.stream().map { it.content }.toList() ?: emptyList(),
             folders = folders.map { it -> it.name }.toList(),
             date = feed.createdAt!!.toLocalDate()
@@ -470,7 +469,7 @@ class FeedService(
     @Transactional
     fun updateKeywords(feed: Feed, updatedKeywords: List<String>) {
         // 기존 키워드
-        val existingKeywords: MutableList<Keyword> = feed.keywords!!.toMutableList()
+        val existingKeywords: MutableList<Keyword> = feed.keywords.toMutableList()
 
         // 기존 키워드 제거
         for (kw in existingKeywords){
@@ -511,7 +510,7 @@ class FeedService(
     fun createRecommendFolders(feed: Feed, content: PromptResponse) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
-        for (folderName in content!!.category) {
+        for (folderName in content.category) {
             val recommend = Recommend(
                 feed = feed,
                 folderName = folderName,
@@ -539,40 +538,17 @@ class FeedService(
     }
 
     fun checkFolder(user: User, folderName: String): Folder? {
-        var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == folderName }
+        val actualFolderName = if (folderName.isBlank()) unClassified else folderName
+        var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == actualFolderName }
         if(folder == null){
             folder = Folder(
-                name = folderName,
+                name = actualFolderName,
                 user = user,
                 count = 0,
-                isUnclassified = folderName == "미분류"
+                isUnclassified = actualFolderName == unClassified
             )
         }
         return folder
-    }
-
-    fun findBrunch(link: String = ""): Source {
-        return if(link.contains("blog.naver.com")){
-            Source.NAVER_BLOG
-        } else if (link.contains("velog.io")){
-            Source.VELOG
-        } else if (link.contains("brunch.co.kr")){
-            Source.BRUNCH
-        } else if (link.contains("yozm.wishket")){
-            Source.YOZM_IT
-        } else if (link.contains("tistory.com")){
-            Source.TISTORY
-        } else if (link.contains("eopla.net")){
-            Source.EO
-        } else if (link.contains("youtube.com")) {
-            Source.YOUTUBE
-        } else if (link.contains("naver.com")) {
-            Source.NAVER
-        } else if (link.contains("google.com")) {
-            Source.GOOGLE
-        } else {
-            Source.DEFAULT
-        }
     }
 
     fun findUserOrElseThrow(userId: Long): User {
@@ -602,5 +578,9 @@ class FeedService(
             return emptyList()
         }
         return recommendFolders.map { it.folderName }
+    }
+
+    companion object{
+        const val unClassified = "미분류"
     }
 }
