@@ -405,13 +405,14 @@ class FeedService(
         return AiSummaryResponseDto(
             feedId = feedId,
             platformImage = Source.getImageByName(feed.platform!!)!!,
+            thumbnailImage = feed.thumbnailImageUrl,
             recommendFolder = recommendRepository.findRecommendFirst(feedId, 0).folderName,
             recommendFolders = recommendRepository.findRecommendationsByFeedId(feedId)
                 .map { it.folderName}.ifEmpty { listOf() },
             subject = feed.title,
             summary = feed.summary,
             keywords = feed.keywords.stream().map { it.content }.toList() ?: emptyList(),
-            folders = folders.map { it -> it.name }.toList(),
+            folders = folders.map { it.name }.toList(),
             date = feed.createdAt!!.toLocalDate()
         )
     }

@@ -51,6 +51,9 @@ data class AiSummaryResponseDto(
     @Schema(description = "플랫폼 이미지 url")
     val platformImage: String,
 
+    @Schema(description = "썸네일 이미지 url")
+    val thumbnailImage: String? = null,
+
     @Schema(description = "AI 추천 폴더")
     val recommendFolder: String,
 
