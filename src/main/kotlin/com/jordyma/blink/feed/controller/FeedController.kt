@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.security.PrivateKey
+import org.springframework.web.util.WebUtils
 
 @RestController
 @RequestMapping("/api/feeds")
@@ -67,26 +68,12 @@ class FeedController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
-        val feedId = feedService.makeFeedFirst(userAccount, requestDto.link)
-        val summarizeMessage = FeedSummarizeMessage(requestDto.link, feedId, userAccount.userId)
+        val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
+        val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id!!, userAccount.userId, feed.originUrl)
         feedSummarizeMessageSender.send(summarizeMessage)
 
-        // worker 이식
-//        val parseContent = htmlParserService.fetchHtmlContent(requestDto.link)
-//        val folderNames: List<String> = folderService.getFolders(userAccount).folderList.map { it.name }
-//        val content = geminiService.getContents(
-//            link = requestDto.link,
-//            folders = folderNames.joinToString(separator = " "),
-//            userAccount,
-//            parseContent,
-//            feedId,
-//        )
-//        val brunch = feedService.findBrunch(requestDto.link)
-//
-//        feedService.updateSummarizedFeed(content, brunch, feedId, userAccount)
-//
         val feedIdResponseDto = FeedIdResponseDto(
-            feedId = feedId
+            feedId = feed.id
         )
         return ResponseEntity.ok(feedIdResponseDto)
     }

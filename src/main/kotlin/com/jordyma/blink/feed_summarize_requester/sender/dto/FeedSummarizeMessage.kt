@@ -5,4 +5,5 @@ data class FeedSummarizeMessage (
     val link: String,
     val feedId: Long,
     val userId: Long,
+    val originUrl: String,
 )

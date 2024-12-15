@@ -354,7 +354,7 @@ class FeedService(
     }
 
     @Transactional
-    fun makeFeedFirst(userAccount: UserAccount, link: String): Long {
+    fun makeFeedFirst(userAccount: UserAccount, link: String): Feed {
         val folder = folderService.getUnclassified(userAccount)
         val feed = Feed(
             folder = folder,
@@ -365,7 +365,7 @@ class FeedService(
             status = Status.REQUESTED,
             isChecked = false,
         )
-        return feedRepository.save(feed).id!!
+        return feedRepository.save(feed)
     }
 
     // 피드 수정
