@@ -10,6 +10,7 @@ import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.CommonUtil
+import com.jordyma.blink.logger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -94,6 +95,7 @@ class AuthController(
         @RequestParam("code") code: String,
         @RequestParam("state") state: String,
     ): ResponseEntity<Void> {
+        logger().info("apple login web callback api called")
         val base64Decoder = Base64.getUrlDecoder()
         val jsonFormat = Json { prettyPrint = true }
         val jsonString = base64Decoder.decode(state).toString(Charsets.UTF_8)
