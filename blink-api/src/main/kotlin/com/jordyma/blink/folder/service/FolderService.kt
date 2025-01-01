@@ -192,7 +192,7 @@ class FolderService(
             ?: Folder(
                 name = requestDto.name,
                 user = user,
-                count = 1,
+                count = 0,
                 isUnclassified = false
             )
 
