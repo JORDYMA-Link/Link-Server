@@ -1,5 +1,6 @@
 package com.jordyma.blink.auth.controller
 import com.jordyma.blink.auth.dto.State
+import com.jordyma.blink.auth.dto.request.AppleCallbackRequestDto
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.AppleUserInfo
@@ -74,8 +75,7 @@ class AuthController(
             jsonFormat.decodeFromString<State>(jsonString)
         }.getOrElse {
             State(
-                // TODO 수정
-                webRedirectUrl = "https://blink.jordyma.com",
+                webRedirectUrl = "https://api.blink-archive.com",
             )
         }
         val webRedirectUrl = stateInfo.webRedirectUrl
@@ -90,15 +90,15 @@ class AuthController(
         return ResponseEntity<Void>(headers, HttpStatus.FOUND)
     }
 
-    @GetMapping("/apple-login-web/callback")
+    @PostMapping("/apple-login-web/callback")
     fun appleLoginWeb(
-        @RequestParam("code") code: String,
-        @RequestParam("state") state: String,
+        @RequestBody request: AppleCallbackRequestDto,
     ): ResponseEntity<Void> {
-        logger().info("apple login web callback api called")
+        logger().info("apple login web callback api called : ${request.code}")
+
         val base64Decoder = Base64.getUrlDecoder()
         val jsonFormat = Json { prettyPrint = true }
-        val jsonString = base64Decoder.decode(state).toString(Charsets.UTF_8)
+        val jsonString = base64Decoder.decode(request.state).toString(Charsets.UTF_8)
         val stateInfo: State = runCatching {
             jsonFormat.decodeFromString<State>(jsonString)
         }.getOrElse {
@@ -106,8 +106,11 @@ class AuthController(
                 webRedirectUrl = "https://api.blink-archive.com",
             )
         }
+
         val webRedirectUrl = stateInfo.webRedirectUrl
-        val tokenInfo = authService.appleLoginWeb(code)
+
+        // resolve code
+        val tokenInfo = authService.appleLoginWeb(request.code)
 
         val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
             .addQueryParameter("accessToken", tokenInfo?.accessToken)
