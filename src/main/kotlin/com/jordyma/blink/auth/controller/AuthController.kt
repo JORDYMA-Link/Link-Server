@@ -15,6 +15,7 @@ import com.jordyma.blink.logger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import kotlinx.serialization.json.*
 import lombok.RequiredArgsConstructor
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -92,13 +93,13 @@ class AuthController(
 
     @PostMapping("/apple-login-web/callback")
     fun appleLoginWeb(
-        @RequestBody request: AppleCallbackRequestDto,
+        request: HttpServletRequest
     ): ResponseEntity<Void> {
-        logger().info("apple login web callback api called : ${request.code}")
+        logger().info("apple login web callback api called : ${request.getParameter("code")}")
 
         val base64Decoder = Base64.getUrlDecoder()
         val jsonFormat = Json { prettyPrint = true }
-        val jsonString = base64Decoder.decode(request.state).toString(Charsets.UTF_8)
+        val jsonString = base64Decoder.decode(request.getParameter("state")).toString(Charsets.UTF_8)
         val stateInfo: State = runCatching {
             jsonFormat.decodeFromString<State>(jsonString)
         }.getOrElse {
@@ -110,7 +111,7 @@ class AuthController(
         val webRedirectUrl = stateInfo.webRedirectUrl
 
         // resolve code
-        val tokenInfo = authService.appleLoginWeb(request.code)
+        val tokenInfo = authService.appleLoginWeb(request.getParameter("code"))
 
         val uri = webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
             .addQueryParameter("accessToken", tokenInfo?.accessToken)
