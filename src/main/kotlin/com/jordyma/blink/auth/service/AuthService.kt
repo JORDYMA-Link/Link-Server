@@ -45,6 +45,7 @@ import net.minidev.json.JSONObject
 import net.minidev.json.parser.JSONParser
 import org.apache.coyote.BadRequestException
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -53,18 +54,16 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
+import java.security.KeyFactory
+import java.security.spec.PKCS8EncodedKeySpec
+import java.io.*
 import java.math.BigInteger
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.InvalidKeyException
 import java.security.Key
-import java.security.KeyFactory
 import java.security.PublicKey
 import java.security.interfaces.ECPrivateKey
-import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.time.Instant
 import java.time.LocalDateTime
@@ -370,10 +369,7 @@ class AuthService(
         val jwt = SignedJWT(header, claimsSet)
 
         try {
-            val keySpec = PKCS8EncodedKeySpec(appleKeyPath.toByteArray())
-            val keyFactory = KeyFactory.getInstance("EC")
-            val ecPrivateKey = keyFactory.generatePrivate(keySpec) as ECPrivateKey
-
+            val ecPrivateKey = getPrivateKey() as ECPrivateKey
             val jwsSigner = ECDSASigner(ecPrivateKey)
 
             jwt.sign(jwsSigner)
@@ -384,6 +380,17 @@ class AuthService(
         }
 
         return jwt.serialize()
+    }
+
+    @Throws(Exception::class)
+    private fun getPrivateKey(): ByteArray {
+        val appleKeyContent = appleKeyPath
+        val appleKeyFile = File("resources/apple-key.p8")
+        appleKeyFile.writeText(appleKeyContent)
+        logger().info("keyPath: ${appleKeyPath}")
+        logger().info("appleKeyFile: ${appleKeyFile}")
+
+        return appleKeyFile.readBytes()
     }
 
     @Transactional
