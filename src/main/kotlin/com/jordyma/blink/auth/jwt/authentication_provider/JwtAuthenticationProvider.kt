@@ -4,6 +4,7 @@ import com.jordyma.blink.auth.jwt.user_account.UserAccountService
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.logger
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -22,6 +23,7 @@ class JwtAuthenticationProvider(
     @Throws(AuthenticationException::class)
     override fun authenticate(authentication: Authentication): Authentication? {
         if (authentication.principal == null || !jwtTokenUtil.isValidToken(authentication.principal.toString(), jwtSecret)) {
+            logger().info("authentication: ${authentication}")
             throw ApplicationException(ErrorCode.TOKEN_VERIFICATION_EXCEPTION, "토큰 verify에 실패하였습니다.")
         }
         val userDetails: UserDetails = userAccountService.loadUserByUsername(authentication.principal as String)
