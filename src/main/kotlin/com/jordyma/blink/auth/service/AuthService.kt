@@ -1,4 +1,5 @@
 package com.jordyma.blink.auth.service
+import com.amazonaws.services.s3.AmazonS3
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -82,10 +83,10 @@ class AuthService(
     private val kakaoAuthApi: KakaoAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
+    private val amazonS3: AmazonS3,
     @Value("\${apple.team-id}") private val appleTeamId: String,
     @Value("\${apple.login-key}") private val appleLoginKey: String,
     @Value("\${apple.redirect-url}") private val appleWebRedirectUrl: String,
-    @Value("\${apple.key-path}") private val appleKeyPath: String,
     @Value("\${kakao.auth.jwt.aud}")  val aud: String? = null,
     @Value("\${kakao.auth.jwt.iss}") val iss: String? = null,
     @Value("\${kakao.auth.jwt.client-id}") val kakaoClientId: String,
@@ -96,6 +97,7 @@ class AuthService(
     @Value("\${apple.client-id}") private val appleClientId: String,
     @Value("\${apple.web-client-id}") val appleWebClientId: String? = null,
     @Value("\${apple.key-path}") val keyPath: String? = null,
+    @Value("\${spring.cloud.aws.s3.bucket}") private val bucket: String,
 ) {
 
     @Transactional
@@ -384,13 +386,15 @@ class AuthService(
 
     @Throws(Exception::class)
     private fun getPrivateKey(): ByteArray {
-        val appleKeyContent = appleKeyPath
-        val appleKeyFile = File("resources/apple-key.p8")
-        appleKeyFile.writeText(appleKeyContent)
-        logger().info("keyPath: ${appleKeyPath}")
-        logger().info("appleKeyFile: ${appleKeyFile}")
+        val keyName = "applekey.p8"
 
-        return appleKeyFile.readBytes()
+        return try {
+            val s3Object = amazonS3.getObject(bucket, keyName)
+            s3Object.objectContent.readAllBytes()
+        } catch (e: Exception) {
+            logger().error("Failed to get private key from S3", e)
+            throw e
+        }
     }
 
     @Transactional
