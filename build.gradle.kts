@@ -101,6 +101,9 @@ dependencies {
 
     implementation("com.auth0:java-jwt:4.4.0")
 
+    // bouncyCastle
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
+
 }
 
 configurations.forEach {

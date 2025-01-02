@@ -45,8 +45,10 @@ import lombok.RequiredArgsConstructor
 import net.minidev.json.JSONObject
 import net.minidev.json.parser.JSONParser
 import org.apache.coyote.BadRequestException
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.openssl.PEMParser
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -392,12 +394,15 @@ class AuthService(
             val s3Object = amazonS3.getObject(bucket, keyName)
             val keyBytes = s3Object.objectContent.readAllBytes()
 
-            // PKCS8 형식의 private key를 파싱
-            val spec = PKCS8EncodedKeySpec(keyBytes)
-            val keyFactory = KeyFactory.getInstance("EC")
-            keyFactory.generatePrivate(spec) as ECPrivateKey
+            // PEM 읽기
+            val pemParser = PEMParser(StringReader(String(keyBytes)))
+            val privateKeyInfo = pemParser.readObject() as PrivateKeyInfo
+
+            // 변환
+            val converter = JcaPEMKeyConverter()
+            converter.getPrivateKey(privateKeyInfo) as ECPrivateKey
         } catch (e: Exception) {
-            logger().error("Failed to get private key from S3", e)
+            logger().error("Failed to parse private key", e)
             throw e
         }
     }
