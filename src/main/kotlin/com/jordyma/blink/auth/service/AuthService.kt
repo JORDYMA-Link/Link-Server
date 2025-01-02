@@ -371,7 +371,7 @@ class AuthService(
         val jwt = SignedJWT(header, claimsSet)
 
         try {
-            val ecPrivateKey = getPrivateKey() as ECPrivateKey
+            val ecPrivateKey = getPrivateKey()
             val jwsSigner = ECDSASigner(ecPrivateKey)
 
             jwt.sign(jwsSigner)
@@ -385,12 +385,17 @@ class AuthService(
     }
 
     @Throws(Exception::class)
-    private fun getPrivateKey(): ByteArray {
+    private fun getPrivateKey(): ECPrivateKey {
         val keyName = "applekey.p8"
 
         return try {
             val s3Object = amazonS3.getObject(bucket, keyName)
-            s3Object.objectContent.readAllBytes()
+            val keyBytes = s3Object.objectContent.readAllBytes()
+
+            // PKCS8 형식의 private key를 파싱
+            val spec = PKCS8EncodedKeySpec(keyBytes)
+            val keyFactory = KeyFactory.getInstance("EC")
+            keyFactory.generatePrivate(spec) as ECPrivateKey
         } catch (e: Exception) {
             logger().error("Failed to get private key from S3", e)
             throw e
