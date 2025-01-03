@@ -332,18 +332,22 @@ class AuthService(
                 httpEntity,
                 String::class.java
             )
+            logger().info("/auth/token response: ${response}")
 
             val jsonParser = JSONParser()
             val jsonObj = jsonParser.parse(response.body) as JSONObject
+            logger().info("jsonObj : ${jsonObj}")
 
             accessToken = jsonObj["access_token"].toString()
 
             // ID TOKEN을 통해 회원 고유 식별자 받기
             val signedJWT = SignedJWT.parse(jsonObj["id_token"].toString())
             val getPayload = signedJWT.jwtClaimsSet
+            logger().info("jwtClaimSet: ${getPayload}")
 
             val objectMapper = ObjectMapper()
             val payload = objectMapper.readValue(getPayload.toJSONObject().toString(), JSONObject::class.java)
+            logger().info("payload: ${payload}")
 
             userId = payload["sub"].toString()
             email = payload["email"].toString()
