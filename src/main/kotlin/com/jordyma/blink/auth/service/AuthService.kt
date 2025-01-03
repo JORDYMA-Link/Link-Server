@@ -342,15 +342,12 @@ class AuthService(
 
             // ID TOKEN을 통해 회원 고유 식별자 받기
             val signedJWT = SignedJWT.parse(jsonObj["id_token"].toString())
-            val getPayload = signedJWT.jwtClaimsSet
-            logger().info("jwtClaimSet: ${getPayload}")
+            val payload = signedJWT.jwtClaimsSet
+            logger().info("jwtClaimSet: ${payload}")
 
-            val objectMapper = ObjectMapper()
-            val payload = objectMapper.readValue(getPayload.toJSONObject().toString(), JSONObject::class.java)
-            logger().info("payload: ${payload}")
-
-            userId = payload["sub"].toString()
-            email = payload["email"].toString()
+            userId = payload.getStringClaim("sub")
+            email = payload.getStringClaim("email")
+            logger().info("userId: ${userId}, email: ${email}, accessToken: ${accessToken}")
         } catch (e: Exception) {
             throw Exception("/auth/token API call failed")
         }
