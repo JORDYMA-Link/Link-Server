@@ -36,9 +36,6 @@ repositories {
 val queryDslVersion: String by extra
 
 dependencies {
-
-    implementation(project(":blink-core"))
-
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
