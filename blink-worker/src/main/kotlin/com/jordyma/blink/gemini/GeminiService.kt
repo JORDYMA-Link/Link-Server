@@ -1,16 +1,14 @@
 package com.jordyma.blink.gemini
 
-import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.FeedRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.global.gemini.request.ChatRequest
-import com.jordyma.blink.global.gemini.response.ChatResponse
-import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.gemini.request.ChatRequest
+import com.jordyma.blink.gemini.response.ChatResponse
+import com.jordyma.blink.gemini.response.PromptResponse
 import com.jordyma.blink.logger
 import kotlinx.serialization.json.Json
-import com.jordyma.blink.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -24,8 +22,6 @@ class GeminiService @Autowired constructor(
     @Qualifier("geminiRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${gemini.api.url}") private val apiUrl: String,
     @Value("\${gemini.api.key}") private val geminiApiKey: String,
-    private val feedService: FeedService,
-    private val userRepository: UserRepository,
     private val feedRepository: FeedRepository,
 ) {
 

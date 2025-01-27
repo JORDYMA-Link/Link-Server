@@ -3,7 +3,7 @@ package com.jordyma.blink.feed_summarizer.listener
 import com.jordyma.blink.feed_summarizer.listener.dto.FeedSummarizeMessage
 import com.jordyma.blink.feed_summarizer.request_limiter.SummarizeRequestLimiter
 import com.jordyma.blink.feed_summarizer.service.FeedSummarizerService
-import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.gemini.response.PromptResponse
 import io.awspring.cloud.sqs.annotation.SqsListener
 import io.awspring.cloud.sqs.listener.acknowledgement.Acknowledgement
 import org.springframework.messaging.Message

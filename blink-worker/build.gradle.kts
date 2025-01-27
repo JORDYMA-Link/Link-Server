@@ -5,6 +5,9 @@ dependencyManagement {
 }
 
 dependencies {
+
+    implementation(project(":blink-core"))
+
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

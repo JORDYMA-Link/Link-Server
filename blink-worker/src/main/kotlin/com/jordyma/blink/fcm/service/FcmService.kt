@@ -1,12 +1,12 @@
 package com.jordyma.blink.fcm.service
 
 import com.jordyma.blink.fcm.client.FcmClient
-import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.feed.Feed
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.user.entity.User
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.User
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 
 @Service

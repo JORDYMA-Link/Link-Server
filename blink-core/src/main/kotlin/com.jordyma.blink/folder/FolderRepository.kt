@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface FolderRepository : JpaRepository<Folder, Long>, CustomFolderRepository {
-//    fun findByUser(user: User): List<Folder>
 
     override fun findAllByUser(user: User): List<Folder>
 
@@ -15,13 +14,11 @@ interface FolderRepository : JpaRepository<Folder, Long>, CustomFolderRepository
     fun findUnclassified(user: User): Folder?
 
     @Query("select f from Folder f where f.user =:user and f.name =:status")
-    fun findFailed(user: User?, status: String): Folder?
+    fun findFailed(user: User, status: String): Folder?
 
     @Query("select f from Folder f where f.user =:user and f.name =:name")
     fun findByName(name: String, user: User): Folder?
 
     @Query("select f from Folder f where f.user =:user")
     fun findFoldersByUser(user: User): List<Folder>
-
-    // override fun delete(folder: Folder): Unit
 }

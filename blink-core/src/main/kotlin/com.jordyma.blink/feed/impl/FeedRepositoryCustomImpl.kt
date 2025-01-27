@@ -56,6 +56,31 @@ class FeedRepositoryCustomImpl(
             .fetch()
     }
 
+    override fun findFeedFolderDtoByUserIdAndBetweenDate(
+        userId: Long,
+        startOfMonth: LocalDateTime,
+        endOfMonth: LocalDateTime
+    ): List<FeedFolderVo> {
+        val feed = QFeed.feed
+        val folder = QFolder.folder
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    FeedFolderVo::class.java,
+                    folder.id,
+                    folder.name,
+                    feed
+                )
+            )
+            .from(feed)
+            .join(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId)
+                    .and(feed.createdAt.between(startOfMonth, endOfMonth))
+            )
+            .fetch()
+    }
 
     override fun findFeedDetail(user: User, feedId: Long): FeedDetailVo? {
         val qFeed = QFeed.feed

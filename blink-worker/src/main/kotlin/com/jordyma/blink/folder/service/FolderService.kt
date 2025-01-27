@@ -3,11 +3,11 @@ package com.jordyma.blink.folder.service
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.repository.FolderRepository
+import com.jordyma.blink.folder.Folder
+import com.jordyma.blink.folder.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -16,7 +16,6 @@ class FolderService(
     private val folderRepository: FolderRepository,
     private val userRepository: UserRepository,
 ) {
-
 
     fun getFolders(userId: Long): GetFolderListResponseDto {
         val user = userRepository.findById(userId).orElseThrow {

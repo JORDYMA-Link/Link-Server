@@ -1,4 +1,4 @@
-package com.jordyma.blink.global.gemini.response
+package com.jordyma.blink.gemini.response
 
 data class ChatResponse(
     var candidates: List<Candidate> = mutableListOf(),

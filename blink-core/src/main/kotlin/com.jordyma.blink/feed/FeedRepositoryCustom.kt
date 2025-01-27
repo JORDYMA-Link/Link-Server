@@ -30,4 +30,6 @@ interface FeedRepositoryCustom {
     fun deleteKeywords(folder: Folder): Long
 
     fun deleteRecommend(folder: Folder): Long
+
+    fun findFeedFolderDtoByUserIdAndBetweenDate(userId: Long, startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): List<FeedFolderVo>
 }

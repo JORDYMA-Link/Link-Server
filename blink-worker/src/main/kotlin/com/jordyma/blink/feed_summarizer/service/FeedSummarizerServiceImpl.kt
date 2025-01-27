@@ -1,9 +1,9 @@
 package com.jordyma.blink.feed_summarizer.service
 
 import com.jordyma.blink.fcm.service.FcmService
-import com.jordyma.blink.feed.entity.Source
-import com.jordyma.blink.feed.entity.Status
-import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.Source
+import com.jordyma.blink.feed.Status
+import com.jordyma.blink.feed.FeedRepository
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.feed_summarizer.html_parser.HtmlParser
 import com.jordyma.blink.feed_summarizer.html_parser.HtmlParserV2
@@ -15,9 +15,9 @@ import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.gemini.response.PromptResponse
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 
 @Service
