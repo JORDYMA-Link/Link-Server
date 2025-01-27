@@ -1,6 +1,6 @@
 package com.jordyma.blink.auth.jwt.util
 
-import com.jordyma.blink.user.entity.User
+import com.jordyma.blink.user.User
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode

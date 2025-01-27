@@ -1,9 +1,9 @@
 package com.jordyma.blink.feed
 
 import com.jordyma.blink.common.BaseTimeEntity
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.entity.Recommend
+import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.keyword.Keyword
+import com.jordyma.blink.recommend.Recommend
 import jakarta.persistence.*
 
 @Entity

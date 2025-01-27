@@ -2,8 +2,8 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
-import com.jordyma.blink.feed.entity.Source
-import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.Source
+import com.jordyma.blink.feed.FeedRepository
 import com.jordyma.blink.folder.dto.request.CreateFeedFolderRequestDto
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
@@ -11,11 +11,11 @@ import com.jordyma.blink.folder.dto.request.UpdateFolderRequestDto
 import com.jordyma.blink.folder.dto.response.FolderDto
 import com.jordyma.blink.folder.dto.response.GetFolderListResponseDto
 import com.jordyma.blink.folder.dto.response.GetFeedsByFolderResponseDto
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.repository.FolderRepository
+import com.jordyma.blink.folder.Folder
+import com.jordyma.blink.folder.FolderRepository
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

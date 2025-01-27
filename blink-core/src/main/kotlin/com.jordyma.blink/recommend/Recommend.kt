@@ -1,4 +1,4 @@
-package com.jordyma.blink.folder.entity
+package com.jordyma.blink.recommend
 
 import com.jordyma.blink.common.BaseTimeEntity
 import com.jordyma.blink.feed.Feed

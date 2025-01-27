@@ -1,4 +1,4 @@
-package com.jordyma.blink.folder.entity
+package com.jordyma.blink.folder
 
 enum class Topic(val displayName: String) {
 

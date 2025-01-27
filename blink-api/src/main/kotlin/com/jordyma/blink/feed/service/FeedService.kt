@@ -1,21 +1,21 @@
 package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.feed.dto.*
-import com.jordyma.blink.feed.entity.Feed
+import com.jordyma.blink.feed.Feed
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
-import com.jordyma.blink.feed.entity.Source
-import com.jordyma.blink.feed.entity.Status
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.entity.Recommend
-import com.jordyma.blink.folder.repository.FolderRepository
-import com.jordyma.blink.folder.repository.RecommendRepository
+import com.jordyma.blink.feed.Source
+import com.jordyma.blink.feed.Status
+import com.jordyma.blink.folder.Folder
+import com.jordyma.blink.recommend.Recommend
+import com.jordyma.blink.folder.FolderRepository
+import com.jordyma.blink.recommend.RecommendRepository
 import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.gemini.response.PromptResponse
-import com.jordyma.blink.keyword.entity.Keyword
+import com.jordyma.blink.keyword.Keyword
 import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.feed.vo.ScoredFeedVo
 import com.jordyma.blink.global.error.ID_NOT_FOUND
@@ -23,14 +23,14 @@ import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
-import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.FeedRepository
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
-import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.keyword.KeywordRepository
 import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
-import com.jordyma.blink.user.entity.User
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.User
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -194,7 +194,7 @@ class FeedService(
             folderId = feed.folder!!.id!!,
             // new
             isUnclassified = feed.folder!!.isUnclassified,
-            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
+            recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
             platform = feed.platform.toString()
         )
     }
@@ -227,7 +227,7 @@ class FeedService(
                 isMarked = feed.isMarked,
                 isUnclassified = folder.isUnclassified,
                 keywords = feed.keywords.map { it.content },
-                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id) else null,
+                recommendedFolder = if (feed.folder!!.isUnclassified) getRecommendFoldersByFeedId(feed.id!!) else null,
                 folderId = folder.id ?: throw ApplicationException(ErrorCode.NOT_FOUND, "Folder ID가 null입니다. Feed ID=${feed.id}"),
                 folderName = folder.name
             )

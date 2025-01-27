@@ -1,9 +1,9 @@
 package com.jordyma.blink.global.gemini.api
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.feed.entity.Status
-import com.jordyma.blink.feed.repository.FeedRepository
+import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.Status
+import com.jordyma.blink.feed.FeedRepository
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -11,7 +11,7 @@ import com.jordyma.blink.global.gemini.request.ChatRequest
 import com.jordyma.blink.global.gemini.response.ChatResponse
 import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.UserRepository
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

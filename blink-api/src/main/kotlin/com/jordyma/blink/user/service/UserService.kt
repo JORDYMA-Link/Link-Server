@@ -9,7 +9,7 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.user.constants.PushTokenType
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
-import com.jordyma.blink.user.repository.UserRepository
+import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

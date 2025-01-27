@@ -1,6 +1,5 @@
-package com.jordyma.blink.feed.repository
+package com.jordyma.blink.feed
 
-import com.jordyma.blink.feed.Feed
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface FeedRepository : JpaRepository<Feed, Long>, FeedRepositoryCustom {

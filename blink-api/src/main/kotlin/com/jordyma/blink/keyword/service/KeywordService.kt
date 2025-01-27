@@ -1,8 +1,8 @@
 package com.jordyma.blink.keyword.service
-import com.jordyma.blink.feed.entity.Feed
-import com.jordyma.blink.feed.repository.FeedRepository
-import com.jordyma.blink.keyword.entity.Keyword
-import com.jordyma.blink.keyword.repository.KeywordRepository
+import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.keyword.Keyword
+import com.jordyma.blink.keyword.KeywordRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

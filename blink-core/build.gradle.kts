@@ -75,35 +75,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    // json
-    // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
-    implementation("com.google.code.gson:gson:2.8.7")
-    implementation ("io.jsonwebtoken:jjwt-jackson:0.11.5")
-    implementation ("io.jsonwebtoken:jjwt-api:0.11.5")
-    implementation ("io.jsonwebtoken:jjwt-impl:0.11.5")
-
-    // logging
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-
-    // jwt
-    implementation("com.auth0:java-jwt:4.2.1")
-
-    // s3
-    implementation("org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE")
-
-    // jsoup
-    implementation("org.jsoup:jsoup:1.18.1")
-
-    // selenium
-    implementation("org.seleniumhq.selenium:selenium-java:4.14.1")
-    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.14.1")
-    implementation("io.github.bonigarcia:webdrivermanager:5.9.2")
-
-    implementation("com.auth0:java-jwt:4.4.0")
-
-    // bouncyCastle
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
-
 }
 
 configurations.forEach {
@@ -150,3 +121,11 @@ kapt {
 }
 
 // Querydsl 설정부 추가 - end
+
+tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    enabled = false
+}
+
+tasks.getByName<Jar>("jar") {
+    enabled = true
+}

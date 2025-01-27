@@ -1,6 +1,5 @@
-package com.jordyma.blink.folder.repository
+package com.jordyma.blink.recommend
 
-import com.jordyma.blink.folder.entity.Recommend
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 

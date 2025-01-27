@@ -1,7 +1,7 @@
 package com.jordyma.blink.notice.service
 
 import com.jordyma.blink.notice.dto.response.NoticeResDto
-import com.jordyma.blink.notice.repository.NoticeRepository
+import com.jordyma.blink.notice.NoticeRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service

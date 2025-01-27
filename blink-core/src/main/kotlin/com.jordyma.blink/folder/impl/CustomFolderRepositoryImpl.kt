@@ -1,8 +1,8 @@
-package com.jordyma.blink.folder.repository.impl
+package com.jordyma.blink.folder.impl
 
-import com.jordyma.blink.folder.entity.Folder
-import com.jordyma.blink.folder.entity.QFolder
-import com.jordyma.blink.folder.repository.CustomFolderRepository
+import com.jordyma.blink.folder.Folder
+import com.jordyma.blink.folder.QFolder
+import com.jordyma.blink.folder.CustomFolderRepository
 import com.jordyma.blink.user.User
 import com.querydsl.jpa.impl.JPAQueryFactory
 import org.springframework.stereotype.Repository

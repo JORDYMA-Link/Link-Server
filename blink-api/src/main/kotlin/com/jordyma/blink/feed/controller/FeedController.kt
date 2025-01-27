@@ -71,7 +71,7 @@ class FeedController(
         feedSummarizeMessageSender.send(summarizeMessage)
 
         val feedIdResponseDto = FeedIdResponseDto(
-            feedId = feed.id
+            feedId = feed.id!!
         )
         return ResponseEntity.ok(feedIdResponseDto)
     }

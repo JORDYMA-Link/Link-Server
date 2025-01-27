@@ -1,4 +1,4 @@
-package com.jordyma.blink.folder.entity
+package com.jordyma.blink.folder
 
 import com.jordyma.blink.common.BaseTimeEntity
 import com.jordyma.blink.user.User

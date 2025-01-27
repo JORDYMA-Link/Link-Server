@@ -48,4 +48,10 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    afterEvaluate {
+        tasks.findByName("kaptGenerateStubsKotlin")?.let { kaptTask ->
+            tasks.findByName("compileKotlin")?.dependsOn(kaptTask)
+        }
+    }
 }

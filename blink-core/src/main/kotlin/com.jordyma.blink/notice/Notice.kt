@@ -5,7 +5,6 @@ import jakarta.persistence.*
 
 @Entity
 class Notice(
-
     @Column(nullable = false, length = 50)
     val title: String,
 
@@ -15,5 +14,4 @@ class Notice(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long,
-
-    ): BaseTimeEntity()
+): BaseTimeEntity()

@@ -1,9 +1,8 @@
-package com.jordyma.blink.feed.repository
+package com.jordyma.blink.feed
 
-import com.jordyma.blink.feed.Feed
 import com.jordyma.blink.feed.vo.FeedDetailVo
 import com.jordyma.blink.feed.vo.FeedFolderVo
-import com.jordyma.blink.folder.entity.Folder
+import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.user.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

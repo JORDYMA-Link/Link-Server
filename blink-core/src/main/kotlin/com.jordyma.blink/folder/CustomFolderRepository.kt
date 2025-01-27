@@ -1,6 +1,5 @@
-package com.jordyma.blink.folder.repository
+package com.jordyma.blink.folder
 
-import com.jordyma.blink.folder.entity.Folder
 import com.jordyma.blink.user.User
 
 interface CustomFolderRepository {
