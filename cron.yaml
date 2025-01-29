@@ -1,0 +1,5 @@
+version: 1
+cron:
+  - name: 'refill token'
+    url: '/feed-summarizer/refill-token'
+    schedule: '* * * * *'
