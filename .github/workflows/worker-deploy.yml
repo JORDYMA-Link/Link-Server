@@ -7,7 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # JDK 세팅
       - uses: actions/checkout@v3
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -15,6 +17,7 @@ jobs:
           java-version: 17
           distribution: 'adopt'
 
+      #gradle 캐싱
       - name: Gradle Caching
         uses: actions/cache@v3
         with:
@@ -25,6 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      # application.yml을 s3로 부터 다운로드
       - name: Getting S3 Object
         id: s3
         uses: jcfrane/s3-get-object-action@v1.0
@@ -36,41 +40,45 @@ jobs:
           object-key: env/dev/application.yml
           filename: application.yml
 
-      # worker와 batch 모듈의 resources 디렉토리로 복사
+      # move application yml
       - name: Move application.yml
         run: |
-          mkdir -p blink-worker/src/main/resources
-          mkdir -p blink-batch/src/main/resources
-          cp application.yml blink-worker/src/main/resources/
-          cp application.yml blink-batch/src/main/resources/
+          mkdir -p src/main/resources
+          mv application.yml src/main/resources
 
+      # gradlew 권한
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
         shell: bash
 
-      - name: Build With Gradle
-        run: ./gradlew :blink-worker:bootJar :blink-batch:bootJar -x test
+      - name: Build worker With Gradle
+        run: ./gradlew :blink-worker:build -x test
 
+      - name: Build batch With Gradle
+        run: ./gradlew :blink-batch:build -x test
+
+      # version 라벨링용
       - name: Get current time
         uses: 1466587594/get-current-time@v2
         id: current-time
         with:
           format: YYYY-MM-DDTHH-mm-ss
-          utcOffset: "+09:00"
+          utcOffset: "+09:00" # 한국 시간
 
+      # 배포용
       - name: Generate deployment package
         run: |
           mkdir -p deploy
           cp blink-worker/build/libs/*-SNAPSHOT.jar deploy/application.jar
           cp blink-batch/build/libs/*-SNAPSHOT.jar deploy/batch.jar
           cp Procfile-worker deploy/Procfile
-          mkdir -p deploy/.ebextensions
-          cp -r .ebextensions/* deploy/.ebextensions/
+          if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
           if test -d .platform ; then cp -r .platform deploy/.platform ; fi
           if test -e cron.yaml ; then cp cron.yaml deploy/cron.yaml ; fi
           ls -al deploy
           cd deploy && zip -r deploy.zip .
 
+        # Beanstalk Deploy 플러그인 사용
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v14
         with:

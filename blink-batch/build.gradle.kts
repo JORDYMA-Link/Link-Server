@@ -5,7 +5,7 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation(project(":blink-api"))
+    implementation(project(":blink-core"))
 
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-actuator")

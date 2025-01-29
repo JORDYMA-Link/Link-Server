@@ -5,4 +5,6 @@ interface SummarizeRequestLimiter {
     fun decreaseToken(): Long
 
     fun refillToken(): Unit
+
+    fun getRemainingToken(): Long
 }

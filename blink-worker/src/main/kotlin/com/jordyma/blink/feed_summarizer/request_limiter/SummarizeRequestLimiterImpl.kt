@@ -20,4 +20,8 @@ class SummarizeRequestLimiterImpl(
     override fun refillToken() {
         this.redisClient.set(RedisKey.SUMMARIZE_REQUEST_TOKEN_COUNT.name, REFILL_TOKEN_COUNT.toString())
     }
+
+    override fun getRemainingToken(): Long {
+        return this.redisClient.get(RedisKey.SUMMARIZE_REQUEST_TOKEN_COUNT.name)?.toLong() ?: 0
+    }
 }
