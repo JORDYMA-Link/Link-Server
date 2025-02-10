@@ -43,8 +43,8 @@ jobs:
       # move application yml
       - name: Move application.yml
         run: |
-          mkdir -p src/main/resources
-          mv application.yml src/main/resources
+          mkdir -p blink-worker/src/main/resources
+          mv application.yml blink-worker/src/main/resources
 
       # gradlew 권한
       - name: Grant execute permission for gradlew
@@ -52,10 +52,7 @@ jobs:
         shell: bash
 
       - name: Build worker With Gradle
-        run: ./gradlew :blink-worker:build -x test
-
-      - name: Build batch With Gradle
-        run: ./gradlew :blink-batch:build -x test
+        run: ./gradlew :blink-worker:bootJar -x test
 
       # version 라벨링용
       - name: Get current time
@@ -65,17 +62,14 @@ jobs:
           format: YYYY-MM-DDTHH-mm-ss
           utcOffset: "+09:00" # 한국 시간
 
-      # 배포용
       - name: Generate deployment package
         run: |
           mkdir -p deploy
-          cp blink-worker/build/libs/*-SNAPSHOT.jar deploy/application.jar
-          cp blink-batch/build/libs/*-SNAPSHOT.jar deploy/batch.jar
+          cp blink-worker/build/libs/*.jar deploy/blink-worker.jar
           cp Procfile-worker deploy/Procfile
-          if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
-          if test -d .platform ; then cp -r .platform deploy/.platform ; fi
-          if test -e cron.yaml ; then cp cron.yaml deploy/cron.yaml ; fi
-          ls -al deploy
+          cp cron.yaml deploy/cron.yaml
+          cp -r .ebextensions deploy/.ebextensions
+          cp -r .platform deploy/.platform
           cd deploy && zip -r deploy.zip .
 
         # Beanstalk Deploy 플러그인 사용

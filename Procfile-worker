@@ -1,1 +1,1 @@
-worker: java -jar application.jar
+web: worker_start

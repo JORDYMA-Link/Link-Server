@@ -1,1 +1,1 @@
-web: java -jar application.jar
+api: api_start

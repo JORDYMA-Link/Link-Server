@@ -44,11 +44,11 @@ jobs:
       - name: Generate deployment package
         run: |
           mkdir -p deploy
-          cp blink-api/build/libs/*-SNAPSHOT.jar deploy/application.jar
-          cp Procfile-app deploy/Procfile 
-          if test -d .ebextensions ; then cp -r .ebextensions deploy/.ebextensions ; fi
-          if test -d .platform ; then cp -r .platform deploy/.platform ; fi
-          cd deploy && zip -r deploy.zip . -x "*/\.*"
+          cp blink-api/build/libs/*.jar deploy/blink-api.jar
+          cp Procfile-app deploy/Procfile
+          cp -r .ebextensions deploy/.ebextensions
+          cp -r .platform deploy/.platform
+          cd deploy && zip -r deploy.zip .
 
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v14
