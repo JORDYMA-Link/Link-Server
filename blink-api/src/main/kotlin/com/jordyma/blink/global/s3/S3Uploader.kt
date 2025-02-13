@@ -3,7 +3,7 @@ package com.jordyma.blink.global.s3
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.model.DeleteObjectRequest
 import com.amazonaws.services.s3.model.PutObjectRequest
-import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.image.entity.Image
 import com.jordyma.blink.logger
 import lombok.RequiredArgsConstructor

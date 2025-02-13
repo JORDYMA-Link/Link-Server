@@ -1,6 +1,6 @@
 package com.jordyma.blink.keyword.service
-import com.jordyma.blink.feed.Feed
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.Feed
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.keyword.Keyword
 import com.jordyma.blink.keyword.KeywordRepository
 import org.springframework.stereotype.Service

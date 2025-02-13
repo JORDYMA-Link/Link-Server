@@ -1,4 +1,4 @@
-package com.jordyma.blink.feed
+package com.jordyma.blink.feed.domain
 
 import com.jordyma.blink.common.BaseTimeEntity
 import com.jordyma.blink.folder.Folder
@@ -9,6 +9,9 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "feed")
 class Feed(
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
     @Column(name = "summary", length = 200)
     var summary: String,
 
@@ -47,9 +50,6 @@ class Feed(
     @OneToMany(mappedBy = "feed")
     var recommendFolders: List<Recommend> = emptyList(),
 ): BaseTimeEntity(){
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    val id: Long? = null
 
     fun updateIsMarked(newIsMarked: Boolean){
         this.isMarked = newIsMarked
@@ -63,12 +63,6 @@ class Feed(
 
     fun updateMemo(memo: String){
         this.memo = memo
-    }
-
-    fun updateRecommendFolders(
-        recommendFolders: List<Recommend>
-    ) {
-        this.recommendFolders = recommendFolders
     }
 
     fun updateStatus(status: Status){

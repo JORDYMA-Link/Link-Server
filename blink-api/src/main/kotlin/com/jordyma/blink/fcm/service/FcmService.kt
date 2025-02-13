@@ -1,7 +1,7 @@
 package com.jordyma.blink.fcm.service
 
 import com.jordyma.blink.fcm.client.FcmClient
-import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode

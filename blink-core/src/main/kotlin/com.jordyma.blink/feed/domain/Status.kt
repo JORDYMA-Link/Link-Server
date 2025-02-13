@@ -1,4 +1,4 @@
-package com.jordyma.blink.feed
+package com.jordyma.blink.feed.domain
 
 enum class Status{
 

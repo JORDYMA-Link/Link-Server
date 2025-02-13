@@ -1,4 +1,4 @@
-package com.jordyma.blink.global.gemini.request
+package com.jordyma.blink.infra.gemini.request
 
 data class ChatRequest(
     var contents: List<Content> = mutableListOf(),

@@ -40,10 +40,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/feeds")
 class FeedController(
     private val feedService: FeedService,
-    private val userService: UserService,
     private val imageService: ImageService,
-    private val feedSummarizeService: FeedSummarizeService,
-    // private val feedSummarizeMessageSender: FeedSummarizeMessageSenderImpl,
 ) {
 
     @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 날짜를 Key로 반환해줍니다.")
@@ -58,70 +55,13 @@ class FeedController(
     }
 
     @Tag(name = "link", description = "링크 API")
-    @Operation(summary = "[링크 요약 1] 링크 요약 api", description = "링크 요약 요청 전송, ai 요약 결과 저장")
-    @PostMapping("/summary")
-    fun getAiSummary(
-        @AuthenticationPrincipal userAccount: UserAccount,
-        @RequestBody requestDto: LinkRequestDto,
-    ): ResponseEntity<FeedIdResponseDto> {
-        val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
-        val userName = userService.getProfile(userAccount).nickName
-        val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id!!, userAccount.userId, feed.originUrl, userName)
-
-        // worker 요청 전송
-        // feedSummarizeMessageSender.send(summarizeMessage)
-
-        // worker, sqs 의존성 제걱
-        feedSummarizeService.summarizeFeed(summarizeMessage)
-
-        val feedIdResponseDto = FeedIdResponseDto(
-            feedId = feed.id!!
-        )
-        return ResponseEntity.ok(feedIdResponseDto)
-    }
-
-
-    @Tag(name = "link", description = "링크 API")
-    @Operation(summary = "[링크 요약 3] 링크 요약 결과 조회 api", description = "ai 요약 결과 확인 (저장버튼 누르기 전)")
-    @GetMapping("/summary/{feedId}")
-    fun getSummaryRes(
-        @AuthenticationPrincipal userAccount: UserAccount,
-        @PathVariable feedId: Long,
-    ): ResponseEntity<AiSummaryResponseDto> {
-        val response = feedService.getSummaryRes(userAccount, feedId)
-        return ResponseEntity.ok(response)
-    }
-
-    @Tag(name = "link", description = "링크 API")
-    @Operation(summary = "[링크 요약 4] 링크 저장(수정) api", description = "플로우 3으로 내용 확인 후 저장")
-    @PatchMapping("/{feedId}")
-    fun createFeed(
-        @AuthenticationPrincipal userAccount: UserAccount,
-        @RequestBody requestDto: FeedUpdateReqDto,
-        @PathVariable feedId: Long,
-    ): ResponseEntity<FeedUpdateResDto> {
-        val response = feedService.update(userAccount, requestDto, feedId)
-        return ResponseEntity.ok(response)
-    }
-
-    @Tag(name = "link", description = "링크 API")
-    @Operation(summary = "[링크 요약 2] 요약 중인 링크 조회 api", description = "요약 완료된 링크 확인 가능 (w. feedId)")
-    @GetMapping("/processing")
-    fun getProcessing(
-        @AuthenticationPrincipal userAccount: UserAccount,
-    ): ResponseEntity<ProcessingListDto> {
-        val response = feedService.getProcessing(userAccount)
-        return ResponseEntity.ok(response)
-    }
-
-    @Tag(name = "link", description = "링크 API")
     @Operation(summary = "요약 불가 링크 삭제 api")
     @DeleteMapping("/processing/{feedId}")
     fun deleteProcessingFeed(
         @AuthenticationPrincipal userAccount: UserAccount,
         @PathVariable feedId: Long,
     ): ResponseEntity<String> {
-        feedService.deleteProcessingFeed(userAccount, feedId)
+        feedService.deleteProcessingFeed(userAccount.userId, feedId)
         return ResponseEntity.ok("삭제 완료되었습니다.")
     }
 

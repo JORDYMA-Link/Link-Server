@@ -1,8 +1,8 @@
 package com.jordyma.blink.feed.service
 
-import com.jordyma.blink.feed.Feed
-import com.jordyma.blink.feed.Source
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.Feed
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.recommend.RecommendRepository
 import com.jordyma.blink.folder.service.FolderService
@@ -92,7 +92,7 @@ class FeedService(
         }
     }
 
-    fun findFeedOrElseThrow(feedId: Long): Feed{
+    fun findFeedOrElseThrow(feedId: Long): Feed {
         return feedRepository.findById(feedId).orElseThrow {
             ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }

@@ -1,8 +1,5 @@
-package com.jordyma.blink.feed.impl
+package com.jordyma.blink.feed.domain
 
-import com.jordyma.blink.feed.Feed
-import com.jordyma.blink.feed.Status
-import com.jordyma.blink.feed.FeedRepositoryCustom
 import com.jordyma.blink.feed.QFeed
 import com.jordyma.blink.feed.QFeed.feed
 import com.jordyma.blink.feed.vo.FeedFolderVo

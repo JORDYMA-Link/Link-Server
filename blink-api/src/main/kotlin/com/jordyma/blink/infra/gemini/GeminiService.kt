@@ -1,16 +1,16 @@
-package com.jordyma.blink.global.gemini.api
+package com.jordyma.blink.infra.gemini
 
-import com.jordyma.blink.feed.Feed
-import com.jordyma.blink.feed.Status
-import com.jordyma.blink.feed.FeedRepository
-import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.feed.domain.Feed
+import com.jordyma.blink.feed.domain.FeedRepository
+import com.jordyma.blink.feed.domain.Status
+import com.jordyma.blink.feed.domain.service.ContentSummarizer
+import com.jordyma.blink.feed.domain.service.SummaryContent
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.global.gemini.request.ChatRequest
-import com.jordyma.blink.global.gemini.response.ChatResponse
-import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.infra.gemini.request.ChatRequest
+import com.jordyma.blink.infra.gemini.response.ChatResponse
+import com.jordyma.blink.infra.gemini.response.PromptResponse
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.UserRepository
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -18,40 +18,42 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
-
-@Suppress("UNREACHABLE_CODE")
 @Service
 class GeminiService @Autowired constructor(
     @Qualifier("geminiRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${gemini.api.url}") private val apiUrl: String,
     @Value("\${gemini.api.key}") private val geminiApiKey: String,
-    private val feedService: FeedService,
-    private val userRepository: UserRepository,
     private val feedRepository: FeedRepository
-) {
+) : ContentSummarizer {
 
-    fun getContents(link: String, folders: String, userId: Long, content: String, feedId: Long): PromptResponse {
-        return try {
-            // gemini 요청
+    override fun summarize(
+        content: String,
+        link: String,
+        folders: String,
+        userId: Long,
+        feedId: Long
+    ): SummaryContent {
+        try {
             val requestUrl = "$apiUrl?key=$geminiApiKey"
             val request = ChatRequest(makePrompt(link, folders, content))
             logger().info("Sending request to Gemini server: $requestUrl with body: $request")
 
-            // gemini 요청값 받아오기
             val response = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
             val responseText = response?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
             logger().info("Received response from Gemini server: $response")
 
-
-            // aiSummary
             if (responseText.isNotEmpty()) {
-                extractJsonAndParse(responseText)
-
+                val promptResponse = extractJsonAndParse(responseText)
+                return SummaryContent(
+                    subject = promptResponse.subject,
+                    summary = promptResponse.summary,
+                    keywords = promptResponse.keyword,
+                    categories = promptResponse.category
+                )
             } else {
                 throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
             }
         } catch (e: Exception) {
-            // 요약 실패 update
             val feed = findFeedOrElseThrow(feedId)
             feed.updateStatus(Status.FAILED)
             feedRepository.save(feed)
@@ -86,20 +88,17 @@ class GeminiService @Autowired constructor(
 
         // JSON 문자열을 ContentData로 파싱하여 반환
         return if (jsonString != null) {
-            logger().info("jsonString ::: $jsonString")
             val fixedJson = fixQuotes(text)
-            logger().info("fixedJson ::: $fixedJson")
             Json.decodeFromString<PromptResponse>(fixedJson)
         } else {
-            logger().info("jsonString is null !!!!!!!!!!")
             throw ApplicationException(ErrorCode.JSON_PARSING_FAILED, "gemini json 파싱 실패")
         }
     }
 
     fun fixQuotes(input: String): String {
         return input
-            .replace('“', '"')  // 왼쪽 큰 따옴표를 표준 쌍따옴표로 교체
-            .replace('”', '"')  // 오른쪽 큰 따옴표를 표준 쌍따옴표로 교체
+            .replace('“', '"')
+            .replace('”', '"')
     }
 
     fun findFeedOrElseThrow(feedId: Long): Feed {

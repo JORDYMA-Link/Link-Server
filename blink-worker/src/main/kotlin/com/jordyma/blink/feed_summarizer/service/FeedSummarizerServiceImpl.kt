@@ -1,9 +1,9 @@
 package com.jordyma.blink.feed_summarizer.service
 
 import com.jordyma.blink.fcm.service.FcmService
-import com.jordyma.blink.feed.Source
-import com.jordyma.blink.feed.Status
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.Status
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.feed_summarizer.html_parser.HtmlParser
 import com.jordyma.blink.feed_summarizer.html_parser.HtmlParserV2

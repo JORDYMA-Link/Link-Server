@@ -2,8 +2,8 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.dto.FeedDto
-import com.jordyma.blink.feed.Source
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.folder.dto.request.CreateFeedFolderRequestDto
 import com.jordyma.blink.folder.dto.request.CreateFolderRequestDto
 import com.jordyma.blink.folder.dto.request.GetFeedsByFolderRequestDto
