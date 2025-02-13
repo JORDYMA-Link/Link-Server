@@ -11,7 +11,7 @@ import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.folder.FolderRepository
 import com.jordyma.blink.recommend.RecommendRepository
-import com.jordyma.blink.folder.service.FolderService
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.infra.gemini.response.PromptResponse

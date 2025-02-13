@@ -1,25 +1,14 @@
 package com.jordyma.blink.feed.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
-import com.jordyma.blink.feed.dto.FeedIdResponseDto
-import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
-import com.jordyma.blink.feed.dto.request.LinkRequestDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
-import com.jordyma.blink.feed.service.FeedSummarizeService
-import com.jordyma.blink.feed_summarize_requester.sender.FeedSummarizeMessageSenderImpl
-import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
-import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.global.gemini.api.GeminiService
-import com.jordyma.blink.global.util.HtmlParserService
 import com.jordyma.blink.image.service.ImageService
 import com.jordyma.blink.logger
-import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema

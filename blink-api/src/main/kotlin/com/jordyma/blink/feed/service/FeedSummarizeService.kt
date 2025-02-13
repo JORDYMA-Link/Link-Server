@@ -6,12 +6,12 @@ import com.jordyma.blink.feed.domain.Source
 import com.jordyma.blink.feed.domain.Status
 import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
 import com.jordyma.blink.folder.FolderRepository
-import com.jordyma.blink.folder.service.FolderService
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
-import com.jordyma.blink.global.gemini.api.GeminiService
 import com.jordyma.blink.infra.gemini.response.PromptResponse
 import com.jordyma.blink.global.util.HtmlParserByJsoup
+import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service

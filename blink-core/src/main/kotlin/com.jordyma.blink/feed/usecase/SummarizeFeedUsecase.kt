@@ -9,6 +9,7 @@ import com.jordyma.blink.feed.domain.Status
 import com.jordyma.blink.feed.domain.model.FeedSummarizeMessage
 import com.jordyma.blink.feed.domain.service.ContentSummarizer
 import com.jordyma.blink.feed.domain.service.PageParser
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,7 +35,7 @@ class SummarizeFeedUsecase (
         try {
             val parseContent = htmlParser.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
-            val folderNames: List<String> = folderService.getFolders(userId=userId).folderList.map { it.name }
+            val folderNames: List<String> = folderService.getFolders(userId).map { it.name }
             val content = contentSummarizer.summarize(
                 parseContent.content,
                 link = link,
