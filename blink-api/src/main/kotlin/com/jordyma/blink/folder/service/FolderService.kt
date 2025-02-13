@@ -26,8 +26,7 @@ class FolderService(
     private val feedRepository: FeedRepository,
     private val userRepository: UserRepository,
 ) {
-    fun getFolders(userAccount: UserAccount): GetFolderListResponseDto {
-        val userId = userAccount.userId;
+    fun getFolders(userId: Long): GetFolderListResponseDto {
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
@@ -124,9 +123,8 @@ class FolderService(
     }
 
     @Transactional
-    fun create(userAccount: UserAccount, requestDto: CreateFolderRequestDto): FolderDto {
-        val userId = userAccount.userId;
-        val user = userRepository.findById(userAccount.userId).orElseThrow {
+    fun create(userId: Long, requestDto: CreateFolderRequestDto): FolderDto {
+        val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
 
@@ -210,8 +208,8 @@ class FolderService(
     }
 
     // 유저의 미분류 폴더 찾기
-    fun getUnclassified(userAccount: UserAccount): Folder{
-        val user = userRepository.findById(userAccount.userId).orElseThrow {
+    fun getUnclassified(userId: Long): Folder{
+        val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
 
@@ -221,7 +219,7 @@ class FolderService(
             val request = CreateFolderRequestDto(
                 name = "미분류"
             )
-            folder = getFolderById(create(userAccount, request).id!!)
+            folder = getFolderById(create(userId, request).id!!)
         }
 
         return folder
@@ -239,7 +237,7 @@ class FolderService(
             val request = CreateFolderRequestDto(
                 name = "요약실패"
             )
-            folder = getFolderById(create(userAccount, request).id!!)
+            folder = getFolderById(create(userAccount.userId, request).id!!)
         }
 
         return folder

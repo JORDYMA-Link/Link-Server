@@ -11,6 +11,7 @@ import com.jordyma.blink.feed.dto.request.PostFeedTypeReqDto
 import com.jordyma.blink.feed.dto.request.UpdateFeedMemoReqDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.service.FeedService
+import com.jordyma.blink.feed.service.FeedSummarizeService
 import com.jordyma.blink.feed_summarize_requester.sender.FeedSummarizeMessageSenderImpl
 import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
 import com.jordyma.blink.folder.service.FolderService
@@ -40,11 +41,9 @@ import org.springframework.web.bind.annotation.RestController
 class FeedController(
     private val feedService: FeedService,
     private val userService: UserService,
-    private val folderService: FolderService,
-    private val geminiService: GeminiService,
     private val imageService: ImageService,
-    private val htmlParserService: HtmlParserService,
-    private val feedSummarizeMessageSender: FeedSummarizeMessageSenderImpl,
+    private val feedSummarizeService: FeedSummarizeService,
+    // private val feedSummarizeMessageSender: FeedSummarizeMessageSenderImpl,
 ) {
 
     @Operation(summary = "캘린더 피드 검색 api", description = "년도와 월(yyyy-MM)을 param으로 넣어주면, 해당 월의 피드들을 날짜를 Key로 반환해줍니다.")
@@ -68,7 +67,12 @@ class FeedController(
         val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
         val userName = userService.getProfile(userAccount).nickName
         val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id!!, userAccount.userId, feed.originUrl, userName)
-        feedSummarizeMessageSender.send(summarizeMessage)
+
+        // worker 요청 전송
+        // feedSummarizeMessageSender.send(summarizeMessage)
+
+        // worker, sqs 의존성 제걱
+        feedSummarizeService.summarizeFeed(summarizeMessage)
 
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feed.id!!

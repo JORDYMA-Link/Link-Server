@@ -107,6 +107,8 @@ dependencies {
     // bouncyCastle
     implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 
+    // Firebase
+    implementation("com.google.firebase:firebase-admin:9.1.1")
 }
 
 configurations.forEach {

@@ -1,6 +1,5 @@
 package com.jordyma.blink.global.gemini.api
 
-import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.feed.Feed
 import com.jordyma.blink.feed.Status
 import com.jordyma.blink.feed.FeedRepository
@@ -31,7 +30,7 @@ class GeminiService @Autowired constructor(
     private val feedRepository: FeedRepository
 ) {
 
-    fun getContents(link: String, folders: String, userAccount: UserAccount, content: String, feedId: Long): PromptResponse {
+    fun getContents(link: String, folders: String, userId: Long, content: String, feedId: Long): PromptResponse {
         return try {
             // gemini 요청
             val requestUrl = "$apiUrl?key=$geminiApiKey"

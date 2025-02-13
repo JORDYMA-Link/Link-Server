@@ -320,24 +320,32 @@ class FeedService(
 
     // gemini 요약 결과 업데이트
     @Transactional
-    fun updateSummarizedFeed(content: PromptResponse, brunch: Source, feedId: Long, userAccount: UserAccount) {
+    fun updateSummarizedFeed(
+        content: PromptResponse,
+        brunch: Source,
+        feedId: Long,
+        userId: Long,
+        thumbnailImage: String
+    ): Feed {
 
         val feed = findFeedOrElseThrow(feedId)
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userId)
 
         // 요약 결과 업데이트 (status: COMPLETE 포함)
         feed.updateSummarizedContent(content.summary, content.subject, brunch)
         feed.updateFolder(folder)
+        feed.updateThumbnailImageUrl(thumbnailImage)
         feedRepository.save(feed)
 
         createRecommendFolders(feed, content)
         keywordService.createKeywords(feed, content.keyword)
+
+        return feed
     }
 
     @Transactional
     fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
-        val user = findUserOrElseThrow(userAccount.userId)
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userAccount.userId)
 
         // ai 요약 결과로 피드 생성 (유저 매칭을 위해 폴더는 미분류로 지정)
         val feed = Feed(
@@ -354,7 +362,7 @@ class FeedService(
 
     @Transactional
     fun makeFeedFirst(userAccount: UserAccount, link: String): Feed {
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userAccount.userId)
         val feed = Feed(
             folder = folder,
             originUrl = link,
@@ -551,6 +559,30 @@ class FeedService(
         return folder
     }
 
+    fun findBrunch(link: String = ""): Source {
+        return if(link.contains("blog.naver.com")){
+            Source.NAVER_BLOG
+        } else if (link.contains("velog.io")){
+            Source.VELOG
+        } else if (link.contains("brunch.co.kr")){
+            Source.BRUNCH
+        } else if (link.contains("yozm.wishket")){
+            Source.YOZM_IT
+        } else if (link.contains("tistory.com")){
+            Source.TISTORY
+        } else if (link.contains("eopla.net")){
+            Source.EO
+        } else if (link.contains("youtube.com")) {
+            Source.YOUTUBE
+        } else if (link.contains("naver.com")) {
+            Source.NAVER
+        } else if (link.contains("google.com")) {
+            Source.GOOGLE
+        } else {
+            Source.DEFAULT
+        }
+    }
+
     fun findUserOrElseThrow(userId: Long): User {
         return userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
@@ -582,5 +614,6 @@ class FeedService(
 
     companion object{
         const val unClassified = "미분류"
+        const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
 }
