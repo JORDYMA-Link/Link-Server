@@ -41,7 +41,7 @@ class FeedSummarizerServiceImpl(
         try{
             val parseContent = htmlParserV2.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
-            val folderNames: List<String> = folderService.getFolders(userId=userId).folderList.map { it.name }
+            val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
             val content = geminiService.getContents(
                 link = link,
                 folders = folderNames.joinToString(separator = " "),
@@ -58,20 +58,6 @@ class FeedSummarizerServiceImpl(
             if (brunch == Source.BRUNCH){
                 thumbnailImage = thumbnailImage.removePrefix("//")
             }
-
-            logger().info(
-                """
-            Attempting to update summarized feed with the following arguments:
-            subject: ${content.subject}
-            summary: ${content.summary}
-            category: ${content.category}
-            keyword: ${content.keyword}
-            brunch: $brunch
-            feedId: $feedId
-            userId: $userId
-            thumbnailImage: $thumbnailImage
-            """.trimIndent()
-            )
 
             // 요약 결과 업데이트
             val feed = feedService.updateSummarizedFeed(

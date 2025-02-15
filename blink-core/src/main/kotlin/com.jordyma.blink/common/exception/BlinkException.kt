@@ -6,4 +6,5 @@ class BlinkException(val code: ErrorCode, override val message: String, val thro
 
 enum class ErrorCode {
     USER_NOT_FOUND,
+    FEED_NOT_FOUND,
 }

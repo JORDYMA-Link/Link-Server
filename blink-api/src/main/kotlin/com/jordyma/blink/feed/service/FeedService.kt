@@ -502,7 +502,7 @@ class FeedService(
     @Transactional
     fun createFailed(userAccount: UserAccount, link: String) {
         val user = findUserOrElseThrow(userAccount.userId)
-        val failedFolder = folderService.getFailed(userAccount)
+        val failedFolder = folderService.getFailed(userAccount.userId)
         val feed = Feed(
             folder = failedFolder,
             originUrl = link,
