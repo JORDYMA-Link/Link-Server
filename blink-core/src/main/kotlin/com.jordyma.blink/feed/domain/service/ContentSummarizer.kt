@@ -1,5 +1,7 @@
 package com.jordyma.blink.feed.domain.service
 
+import kotlinx.serialization.Serializable
+
 interface ContentSummarizer {
     fun summarize(
         content: String,
@@ -7,12 +9,12 @@ interface ContentSummarizer {
         folders: String,
         userId: Long,
         feedId: Long
-    ): SummaryContent
+    ): PromptResponse
 }
-
-data class SummaryContent(
+@Serializable
+data class PromptResponse(
     val subject: String,
     val summary: String,
-    val keywords: List<String>,
-    val categories: List<String>
+    val keyword: List<String>,
+    val category: List<String>,
 )

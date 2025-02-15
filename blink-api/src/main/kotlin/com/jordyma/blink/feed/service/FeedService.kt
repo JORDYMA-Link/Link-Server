@@ -14,7 +14,6 @@ import com.jordyma.blink.recommend.RecommendRepository
 import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.infra.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.Keyword
 import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.feed.vo.ScoredFeedVo
@@ -24,6 +23,7 @@ import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
 import com.jordyma.blink.feed.domain.FeedRepository
+import com.jordyma.blink.feed.domain.service.PromptResponse
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.KeywordRepository
 import com.jordyma.blink.keyword.service.KeywordService

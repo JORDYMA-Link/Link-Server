@@ -3,9 +3,9 @@ package com.jordyma.blink.feed.service
 import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.feed.domain.Source
 import com.jordyma.blink.feed.domain.FeedRepository
+import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.recommend.RecommendRepository
-import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.keyword.service.KeywordService

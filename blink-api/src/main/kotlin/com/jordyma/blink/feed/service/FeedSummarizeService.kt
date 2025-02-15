@@ -36,13 +36,13 @@ class FeedSummarizeService(
         try{
             val parseContent = htmlParser.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
-            val folderNames: List<String> = folderService.getFolders(userId=userId).folderList.map { it.name }
-            val content = geminiService.getContents(
+            val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
+            val content = geminiService.summarize(
                 link = link,
                 folders = folderNames.joinToString(separator = " "),
                 userId = userId,
-                parseContent.content,
-                feedId
+                content = parseContent.content,
+                feedId = feedId,
             )
 
             // 플랫폼별 이미지 추출

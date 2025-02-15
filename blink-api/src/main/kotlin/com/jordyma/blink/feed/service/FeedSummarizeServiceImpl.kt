@@ -4,7 +4,7 @@ import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Source
 import com.jordyma.blink.feed.domain.service.FeedSummarizeService
-import com.jordyma.blink.feed.domain.service.SummaryContent
+import com.jordyma.blink.feed.domain.service.PromptResponse
 import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
@@ -25,7 +25,7 @@ class FeedSummarizeServiceImpl(
 
     @Transactional
     override fun updateSummarizedFeed(
-        content: SummaryContent,
+        content: PromptResponse,
         brunch: Source,
         feedId: Long,
         userId: Long,
@@ -44,8 +44,8 @@ class FeedSummarizeServiceImpl(
 
         logger().info("요약 결과 업데이트 성공")
 
-        createRecommendFolders(feed, content.categories)
-        keywordService.createKeywords(feed, content.keywords)
+        createRecommendFolders(feed, content.category)
+        keywordService.createKeywords(feed, content.keyword)
         return feed
     }
 

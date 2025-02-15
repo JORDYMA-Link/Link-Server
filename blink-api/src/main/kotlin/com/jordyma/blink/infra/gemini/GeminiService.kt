@@ -4,12 +4,11 @@ import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Status
 import com.jordyma.blink.feed.domain.service.ContentSummarizer
-import com.jordyma.blink.feed.domain.service.SummaryContent
+import com.jordyma.blink.feed.domain.service.PromptResponse
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.infra.gemini.request.ChatRequest
 import com.jordyma.blink.infra.gemini.response.ChatResponse
-import com.jordyma.blink.infra.gemini.response.PromptResponse
 import com.jordyma.blink.logger
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,7 +31,7 @@ class GeminiService @Autowired constructor(
         folders: String,
         userId: Long,
         feedId: Long
-    ): SummaryContent {
+    ): PromptResponse {
         try {
             val requestUrl = "$apiUrl?key=$geminiApiKey"
             val request = ChatRequest(makePrompt(link, folders, content))
@@ -43,13 +42,7 @@ class GeminiService @Autowired constructor(
             logger().info("Received response from Gemini server: $response")
 
             if (responseText.isNotEmpty()) {
-                val promptResponse = extractJsonAndParse(responseText)
-                return SummaryContent(
-                    subject = promptResponse.subject,
-                    summary = promptResponse.summary,
-                    keywords = promptResponse.keyword,
-                    categories = promptResponse.category
-                )
+                return extractJsonAndParse(responseText)
             } else {
                 throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini json 파싱 오류")
             }

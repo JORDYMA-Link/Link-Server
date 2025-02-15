@@ -5,7 +5,7 @@ import com.jordyma.blink.feed.domain.Source
 
 interface FeedSummarizeService {
     fun updateSummarizedFeed(
-        content: SummaryContent,
+        content: PromptResponse,
         brunch: Source,
         feedId: Long,
         userId: Long,

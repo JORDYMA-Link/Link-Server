@@ -17,7 +17,7 @@ class FolderService(
     private val userRepository: UserRepository,
 ) {
 
-    fun getFolders(userId: Long): GetFolderListResponseDto {
+    fun getFolders(userId: Long): List<FolderDto> {
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
@@ -32,7 +32,7 @@ class FolderService(
                 feedCount = folder.count
             )
         }.let {
-            return GetFolderListResponseDto(it)
+            return it
         }
 
     }

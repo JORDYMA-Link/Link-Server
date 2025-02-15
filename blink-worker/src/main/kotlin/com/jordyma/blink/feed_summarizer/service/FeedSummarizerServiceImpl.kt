@@ -9,7 +9,7 @@ import com.jordyma.blink.feed_summarizer.html_parser.HtmlParser
 import com.jordyma.blink.feed_summarizer.html_parser.HtmlParserV2
 import com.jordyma.blink.feed_summarizer.listener.dto.FeedSummarizeMessage
 import com.jordyma.blink.feed_summarizer.request_limiter.SummarizeRequestLimiter
-import com.jordyma.blink.folder.domain.service.FolderService
+import com.jordyma.blink.folder.service.FolderService
 import com.jordyma.blink.gemini.GeminiService
 import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
