@@ -21,10 +21,10 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import com.jordyma.blink.global.http.response.OpenKeyListResponse
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
-import com.jordyma.blink.feed.Feed
-import com.jordyma.blink.feed.Source
-import com.jordyma.blink.feed.Status
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.Feed
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.Status
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.folder.FolderRepository
 import com.jordyma.blink.keyword.Keyword

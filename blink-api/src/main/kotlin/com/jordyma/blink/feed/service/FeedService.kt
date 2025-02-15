@@ -1,20 +1,19 @@
 package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.feed.dto.*
-import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.global.util.rangeTo
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
-import com.jordyma.blink.feed.Source
-import com.jordyma.blink.feed.Status
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.Status
 import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.folder.FolderRepository
 import com.jordyma.blink.recommend.RecommendRepository
-import com.jordyma.blink.folder.service.FolderService
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.global.gemini.response.PromptResponse
 import com.jordyma.blink.keyword.Keyword
 import com.jordyma.blink.feed.dto.FeedCalendarListDto
 import com.jordyma.blink.feed.vo.ScoredFeedVo
@@ -23,7 +22,8 @@ import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.feed.dto.FeedCalendarResponseDto
 import com.jordyma.blink.feed.dto.response.FeedDetailResponseDto
 import com.jordyma.blink.feed.dto.response.*
-import com.jordyma.blink.feed.FeedRepository
+import com.jordyma.blink.feed.domain.FeedRepository
+import com.jordyma.blink.feed.domain.service.PromptResponse
 import com.jordyma.blink.global.util.DateTimeUtils.localDateTimeToString
 import com.jordyma.blink.keyword.KeywordRepository
 import com.jordyma.blink.keyword.service.KeywordService
@@ -320,24 +320,32 @@ class FeedService(
 
     // gemini 요약 결과 업데이트
     @Transactional
-    fun updateSummarizedFeed(content: PromptResponse, brunch: Source, feedId: Long, userAccount: UserAccount) {
+    fun updateSummarizedFeed(
+        content: PromptResponse,
+        brunch: Source,
+        feedId: Long,
+        userId: Long,
+        thumbnailImage: String
+    ): Feed {
 
         val feed = findFeedOrElseThrow(feedId)
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userId)
 
         // 요약 결과 업데이트 (status: COMPLETE 포함)
         feed.updateSummarizedContent(content.summary, content.subject, brunch)
         feed.updateFolder(folder)
+        feed.updateThumbnailImageUrl(thumbnailImage)
         feedRepository.save(feed)
 
         createRecommendFolders(feed, content)
         keywordService.createKeywords(feed, content.keyword)
+
+        return feed
     }
 
     @Transactional
     fun makeFeed(userAccount: UserAccount, content: PromptResponse, brunch: Source, link: String): Feed {
-        val user = findUserOrElseThrow(userAccount.userId)
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userAccount.userId)
 
         // ai 요약 결과로 피드 생성 (유저 매칭을 위해 폴더는 미분류로 지정)
         val feed = Feed(
@@ -354,7 +362,7 @@ class FeedService(
 
     @Transactional
     fun makeFeedFirst(userAccount: UserAccount, link: String): Feed {
-        val folder = folderService.getUnclassified(userAccount)
+        val folder = folderService.getUnclassified(userAccount.userId)
         val feed = Feed(
             folder = folder,
             originUrl = link,
@@ -390,15 +398,15 @@ class FeedService(
         feed.updateStatus(Status.SAVED)
 
         feedRepository.save(feed)
-        return FeedUpdateResDto(feed.id!!)
+        return FeedUpdateResDto(feed.id)
     }
 
     // 요약 결과 조회 (저장 전)
     @Transactional
-    fun getSummaryRes(userAccount: UserAccount, feedId: Long): AiSummaryResponseDto? {
+    fun getSummaryRes(userId: Long, feedId: Long): AiSummaryResponseDto? {
 
         val feed = findFeedOrElseThrow(feedId)
-        val user = findUserOrElseThrow(userAccount.userId)
+        val user = findUserOrElseThrow(userId)
         val folders = folderRepository.findAllByUser(user)
 
         return AiSummaryResponseDto(
@@ -418,8 +426,8 @@ class FeedService(
 
     // 요약 중인 링크 조회
     @Transactional
-    fun getProcessing(userAccount: UserAccount): ProcessingListDto? {
-        val user = findUserOrElseThrow(userAccount.userId)
+    fun getProcessing(userId: Long): ProcessingListDto? {
+        val user = findUserOrElseThrow(userId)
         val feeds = feedRepository.getProcessing(user)
         var result: MutableList<ProcessingFeedResDto> = mutableListOf()
         for(feed in feeds){
@@ -443,7 +451,7 @@ class FeedService(
             else {
                 result.add(
                     ProcessingFeedResDto(
-                        feedId = feed.id!!,
+                        feedId = feed.id,
                         title = feed.title,
                         status = feed.status.toString()
                     )
@@ -455,8 +463,8 @@ class FeedService(
 
     // 요약 실패 피드 삭제
     @Transactional
-    fun deleteProcessingFeed(userAccount: UserAccount, feedId: Long) {
-        val user = findUserOrElseThrow(userAccount.userId)
+    fun deleteProcessingFeed(userId: Long, feedId: Long) {
+        val user = findUserOrElseThrow(userId)
         val feed = findFeedOrElseThrow(feedId)
         if(feed.folder!!.user != user){
             throw ApplicationException(ErrorCode.UNAUTHORIZED, "삭제 권한이 없습니다.")
@@ -494,7 +502,7 @@ class FeedService(
     @Transactional
     fun createFailed(userAccount: UserAccount, link: String) {
         val user = findUserOrElseThrow(userAccount.userId)
-        val failedFolder = folderService.getFailed(userAccount)
+        val failedFolder = folderService.getFailed(userAccount.userId)
         val feed = Feed(
             folder = failedFolder,
             originUrl = link,
@@ -551,13 +559,37 @@ class FeedService(
         return folder
     }
 
+    fun findBrunch(link: String = ""): Source {
+        return if(link.contains("blog.naver.com")){
+            Source.NAVER_BLOG
+        } else if (link.contains("velog.io")){
+            Source.VELOG
+        } else if (link.contains("brunch.co.kr")){
+            Source.BRUNCH
+        } else if (link.contains("yozm.wishket")){
+            Source.YOZM_IT
+        } else if (link.contains("tistory.com")){
+            Source.TISTORY
+        } else if (link.contains("eopla.net")){
+            Source.EO
+        } else if (link.contains("youtube.com")) {
+            Source.YOUTUBE
+        } else if (link.contains("naver.com")) {
+            Source.NAVER
+        } else if (link.contains("google.com")) {
+            Source.GOOGLE
+        } else {
+            Source.DEFAULT
+        }
+    }
+
     fun findUserOrElseThrow(userId: Long): User {
         return userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
     }
 
-    fun findFeedOrElseThrow(feedId: Long): Feed{
+    fun findFeedOrElseThrow(feedId: Long): Feed {
         return feedRepository.findById(feedId).orElseThrow {
             ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }
@@ -582,5 +614,6 @@ class FeedService(
 
     companion object{
         const val unClassified = "미분류"
+        const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
 }

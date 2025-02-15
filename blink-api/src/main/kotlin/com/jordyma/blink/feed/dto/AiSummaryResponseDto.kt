@@ -1,6 +1,6 @@
 package com.jordyma.blink.feed.dto
 
-import com.jordyma.blink.global.gemini.response.PromptResponse
+import com.jordyma.blink.infra.gemini.response.PromptResponse
 import io.swagger.v3.oas.annotations.media.Schema
 import lombok.NoArgsConstructor
 import java.time.LocalDate

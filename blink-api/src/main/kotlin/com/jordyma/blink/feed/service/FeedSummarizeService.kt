@@ -1,57 +1,49 @@
-package com.jordyma.blink.feed_summarizer.service
+package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.fcm.service.FcmService
+import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Source
 import com.jordyma.blink.feed.domain.Status
-import com.jordyma.blink.feed.domain.FeedRepository
-import com.jordyma.blink.feed.service.FeedService
-import com.jordyma.blink.feed_summarizer.html_parser.HtmlParser
-import com.jordyma.blink.feed_summarizer.html_parser.HtmlParserV2
-import com.jordyma.blink.feed_summarizer.listener.dto.FeedSummarizeMessage
-import com.jordyma.blink.feed_summarizer.request_limiter.SummarizeRequestLimiter
-import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.gemini.GeminiService
+import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
+import com.jordyma.blink.folder.FolderRepository
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.error.USER_NOT_FOUND
 import com.jordyma.blink.global.error.exception.BadRequestException
-import com.jordyma.blink.global.exception.ApplicationException
-import com.jordyma.blink.global.exception.ErrorCode
-import com.jordyma.blink.gemini.response.PromptResponse
+import com.jordyma.blink.infra.gemini.response.PromptResponse
+import com.jordyma.blink.global.util.HtmlParserByJsoup
+import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
 import org.springframework.stereotype.Service
 
 @Service
-class FeedSummarizerServiceImpl(
-    private val summarizeRequestLimiter: SummarizeRequestLimiter,
-    private val htmlParser: HtmlParser,
-    private val htmlParserV2: HtmlParserV2,
-    private val folderService: FolderService,
-    private val geminiService: GeminiService,
-    private val feedService: FeedService,
+class FeedSummarizeService(
     private val feedRepository: FeedRepository,
+    private val folderRepository: FolderRepository,
     private val userRepository: UserRepository,
+    private val htmlParser: HtmlParserByJsoup,
+    private val geminiService: GeminiService,
+    private val folderService: FolderService,
+    private val feedService: FeedService,
     private val fcmService: FcmService,
-): FeedSummarizerService {
+){
 
-    override fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
+    fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
         val link = payload.link
         val feedId = payload.feedId.toLong()
 
         try{
-            val parseContent = htmlParserV2.parseUrl(link)
+            val parseContent = htmlParser.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
             val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
-            val content = geminiService.getContents(
+            val content = geminiService.summarize(
                 link = link,
                 folders = folderNames.joinToString(separator = " "),
                 userId = userId,
-                parseContent.content,
-                feedId
+                content = parseContent.content,
+                feedId = feedId,
             )
-            if (content == null){
-                throw ApplicationException(ErrorCode.JSON_PARSING_FAILED, "gemini exception: no content")
-            }
 
             // 플랫폼별 이미지 추출
             val brunch = feedService.findBrunch(link)
@@ -61,10 +53,7 @@ class FeedSummarizerServiceImpl(
 
             // 요약 결과 업데이트
             val feed = feedService.updateSummarizedFeed(
-                content.subject,
-                content.summary,
-                content.category,
-                content.keyword,
+                content,
                 brunch,
                 feedId,
                 userId,
@@ -83,11 +72,8 @@ class FeedSummarizerServiceImpl(
             logger().error(e.message)
             logger().info("gemini exception: failed to summarize ${payload.originUrl} by userName ${payload.userName}")
         }
+        // TODO: exception 되돌리기
         return null
     }
 
-    override fun refillToken(): Unit {
-        this.summarizeRequestLimiter.refillToken()
-        logger().info("refill token")
-    }
 }

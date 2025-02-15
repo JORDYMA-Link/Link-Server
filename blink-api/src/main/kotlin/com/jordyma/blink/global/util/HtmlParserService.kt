@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 
+// Jsoup으로 Parser 변경 이전
 @Service
 class HtmlParserService {
 

@@ -1,7 +1,7 @@
 package com.jordyma.blink.recommend
 
 import com.jordyma.blink.common.BaseTimeEntity
-import com.jordyma.blink.feed.Feed
+import com.jordyma.blink.feed.domain.Feed
 import jakarta.persistence.*
 
 @Entity

@@ -6,7 +6,7 @@ import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.auth.service.AuthService
-import com.jordyma.blink.folder.service.FolderService
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.global.util.CommonUtil
@@ -141,7 +141,7 @@ class AuthController(
     fun logout(
         @AuthenticationPrincipal userAccount: UserAccount,
     ): ResponseEntity<String> {
-        folderService.signOutDelete(userAccount)
+        folderService.signOutDelete(userAccount.userId)
         authService.signout(userAccount)
         return ResponseEntity.ok().body("탈퇴가 완료되었습니다.")
     }

@@ -1,37 +1,35 @@
 package com.jordyma.blink.feed.service
 
 import com.jordyma.blink.feed.domain.Feed
-import com.jordyma.blink.feed.domain.Source
 import com.jordyma.blink.feed.domain.FeedRepository
-import com.jordyma.blink.folder.service.FolderService
-import com.jordyma.blink.recommend.Recommend
-import com.jordyma.blink.recommend.RecommendRepository
+import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.service.FeedSummarizeService
+import com.jordyma.blink.feed.domain.service.PromptResponse
+import com.jordyma.blink.folder.domain.service.FolderService
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
+import com.jordyma.blink.recommend.Recommend
+import com.jordyma.blink.recommend.RecommendRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class FeedService(
+class FeedSummarizeServiceImpl(
     private val feedRepository: FeedRepository,
     private val folderService: FolderService,
     private val recommendRepository: RecommendRepository,
     private val keywordService: KeywordService,
-) {
+) : FeedSummarizeService {
 
-    // gemini 요약 결과 업데이트
     @Transactional
-    fun updateSummarizedFeed(
-        subject: String,
-        summary: String,
-        category: List<String>,
-        keyword: List<String>,
+    override fun updateSummarizedFeed(
+        content: PromptResponse,
         brunch: Source,
         feedId: Long,
         userId: Long,
-        thumbnailImage: String,
+        thumbnailImage: String
     ): Feed {
         logger().info(">>>>> feed update start")
 
@@ -39,20 +37,19 @@ class FeedService(
         val folder = folderService.getUnclassified(userId)
 
         // 요약 결과 업데이트 (status: COMPLETE 포함)
-        feed.updateSummarizedContent(summary, subject, brunch)
+        feed.updateSummarizedContent(content.summary, content.subject, brunch)
         feed.updateFolder(folder)
         feed.updateThumbnailImageUrl(thumbnailImage)
         feedRepository.save(feed)
 
         logger().info("요약 결과 업데이트 성공")
 
-        createRecommendFolders(feed, category)
-        keywordService.createKeywords(feed, keyword)
+        createRecommendFolders(feed, content.category)
+        keywordService.createKeywords(feed, content.keyword)
         return feed
     }
 
-    @Transactional
-    fun createRecommendFolders(feed: Feed, category: List<String>) {
+    override fun createRecommendFolders(feed: Feed, category: List<String>) {
         var cnt = 0
         val recommendFolders: MutableList<Recommend> = mutableListOf()
         for (folderName in category) {
@@ -68,7 +65,7 @@ class FeedService(
         feed.recommendFolders = recommendFolders
     }
 
-    fun findBrunch(link: String = ""): Source {
+    private fun findBrunch(link: String): Source {
         return if(link.contains("blog.naver.com")){
             Source.NAVER_BLOG
         } else if (link.contains("velog.io")){
@@ -92,7 +89,7 @@ class FeedService(
         }
     }
 
-    fun findFeedOrElseThrow(feedId: Long): Feed {
+    private fun findFeedOrElseThrow(feedId: Long): Feed {
         return feedRepository.findById(feedId).orElseThrow {
             ApplicationException(ErrorCode.FEED_NOT_FOUND, "피드를 찾을 수 없습니다.")
         }
