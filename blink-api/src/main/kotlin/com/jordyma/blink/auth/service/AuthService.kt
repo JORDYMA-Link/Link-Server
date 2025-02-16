@@ -421,7 +421,7 @@ class AuthService(
 
         val onboardingFeed = Feed(
             folder = folder,
-            originUrl = onboarding_title,
+            originUrl = onboarding_url,
             summary = onboarding_summary,
             title =  onboarding_title,
             platform = Source.ONBOARDING.source,
@@ -609,6 +609,7 @@ class AuthService(
         const val onboarding_summary = "블링크를 활용하는 방법을 정리했습니다. 글 추가부터 똑똑하게 활용하는 방법을 모두 알려드릴게요!"
         const val onboarding_title = "어서오세요, 블링크는 처음이시죠"
         const val onboarding_keyword = "블링크 설명서"
+        const val onboarding_url = "https://daffy-sandal-6ef.notion.site/6addddc3f4164264b4fc58d01cbfd706?pvs=4"
         const val APPLE_AUTH_URL = "https://appleid.apple.com"
     }
 }
