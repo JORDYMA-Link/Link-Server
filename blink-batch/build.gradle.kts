@@ -4,8 +4,13 @@ dependencyManagement {
     }
 }
 
+configurations.all {
+    exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl")
+}
+
 dependencies {
     implementation(project(":blink-core"))
+    implementation(project(":blink-api"))
 
     implementation("org.springframework.boot:spring-boot-starter-batch")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -37,4 +42,8 @@ dependencies {
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    implementation("org.slf4j:slf4j-api")
+    implementation("ch.qos.logback:logback-classic")
+    implementation("org.apache.logging.log4j:log4j-to-slf4j")
 }

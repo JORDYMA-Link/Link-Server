@@ -1,12 +1,14 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     java
-    id("org.springframework.boot") version "3.2.4" apply false
-    id("io.spring.dependency-management") version "1.1.4" apply false
-    kotlin("jvm") version "1.9.23" apply false
-    kotlin("plugin.spring") version "1.9.23" apply false
-    kotlin("plugin.jpa") version "1.9.23" apply false
-    kotlin("kapt") version "1.9.23" apply false
-    kotlin("plugin.serialization") version "1.8.0" apply false
+    id("org.springframework.boot") version "3.2.4"
+    id("io.spring.dependency-management") version "1.1.4"
+    kotlin("jvm") version "1.9.23"
+    kotlin("plugin.spring") version "1.9.23"
+    kotlin("plugin.jpa") version "1.9.23"
+    kotlin("kapt") version "1.9.23"
+    kotlin("plugin.serialization") version "1.8.0"
 }
 
 allprojects {
@@ -38,7 +40,7 @@ subprojects {
         testImplementation("org.springframework.boot:spring-boot-starter-test")
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    tasks.withType<KotlinCompile> {
         kotlinOptions {
             freeCompilerArgs += "-Xjsr305=strict"
             jvmTarget = "17"

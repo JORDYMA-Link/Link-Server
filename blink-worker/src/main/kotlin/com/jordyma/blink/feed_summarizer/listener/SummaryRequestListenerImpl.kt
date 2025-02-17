@@ -18,7 +18,7 @@ class SummaryRequestListenerImpl(
     private val summarizeRequestLimiter: SummarizeRequestLimiter
 ) : SummaryRequestListener {
 
-    @SqsListener("\${spring.cloud.aws.sqs.summary-request-queue.name}")
+    @SqsListener("\${spring.cloud.aws.sqs.summary-request-queue}")
     override fun summarizeFeed(
         message: Message<FeedSummarizeMessage>,
         @Headers headers: MessageHeaders,

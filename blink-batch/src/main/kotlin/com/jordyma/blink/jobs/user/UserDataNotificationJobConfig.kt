@@ -1,7 +1,8 @@
 package com.jordyma.blink.jobs.user
 
 import com.jordyma.blink.domain.dto.UserDataNotificationDto
-import com.jordyma.blink.domain.service.SendMessageService
+import com.jordyma.blink.domain.service.SendUserDataNotificationService
+import com.jordyma.blink.logger
 import org.springframework.batch.core.Job
 import org.springframework.batch.core.Step
 import org.springframework.batch.core.configuration.annotation.StepScope
@@ -16,13 +17,14 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.transaction.PlatformTransactionManager
 import javax.sql.DataSource
 
+
 @Configuration
 class UserDataNotificationJobConfig(
-    private val jobRepository: JobRepository,
-    @Qualifier("batchTransactionManager")
-    private val batchTransactionManager: PlatformTransactionManager,
-    private val dataSource: DataSource,
-    private val sendMessageService: SendMessageService,
+        private val jobRepository: JobRepository,
+        @Qualifier("batchTransactionManager")
+        private val batchTransactionManager: PlatformTransactionManager,
+        private val dataSource: DataSource,
+        private val sendMessageService: SendUserDataNotificationService,
 ) {
     companion object {
         const val JOB_NAME = "UserDataNotificationJobConfig"
