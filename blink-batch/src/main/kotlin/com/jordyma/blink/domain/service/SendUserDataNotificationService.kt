@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
-class SendMessageService(
+class SendUserDataNotificationService(
     @Value("\${slack.channel-id}")
     private val channelId: String,
     @Value("\${slack.token}")
