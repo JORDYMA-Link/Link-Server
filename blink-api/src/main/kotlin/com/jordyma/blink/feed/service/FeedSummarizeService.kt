@@ -49,6 +49,7 @@ class FeedSummarizeService(
             val brunch = feedService.findBrunch(link)
             if (brunch == Source.BRUNCH){
                 thumbnailImage = thumbnailImage.removePrefix("//")
+                thumbnailImage = "https://$thumbnailImage"
             }
 
             // 요약 결과 업데이트
