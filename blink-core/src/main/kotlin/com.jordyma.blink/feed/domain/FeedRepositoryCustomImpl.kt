@@ -15,6 +15,7 @@ import com.jordyma.blink.user.User
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Projections
 import com.querydsl.jpa.impl.JPAQueryFactory
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
+@Transactional
 class FeedRepositoryCustomImpl(
     private val queryFactory: JPAQueryFactory
 ) : FeedRepositoryCustom {
