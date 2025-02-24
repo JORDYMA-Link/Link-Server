@@ -5,10 +5,12 @@ import com.jordyma.blink.folder.QFolder
 import com.jordyma.blink.folder.CustomFolderRepository
 import com.jordyma.blink.user.User
 import com.querydsl.jpa.impl.JPAQueryFactory
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 
 @Repository
+@Transactional
 class CustomFolderRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ): CustomFolderRepository {

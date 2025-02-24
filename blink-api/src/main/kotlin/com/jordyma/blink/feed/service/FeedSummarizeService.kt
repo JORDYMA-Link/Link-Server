@@ -71,7 +71,7 @@ class FeedSummarizeService(
             feed.updateStatus(Status.FAILED)
             feedRepository.save(feed)
             logger().error(e.message)
-            logger().info("gemini exception: failed to summarize ${payload.originUrl} by userName ${payload.userName}")
+            logger().info("gemini exception: failed to summarize ${payload.originUrl} by userName ${payload.userName} by userId ${payload.userId}")
         }
         // TODO: exception 되돌리기
         return null
