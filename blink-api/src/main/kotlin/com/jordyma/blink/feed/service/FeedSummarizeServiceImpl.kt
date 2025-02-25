@@ -14,6 +14,7 @@ import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.recommend.RecommendRepository
+import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -102,6 +103,7 @@ class FeedSummarizeServiceImpl(
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
 
+    @PostConstruct // DB 데이터 메모리에 미리 로드해 캐싱
     fun isInvalidLink(link: String): Boolean {
         val invalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE)
             .map { it.paramValue }
