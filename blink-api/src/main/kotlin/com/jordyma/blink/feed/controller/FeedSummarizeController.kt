@@ -38,11 +38,10 @@ class FeedSummarizeController(
         val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id, userAccount.userId, feed.originUrl, userName)
 
         if (feedSummarizeService.isInvalidLink(requestDto.link)){
-            logger().info(">>>>> EXCEPTION : Try to summarize invalid link: ${requestDto.link}")
+            logger().info(">>>>> FAILED : Try to summarize invalid link: ${requestDto.link}")
             feedService.createFailed(userAccount, feed.id)
             return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
         }
-
 
         // worker 요청 전송
         // feedSummarizeMessageSender.send(summarizeMessage)
