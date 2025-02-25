@@ -217,7 +217,7 @@ class FolderServiceImpl(
         return folder
     }
 
-    override fun getFailed(userId: Long): Folder? {
+    override fun getFailed(userId: Long): Folder {
         val user = userRepository.findById(userId).orElseThrow {
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }

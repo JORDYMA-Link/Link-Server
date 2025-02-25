@@ -23,7 +23,7 @@ interface FolderService {
 
     fun getUnclassified(userId: Long): Folder
 
-    fun getFailed(userId: Long): Folder?
+    fun getFailed(userId: Long): Folder
 
     fun getFolderById(folderId: Long): Folder
 }
