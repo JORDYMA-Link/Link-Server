@@ -91,6 +91,12 @@ class Feed(
         this.folder = folder
     }
 
+    fun update(folder: Folder, status: Status){
+        this.folder = folder
+        this.status = status
+    }
+
+
     fun updateSummarizedContent(summary: String, title: String, brunch: Source) {
         this.summary = summary
         this.title = title
