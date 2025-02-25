@@ -10,6 +10,7 @@ import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.feed.service.FeedSummarizeService
 import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
+import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -35,6 +36,13 @@ class FeedSummarizeController(
         val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
         val userName = userService.getProfile(userAccount).nickName
         val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id, userAccount.userId, feed.originUrl, userName)
+
+        if (feedSummarizeService.isInvalidLink(requestDto.link)){
+            logger().info(">>>>> EXCEPTION : Try to summarize invalid link: ${requestDto.link}")
+            feedService.createFailed(userAccount, feed.id)
+            return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
+        }
+
 
         // worker 요청 전송
         // feedSummarizeMessageSender.send(summarizeMessage)

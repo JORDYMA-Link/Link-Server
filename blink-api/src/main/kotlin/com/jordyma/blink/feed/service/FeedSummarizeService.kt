@@ -89,7 +89,12 @@ class FeedSummarizeService(
     }
 
     fun isInvalidLink(link: String): Boolean {
-        return cachedInvalidLinks.contains(link)
+        for (invalidLink in cachedInvalidLinks){
+            if (link.contains(invalidLink)){
+                return true
+            }
+        }
+        return false
     }
 
 }
