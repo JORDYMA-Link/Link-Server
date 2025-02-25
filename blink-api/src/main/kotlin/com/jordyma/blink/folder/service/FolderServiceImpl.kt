@@ -2,6 +2,7 @@ package com.jordyma.blink.folder.service
 
 import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Source
+import com.jordyma.blink.feed.domain.Status
 import com.jordyma.blink.feed.dto.FeedDto
 import com.jordyma.blink.folder.Folder
 import com.jordyma.blink.folder.FolderRepository
@@ -174,7 +175,7 @@ class FolderServiceImpl(
             .orElseThrow { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 feedId가 없습니다 : ${feedId}") }
 
         // 기존 폴더 cnt--
-        if(feed.folder != null){
+        if(feed.folder != null && feed.folder!!.count > 0){
             feed.folder!!.decreaseCount()
             folderRepository.save(feed.folder!!)
         }
@@ -187,9 +188,12 @@ class FolderServiceImpl(
                 isUnclassified = false
             )
 
-        folder.increaseCount()
+        // 요약실패건은 폴더 개수에 추가 되지 않도록
+        // 실패도 저장된다면 이 부분 수정 필요
+        if (feed.status == Status.SAVED) {
+            folder.increaseCount()
+        }
         folderRepository.save(folder)
-
         feed.updateFolder(folder)
         feedRepository.save(feed)
 
@@ -223,7 +227,7 @@ class FolderServiceImpl(
         }
 
         // 요약 실패 폴더 찾기
-        var folder = folderRepository.findFailed(user, "FAILED")
+        var folder = folderRepository.findFailed(user, "요약실패")
         if(folder == null){     // 없으면 생성
             val request = CreateFolderRequestDto(
                 name = "요약실패"

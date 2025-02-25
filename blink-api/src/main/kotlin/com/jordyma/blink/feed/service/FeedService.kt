@@ -504,7 +504,7 @@ class FeedService(
         val failedFolder = folderService.getFailed(userAccount.userId)
         val feed: Feed = findFeedOrElseThrow(feedId)
         feed.update(failedFolder, Status.FAILED)
-        feedRepository.save(feed)
+        folderService.createFeedFolder(userAccount.userId, feedId, failedFolder.name)
     }
 
     @Transactional
