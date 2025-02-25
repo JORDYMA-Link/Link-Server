@@ -27,6 +27,8 @@ class FeedSummarizeServiceImpl(
     private val keywordService: KeywordService,
 ) : FeedSummarizeService {
 
+    private lateinit var cachedInvalidLinks: List<String>
+
     @Transactional
     override fun updateSummarizedFeed(
         content: PromptResponse,
@@ -103,11 +105,13 @@ class FeedSummarizeServiceImpl(
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
 
-    @PostConstruct // DB 데이터 메모리에 미리 로드해 캐싱
-    fun isInvalidLink(link: String): Boolean {
-        val invalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE)
-            .map { it.paramValue }
+    @PostConstruct
+    fun loadInvalidLinks() {
+        cachedInvalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE).map { it.paramValue }
+        logger().info(">>>>> cachedInvalidLinks: $cachedInvalidLinks")
+    }
 
-        return invalidLinks.contains(link)
+    fun isInvalidLink(link: String): Boolean {
+        return cachedInvalidLinks.contains(link)
     }
 }
