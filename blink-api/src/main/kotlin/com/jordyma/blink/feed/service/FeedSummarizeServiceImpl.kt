@@ -20,14 +20,14 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FeedSummarizeServiceImpl(
-    private val commonParamRepository: CommonParameterRepository,
+    //private val commonParamRepository: CommonParameterRepository,
     private val feedRepository: FeedRepository,
     private val folderService: FolderService,
     private val recommendRepository: RecommendRepository,
     private val keywordService: KeywordService,
 ) : FeedSummarizeService {
 
-    private lateinit var cachedInvalidLinks: List<String>
+    //private lateinit var cachedInvalidLinks: List<String>
 
     @Transactional
     override fun updateSummarizedFeed(
@@ -105,13 +105,13 @@ class FeedSummarizeServiceImpl(
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
 
-    @PostConstruct
-    fun loadInvalidLinks() {
-        cachedInvalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE).map { it.paramValue }
-        logger().info(">>>>> cachedInvalidLinks: $cachedInvalidLinks")
-    }
-
-    fun isInvalidLink(link: String): Boolean {
-        return cachedInvalidLinks.contains(link)
-    }
+//    @PostConstruct
+//    fun loadInvalidLinks() {
+//        cachedInvalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE).map { it.paramValue }
+//        logger().info(">>>>> cachedInvalidLinks: $cachedInvalidLinks")
+//    }
+//
+//    fun isInvalidLink(link: String): Boolean {
+//        return cachedInvalidLinks.contains(link)
+//    }
 }
