@@ -39,16 +39,16 @@ jobs:
           filename: application.yml
 
       # application-batch.yml을 s3로 부터 다운로드
-      - name: Getting S3 Object
-        id: s3
-        uses: jcfrane/s3-get-object-action@v1.0
-        with:
-          region: ap-southeast-2
-          bucket: blink-env
-          aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          object-key: env/dev/application-batch.yml
-          filename: application-batch.yml
+#      - name: Getting S3 Object
+#        id: s3
+#        uses: jcfrane/s3-get-object-action@v1.0
+#        with:
+#          region: ap-southeast-2
+#          bucket: blink-env
+#          aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          object-key: env/dev/application-batch.yml
+#          filename: application-batch.yml
 
       # move application yml for API
       - name: Move application.yml for API
@@ -57,10 +57,10 @@ jobs:
           cp application.yml blink-api/src/main/resources
 
       # move application yml for Batch
-      - name: Move application-batch.yml for Batch
-        run: |
-          mkdir -p blink-batch/src/main/resources
-          cp application-batch.yml blink-batch/src/main/resources
+#      - name: Move application-batch.yml for Batch
+#        run: |
+#          mkdir -p blink-batch/src/main/resources
+#          cp application-batch.yml blink-batch/src/main/resources
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -70,9 +70,9 @@ jobs:
         run: |
           ./gradlew :blink-api:bootJar -x test
 
-      - name: Build Batch With Gradle
-        run: |
-          ./gradlew :blink-batch:bootJar -x test
+#      - name: Build Batch With Gradle
+#        run: |
+#          ./gradlew :blink-batch:bootJar -x test
 
       - name: Get current time
         uses: 1466587594/get-current-time@v2
@@ -85,7 +85,6 @@ jobs:
         run: |
           mkdir -p deploy
           cp blink-api/build/libs/blink-api-0.0.1-SNAPSHOT.jar deploy/blink-api.jar
-          cp blink-batch/build/libs/blink-batch-0.0.1-SNAPSHOT.jar deploy/blink-batch.jar
           cp Procfile-app deploy/Procfile
           cp -r .ebextensions deploy/.ebextensions
           cp -r .platform deploy/.platform

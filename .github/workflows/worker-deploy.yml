@@ -1,8 +1,8 @@
 name: Blink-Worker CD
 
-on:
-  push:
-    branches: [ test ]
+#on:
+#  push:
+#    branches: [ test ]
 
 jobs:
   build:
