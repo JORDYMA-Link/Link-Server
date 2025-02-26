@@ -500,18 +500,11 @@ class FeedService(
 
     // 요약 실패 피드 생성
     @Transactional
-    fun createFailed(userAccount: UserAccount, link: String) {
-        val user = findUserOrElseThrow(userAccount.userId)
+    fun createFailed(userAccount: UserAccount, feedId: Long) {
         val failedFolder = folderService.getFailed(userAccount.userId)
-        val feed = Feed(
-            folder = failedFolder,
-            originUrl = link,
-            summary = "",
-            title = "",
-            platform = "",
-            status = Status.FAILED,
-        )
-        feedRepository.save(feed)
+        val feed: Feed = findFeedOrElseThrow(feedId)
+        feed.update(failedFolder, Status.FAILED)
+        folderService.createFeedFolder(userAccount.userId, feedId, failedFolder.name)
     }
 
     @Transactional
