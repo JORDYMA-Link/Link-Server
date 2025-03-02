@@ -1,5 +1,7 @@
 package com.jordyma.blink.feed.service
 
+import com.jordyma.blink.common.system.CommonParameterCode.EXCEPTION_LINK_PARAM_CODE
+import com.jordyma.blink.common.system.CommonParameterRepository
 import com.jordyma.blink.fcm.service.FcmService
 import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Source
@@ -14,10 +16,12 @@ import com.jordyma.blink.global.util.HtmlParserByJsoup
 import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
+import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 
 @Service
 class FeedSummarizeService(
+    private val commonParamRepository: CommonParameterRepository,
     private val feedRepository: FeedRepository,
     private val folderRepository: FolderRepository,
     private val userRepository: UserRepository,
@@ -27,6 +31,7 @@ class FeedSummarizeService(
     private val feedService: FeedService,
     private val fcmService: FcmService,
 ){
+    private lateinit var cachedInvalidLinks: List<String>
 
     fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
@@ -75,6 +80,21 @@ class FeedSummarizeService(
         }
         // TODO: exception 되돌리기
         return null
+    }
+
+    @PostConstruct
+    fun loadInvalidLinks() {
+        cachedInvalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE).map { it.paramValue }
+        logger().info(">>>>> cachedInvalidLinks: $cachedInvalidLinks")
+    }
+
+    fun isInvalidLink(link: String): Boolean {
+        for (invalidLink in cachedInvalidLinks){
+            if (link.contains(invalidLink)){
+                return true
+            }
+        }
+        return false
     }
 
 }

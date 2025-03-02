@@ -1,5 +1,7 @@
 package com.jordyma.blink.feed.service
 
+import com.jordyma.blink.common.system.CommonParameterCode.EXCEPTION_LINK_PARAM_CODE
+import com.jordyma.blink.common.system.CommonParameterRepository
 import com.jordyma.blink.feed.domain.Feed
 import com.jordyma.blink.feed.domain.FeedRepository
 import com.jordyma.blink.feed.domain.Source
@@ -12,16 +14,20 @@ import com.jordyma.blink.keyword.service.KeywordService
 import com.jordyma.blink.logger
 import com.jordyma.blink.recommend.Recommend
 import com.jordyma.blink.recommend.RecommendRepository
+import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class FeedSummarizeServiceImpl(
+    //private val commonParamRepository: CommonParameterRepository,
     private val feedRepository: FeedRepository,
     private val folderService: FolderService,
     private val recommendRepository: RecommendRepository,
     private val keywordService: KeywordService,
 ) : FeedSummarizeService {
+
+    //private lateinit var cachedInvalidLinks: List<String>
 
     @Transactional
     override fun updateSummarizedFeed(
@@ -98,4 +104,14 @@ class FeedSummarizeServiceImpl(
     companion object{
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
     }
+
+//    @PostConstruct
+//    fun loadInvalidLinks() {
+//        cachedInvalidLinks = commonParamRepository.findByParamCode(EXCEPTION_LINK_PARAM_CODE).map { it.paramValue }
+//        logger().info(">>>>> cachedInvalidLinks: $cachedInvalidLinks")
+//    }
+//
+//    fun isInvalidLink(link: String): Boolean {
+//        return cachedInvalidLinks.contains(link)
+//    }
 }
