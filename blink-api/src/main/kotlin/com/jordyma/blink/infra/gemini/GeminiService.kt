@@ -81,7 +81,7 @@ class GeminiService @Autowired constructor(
 
         // JSON 문자열을 ContentData로 파싱하여 반환
         return if (jsonString != null) {
-            val fixedJson = fixQuotes(text)
+            val fixedJson = fixQuotes(jsonString)
             Json.decodeFromString<PromptResponse>(fixedJson)
         } else {
             throw ApplicationException(ErrorCode.JSON_PARSING_FAILED, "gemini json 파싱 실패")
