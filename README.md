@@ -8,7 +8,7 @@
 ㅤㅤㅤ
 
 
-### [👉👉 블링크 사용하러 가기](https://github.com/JORDYMA-Link/Link-Server)
+### [👉👉 블링크 사용하러 가기](https://blink-archive.com/landing.html?_gl=1*1csu5et*_ga*Njc2OTk0MjMwLjE3NDExNTAyMDA.*_ga_SVPGFFPMVF*MTc0MTE1MDE5OS4xLjAuMTc0MTE1MDIwMS41OC4wLjA.)
 ㅤㅤㅤ
 ## Tech Stack
 * Dev
