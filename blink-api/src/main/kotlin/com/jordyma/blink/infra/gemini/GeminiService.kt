@@ -56,20 +56,32 @@ class GeminiService @Autowired constructor(
     }
 
     fun makePrompt(link: String, folders: String, content: String): String{
-        return "다음 텍스트를 읽고 다음 요구사항을 들어줘.\n" +
-                "텍스트 :" + content + "\n" +
-                "\t1\t텍스트를 summarize하여 “summary”를 한 문장으로 생성하여 “summary” 부분에 출력해줘.\n" +
-                "\t2\t텍스트의 제목을 추출해서 “subject” 부분에 출력해줘.\n" +
-                "\t3\t텍스트에 알맞는 keyword를 명사형으로 3개 추출해서 “keyword” 부분에 출력해줘.\n" +
-                "\t4\t텍스트에 어울리는 category를 [" + folders + "] 중에 3개 선택해서 “category” : 부분에 출력해줘. 어울리는 category가 없다고 판단되면 새로 생성해줘.\n" +
-                "\t5\t출력 형식은 반드시 JSON 포맷을 준수하고, 값 안에 쌍따옴표(\")가 있을 경우 반드시 역슬래시(\\)를 사용해 이스케이프 처리해줘.\n" +
-                "\t절대 JSON 포맷을 벗어나지 마. { } 안의 내용만 출력하고, 추가 설명이나 주의사항은 절대 작성하지 마." +
-                "{\n" +
-                "\t“subject” : “주제”,\n" +
-                "\t“summary” : “요약한 내용”,\n" +
-                "\t“keyword” : [“키워드1”, “키워드2”, “키워드3”],\n" +
-                "\t“category” : [\"카테고리1\", \"카테고리2\", \"카테고리3\"]\n" +
-                "}\n"
+        return """
+        다음 텍스트를 읽고 아래 요구사항을 충족하는 JSON을 생성해줘.
+        
+        텍스트: 
+        $content
+        
+        요구사항:
+        1. 텍스트를 summarize해서 "summary"에 한 문장으로 작성
+        2. 텍스트의 제목을 추출해서 "subject"에 작성
+        3. 텍스트에서 명사형 키워드 3개를 추출해 "keyword" 배열에 작성
+        4. 텍스트에 어울리는 category를 [${folders}] 중에서 3개 선택해서 "category" 배열에 작성. 적절한 게 없으면 새로 생성해도 됨.
+        
+        반드시 유효한 JSON으로만 응답해. JSON 형식은 아래와 같아.
+        
+        {
+            "subject": "텍스트 제목",
+            "summary": "텍스트 요약",
+            "keyword": ["키워드1", "키워드2", "키워드3"],
+            "category": ["카테고리1", "카테고리2", "카테고리3"]
+        }
+        
+        ❗ 반드시 위 JSON 구조만 출력하고, 추가 설명이나 부가 정보는 절대 쓰지 마.
+        ❗ JSON 포맷이 틀리면 시스템이 에러 처리하니 정확히 작성해줘.
+        ❗ 출력값 안에 쌍따옴표(", “, ”)가 있을 경우 반드시 역슬래시(\)를 사용해 이스케이프 처리해줘.
+    """.trimIndent()
+
     }
 
     fun extractJsonAndParse(text: String): PromptResponse {
@@ -82,8 +94,8 @@ class GeminiService @Autowired constructor(
 
         // JSON 문자열을 ContentData로 파싱하여 반환
         return if (jsonString != null) {
-            val fixedJson = fixQuotes(jsonString)
-            Json.decodeFromString<PromptResponse>(fixedJson)
+            //val fixedJson = fixQuotes(jsonString)
+            Json.decodeFromString<PromptResponse>(jsonString)
         } else {
             throw ApplicationException(ErrorCode.JSON_PARSING_FAILED, "gemini json 파싱 실패")
         }
@@ -91,8 +103,8 @@ class GeminiService @Autowired constructor(
 
     fun fixQuotes(input: String): String {
         return input
-            .replace('“', '"')
-            .replace('”', '"')
+            .replace('“', '\'')
+            .replace('”', '\'')
     }
 
     fun findFeedOrElseThrow(feedId: Long): Feed {
