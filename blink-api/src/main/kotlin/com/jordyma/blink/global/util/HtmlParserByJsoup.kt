@@ -1,5 +1,6 @@
 package com.jordyma.blink.global.util
 
+import com.jordyma.blink.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.safety.Safelist
@@ -18,6 +19,7 @@ class HtmlParserByJsoup {
     fun parseUrl(url: String): PageInfo {
         val document = when {
             url.contains(NAVER_BLOG_BASE_URL) -> fetchNaverBlogContent(url)
+            url.contains("naver.me") -> fetchNaverShortUrl(url)
             else -> fetchContent(url)
         }
 
@@ -33,6 +35,15 @@ class HtmlParserByJsoup {
         val iframeSrc = mainDoc.select("iframe#mainFrame").attr("src")
         val realUrl = NAVER_BLOG_BASE_URL + iframeSrc
         return createJsoupConnection(realUrl).get()
+    }
+
+    private fun fetchNaverShortUrl(url: String): Document {
+        val response = createJsoupConnection(url).execute()
+        val redirectedUrl = response.url().toString()
+        logger().info("리디렉트된 URL: $redirectedUrl")
+
+        // 리디렉트된 실제 URL로 다시 요청
+        return createJsoupConnection(redirectedUrl).get()
     }
 
     private fun fetchContent(url: String): Document =
