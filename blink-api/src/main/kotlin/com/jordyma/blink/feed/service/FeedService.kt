@@ -434,17 +434,18 @@ class FeedService(
             if(feed.status.equals(Status.PROCESSING) || feed.status.equals(Status.REQUESTED)){
                 result.add(
                     ProcessingFeedResDto(
-                        feedId = feed.id!!,
-                        title = "블링크가 눈 깜짝할 새에 요약할게요",
+                        feedId = feed.id,
+                        title = SUMMARY_START,
                         status = feed.status.toString()
                     )
                 )
             } else if (feed.status.equals(Status.FAILED)){
                 result.add(
                     ProcessingFeedResDto(
-                        feedId = feed.id!!,
-                        title = " 링크에 텍스트가 없어 요약할 수 없거나," + "\n접근 권한이 없어요. 확인 후 다시 실행해 주세요",
-                        status = feed.status.toString()
+                        feedId = feed.id,
+                        title = UNAVAILABLE_LINK,
+                        status = feed.status.toString(),
+                        originUrl = feed.originUrl,
                     )
                 )
             }
@@ -607,6 +608,9 @@ class FeedService(
 
     companion object{
         const val unClassified = "미분류"
+        const val SUMMARY_START = "블링크가 눈 깜짝할 새에 요약할게요."
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
+        const val FAIL_MESSAGE = " 링크에 텍스트가 없어 요약할 수 없거나," + "\n접근 권한이 없어요. 확인 후 다시 실행해 주세요."
+        const val UNAVAILABLE_LINK = "블링크는 현재 일부 링크만 저장 가능해요."
     }
 }
