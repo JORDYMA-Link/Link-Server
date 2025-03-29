@@ -7,6 +7,7 @@ data class ProcessingFeedResDto(
     val feedId: Long,
     val title: String,
     val status: String,
+    val originUrl: String ?= "",
 )
 
 @Schema(description = "요약 중인 링크 리스트 response dto")
