@@ -2,6 +2,7 @@ package com.jordyma.blink.domain.service
 
 import com.jordyma.blink.domain.dto.UserDataNotificationDto
 import com.jordyma.blink.logger
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -19,6 +20,7 @@ class SendUserDataNotificationService(
     private val channelId: String,
     @Value("\${slack.token}")
     private val botToken: String,
+    @Qualifier("slackRestTemplate")
     private val restTemplate: RestTemplate
 ) {
     fun sendUserDataNotification(data: UserDataNotificationDto) {

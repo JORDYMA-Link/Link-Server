@@ -7,8 +7,9 @@ import org.springframework.web.client.RestTemplate
 
 @Configuration
 class SlackRestTemplateConfig {
-    @Bean
-    fun restTemplate(): RestTemplate {
+
+    @Bean(name = ["slackRestTemplate"])
+    fun slackRestTemplate(): RestTemplate {
         return RestTemplate()
     }
 }
