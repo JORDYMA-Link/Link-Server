@@ -11,7 +11,8 @@ data class ChatRequest(
         this.generationConfig = GenerationConfig(
             candidateCount = 1,
             maxOutputTokens = 1000,
-            temperature = 0.7
+            temperature = 0.7,
+            response_mime_type = "application/json"
         )
     }
 
@@ -26,6 +27,7 @@ data class ChatRequest(
     data class GenerationConfig(
         var candidateCount: Int = 1,
         var maxOutputTokens: Int = 1000,
-        var temperature: Double = 0.7
+        var temperature: Double = 0.7,
+        var response_mime_type: String = "application/json"
     )
 }

@@ -1,5 +1,6 @@
 package com.jordyma.blink.global.util
 
+import com.jordyma.blink.logger
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.safety.Safelist
@@ -15,9 +16,11 @@ class HtmlParserByJsoup {
         val thumbnailImage: String,
     )
 
+
     fun parseUrl(url: String): PageInfo {
         val document = when {
             url.contains(NAVER_BLOG_BASE_URL) -> fetchNaverBlogContent(url)
+            url.contains("naver.me") -> fetchNaverShortUrl(url)
             else -> fetchContent(url)
         }
 
@@ -28,6 +31,7 @@ class HtmlParserByJsoup {
         )
     }
 
+
     private fun fetchNaverBlogContent(url: String): Document {
         val mainDoc = createJsoupConnection(url).get()
         val iframeSrc = mainDoc.select("iframe#mainFrame").attr("src")
@@ -35,8 +39,29 @@ class HtmlParserByJsoup {
         return createJsoupConnection(realUrl).get()
     }
 
+
+    private fun fetchNaverShortUrl(url: String): Document {
+        val response = createJsoupConnection(url).execute()
+        val redirectedUrl = response.url().toString()
+        logger().info("리디렉트된 URL: $redirectedUrl")
+
+        // 만약 link.naver.com/bridge로 리디렉트 됐다면, url 파라미터 값 추출
+        val finalUrl = if (redirectedUrl.contains("link.naver.com/bridge")) {
+            extractUrlFromBridge(redirectedUrl)
+        } else {
+            redirectedUrl
+        }
+
+        println("최종 URL: $finalUrl")
+
+        // 리디렉트된 실제 URL로 다시 요청
+        return createJsoupConnection(finalUrl).get()
+    }
+
+
     private fun fetchContent(url: String): Document =
         createJsoupConnection(url).get()
+
 
     private fun extractContent(document: Document): String {
         val content = when {
@@ -49,19 +74,34 @@ class HtmlParserByJsoup {
         return cleanHtml(content)
     }
 
+
     private fun extractThumbnailImage(document: Document): String =
         document.select("meta[property=og:image]")
             .firstOrNull()
             ?.attr("content")
             ?: ""
 
+
+    private fun extractUrlFromBridge(redirectedUrl: String): String {
+        val uri = java.net.URI(redirectedUrl)
+        val queryParams = uri.query.split("&").associate {
+            val (key, value) = it.split("=")
+            key to java.net.URLDecoder.decode(value, "UTF-8")
+        }
+
+        return queryParams["url"] ?: redirectedUrl
+    }
+
+
     private fun createJsoupConnection(url: String) = Jsoup.connect(url)
         .timeout(Duration.ofSeconds(TIMEOUT_SECONDS.toLong()).toMillis().toInt())
         .userAgent(USER_AGENT)
         .followRedirects(true)
 
+
     private fun cleanHtml(html: String): String =
         Jsoup.clean(html, Safelist.relaxed())
+
 
     companion object {
         private const val NAVER_BLOG_BASE_URL = "https://blog.naver.com"

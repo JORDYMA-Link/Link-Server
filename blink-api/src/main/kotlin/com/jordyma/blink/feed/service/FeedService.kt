@@ -568,7 +568,7 @@ class FeedService(
             Source.EO
         } else if (link.contains("youtube.com")) {
             Source.YOUTUBE
-        } else if (link.contains("naver.com")) {
+        } else if (link.contains("naver")) {
             Source.NAVER
         } else if (link.contains("google.com")) {
             Source.GOOGLE
