@@ -436,7 +436,8 @@ class FeedService(
                     ProcessingFeedResDto(
                         feedId = feed.id,
                         title = SUMMARY_START,
-                        status = feed.status.toString()
+                        status = feed.status.toString(),
+                        originUrl = feed.originUrl,
                     )
                 )
             } else if (feed.status.equals(Status.FAILED)){
