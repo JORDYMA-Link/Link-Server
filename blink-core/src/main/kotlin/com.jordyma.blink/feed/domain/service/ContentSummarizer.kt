@@ -18,3 +18,15 @@ data class PromptResponse(
     val keyword: List<String>,
     val category: List<String>,
 )
+
+@Serializable
+data class PromptSummaryResponse(
+    val subject: String,
+    val summary: String,
+)
+
+@Serializable
+data class PromptMetadataResponse(
+    val keyword: List<String>,
+    val category: List<String>,
+)
