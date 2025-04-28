@@ -18,4 +18,20 @@ class RedisClientImpl(private val redisTemplate: RedisTemplate<String, String>) 
         return redisTemplate.opsForValue().decrement(key)
     }
 
+    override fun incr(key: String): Long? {
+        return redisTemplate.opsForValue().increment(key)
+    }
+
+    override fun sadd(key: String, value: String): Long? {
+        return redisTemplate.opsForSet().add(key, value)
+    }
+
+    override fun scard(key: String): Long? {
+        return redisTemplate.opsForSet().size(key)
+    }
+
+    override fun expire(key: String, seconds: Long): Boolean {
+        return redisTemplate.expire(key, seconds, java.util.concurrent.TimeUnit.SECONDS) ?: false
+    }
+
 }
