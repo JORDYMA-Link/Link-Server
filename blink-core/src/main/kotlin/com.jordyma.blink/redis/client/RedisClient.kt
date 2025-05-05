@@ -15,4 +15,6 @@ interface RedisClient{
     fun scard(key: String): Long?
 
     fun expire(key: String, seconds: Long): Boolean
+
+    fun eval(script: String, keys: List<String>, args: List<String>): Any?
 }

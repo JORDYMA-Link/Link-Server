@@ -1,6 +1,7 @@
 package com.jordyma.blink.redis.client
 
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 
 @Component
@@ -32,6 +33,11 @@ class RedisClientImpl(private val redisTemplate: RedisTemplate<String, String>) 
 
     override fun expire(key: String, seconds: Long): Boolean {
         return redisTemplate.expire(key, seconds, java.util.concurrent.TimeUnit.SECONDS) ?: false
+    }
+
+    // 스크립트 실행
+    override fun eval(script: String, keys: List<String>, args: List<String>): Any? {
+        return redisTemplate.execute(RedisScript.of(script, Any::class.java), keys, *args.toTypedArray())
     }
 
 }
