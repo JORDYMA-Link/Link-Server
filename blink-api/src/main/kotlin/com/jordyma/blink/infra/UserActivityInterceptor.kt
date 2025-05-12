@@ -2,7 +2,7 @@ package com.jordyma.blink.infra
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
 import com.jordyma.blink.logger
-import com.jordyma.blink.stats.service.LinkStatisticsService
+import com.jordyma.blink.stats.service.LinkStatsIncreaseService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.messaging.handler.HandlerMethod
@@ -12,14 +12,14 @@ import org.springframework.web.servlet.HandlerInterceptor
 
 @Component
 class UserActivityInterceptor (
-    private val statisticsService: LinkStatisticsService,
+    private val linkStatsIncreaseService: LinkStatsIncreaseService,
 ) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         val userId = getUserIdFromRequest()
 
         // 활성 사용자수 ++
         if (userId != null) {
-            statisticsService.recordUserActivity(userId)
+            linkStatsIncreaseService.recordUserActivity(userId)
             logger().info("user record increment for user: {}", userId)
         }
 
@@ -30,7 +30,7 @@ class UserActivityInterceptor (
             val requestURI = request.requestURI
             if (requestURI.contains("/api/feeds/detail/") && request.method == "GET") {
                 logger().info("Feed view increment for URI: {}", requestURI)
-                statisticsService.incrementLinkView()
+                linkStatsIncreaseService.incrementLinkView()
             }
         }
 
