@@ -1,0 +1,25 @@
+package com.jordyma.blink.domain.stats.service
+
+import com.jordyma.blink.redis.client.RedisClient
+import com.jordyma.blink.stats.service.LinkStatisticsService
+import com.jordyma.blink.stats.service.LinkStatsProcessService
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+class LinkStatsProcessServiceImpl(
+    private val redisClient: RedisClient,
+) : LinkStatsProcessService {
+    override fun saveLinkViewCount(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getYesterdayLinkViewCount(): Int {
+        val yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE)
+        return redisClient.get("${LinkStatisticsService.LINK_VIEW_COUNT_KEY_PREFIX}$yesterday")?.toIntOrNull() ?: 0
+    }
+
+    override fun getYesterdayDailyActiveUsers(): Int {
+        val yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE)
+        return redisClient.scard("${LinkStatisticsService.DAILY_ACTIVE_USERS_KEY_PREFIX}$yesterday")?.toInt() ?: 0
+    }
+}

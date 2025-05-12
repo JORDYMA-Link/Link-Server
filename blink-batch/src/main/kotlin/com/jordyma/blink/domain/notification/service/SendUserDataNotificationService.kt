@@ -1,6 +1,6 @@
-package com.jordyma.blink.domain.service
+package com.jordyma.blink.domain.notification.service
 
-import com.jordyma.blink.domain.dto.UserDataNotificationDto
+import com.jordyma.blink.domain.notification.service.dto.UserDataNotificationDto
 import com.jordyma.blink.logger
 import com.jordyma.blink.stats.service.LinkStatisticsService
 import org.springframework.beans.factory.annotation.Qualifier

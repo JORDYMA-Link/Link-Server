@@ -1,4 +1,4 @@
-package com.jordyma.blink.domain.dto
+package com.jordyma.blink.domain.notification.dto
 
 data class UserDataNotificationDto (
     val newUserCount: Int = 0,
