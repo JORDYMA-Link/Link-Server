@@ -27,7 +27,7 @@ class OpenApiConfig {
     @Value("\${open-api.kakao.open-key-url}")
     lateinit var kakaoOpenKeyUrl: String
 
-    @Value("\${open-api.google.token-url}")
+    @Value("\${open-api.google.token-oauth-url}")
     lateinit var googleTokenUrl: String
 
 
