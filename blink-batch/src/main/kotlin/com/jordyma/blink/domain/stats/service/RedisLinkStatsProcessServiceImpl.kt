@@ -1,18 +1,14 @@
 package com.jordyma.blink.domain.stats.service
 
-import com.jordyma.blink.infra.stats.StatsStore
-import com.jordyma.blink.stats.service.LinkStatsIncreaseService
+import com.jordyma.blink.redis.client.RedisClient
 import com.jordyma.blink.stats.service.LinkStatsProcessService
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
-class LinkStatsProcessServiceImpl (
-    @Qualifier("linkStatsIncreaseServiceImpl")
-    private val linkStatsIncreaseService: LinkStatsIncreaseService,
-    private val statsStore: StatsStore,
+class RedisLinkStatsProcessServiceImpl(
+    private val redisClient: RedisClient,
 ) : LinkStatsProcessService {
     override fun saveLinkViewCount(): Long {
         TODO("Not yet implemented")
@@ -20,11 +16,16 @@ class LinkStatsProcessServiceImpl (
 
     override fun getYesterdayLinkViewCount(): Long {
         val yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE)
-        return statsStore.getLinkViewCount(yesterday)
+        return (redisClient.get("${LINK_VIEW_COUNT_KEY_PREFIX}$yesterday")?.toIntOrNull() ?: 0L) as Long
     }
 
     override fun getYesterdayDailyActiveUsers(): Long {
         val yesterday = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_DATE)
-        return statsStore.getActiveUserCount(yesterday)
+        return (redisClient.scard("${DAILY_ACTIVE_USERS_KEY_PREFIX}$yesterday")?.toInt() ?: 0L) as Long
+    }
+
+    companion object {
+        const val LINK_VIEW_COUNT_KEY_PREFIX = "stats:link:view:count:"
+        const val DAILY_ACTIVE_USERS_KEY_PREFIX = "stats:user:active:"
     }
 }

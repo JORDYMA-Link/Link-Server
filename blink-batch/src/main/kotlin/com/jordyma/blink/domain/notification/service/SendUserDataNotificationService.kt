@@ -23,6 +23,7 @@ class SendUserDataNotificationService(
     private val botToken: String,
     @Qualifier("slackRestTemplate")
     private val restTemplate: RestTemplate,
+    @Qualifier("linkStatsProcessServiceImpl")
     private val linkStatsProcessService : LinkStatsProcessService,
 ) {
     fun sendUserDataNotification(data: UserDataNotificationDto) {

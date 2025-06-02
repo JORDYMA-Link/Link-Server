@@ -1,6 +1,6 @@
 package com.jordyma.blink.jobs.user
 
-import com.jordyma.blink.domain.notification.service.dto.UserDataNotificationDto
+import com.jordyma.blink.domain.notification.dto.UserDataNotificationDto
 import com.jordyma.blink.domain.notification.service.SendUserDataNotificationService
 import com.jordyma.blink.logger
 import org.springframework.batch.core.Job
