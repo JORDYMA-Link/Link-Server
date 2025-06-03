@@ -1,5 +1,6 @@
 package com.jordyma.blink.global.config
 
+import com.jordyma.blink.auth.api.GoogleAuthApi
 import com.jordyma.blink.global.http.api.KakaoAuthApi
 import io.netty.channel.ChannelOption
 import io.netty.handler.timeout.ReadTimeoutHandler
@@ -25,6 +26,10 @@ class OpenApiConfig {
 
     @Value("\${open-api.kakao.open-key-url}")
     lateinit var kakaoOpenKeyUrl: String
+
+    @Value("\${open-api.google.token-oauth-url}")
+    lateinit var googleTokenUrl: String
+
 
     private fun myConnectionProvider(): ConnectionProvider {
         return ConnectionProvider
@@ -55,5 +60,18 @@ class OpenApiConfig {
             .builderFor(WebClientAdapter.create(webClient))
             .build()
             .createClient(KakaoAuthApi::class.java)
+    }
+
+    @Bean
+    fun googleAuthApi(): GoogleAuthApi {
+        val webClient: WebClient = WebClient.builder()
+            .baseUrl(googleTokenUrl)
+            .clientConnector(ReactorClientHttpConnector(httpClient()))
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .build()
+        return HttpServiceProxyFactory
+            .builderFor(WebClientAdapter.create(webClient))
+            .build()
+            .createClient(GoogleAuthApi::class.java)
     }
 }

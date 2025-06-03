@@ -7,7 +7,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.jordyma.blink.auth.api.GoogleAuthApi
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
+import com.jordyma.blink.auth.dto.request.GoogleLoginRequestDto
 import com.jordyma.blink.user.SocialType
 import com.jordyma.blink.user.User
 import com.jordyma.blink.user.UserRepository
@@ -58,6 +60,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.security.KeyFactory
 import java.security.spec.PKCS8EncodedKeySpec
 import java.io.*
@@ -84,6 +87,7 @@ class AuthService(
     private val feedRepository: FeedRepository,
     private val keywordRepository: KeywordRepository,
     private val kakaoAuthApi: KakaoAuthApi,
+    private val googleAuthApi: GoogleAuthApi,
     private val userRefreshTokenRepository: UserRefreshTokenRepository,
     private val restTemplate: RestTemplate,
     private val amazonS3: AmazonS3,
@@ -360,6 +364,36 @@ class AuthService(
         )
     }
 
+    @Transactional
+    fun googleLogin(googleLoginRequestDto: GoogleLoginRequestDto): TokenResponseDto {
+        val userInfo = try {
+            googleAuthApi.getGoogleUserInfo(googleLoginRequestDto.idToken)
+        } catch (e: WebClientResponseException) {
+            if (e.statusCode.is4xxClientError) {
+                throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "유효하지 않은 소셜 로그인 토큰입니다.")
+            } else if (e.statusCode.is5xxServerError) {
+                throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "Google 서버 오류로 토큰 인증에 실패했습니다")
+            }
+            throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "알 수 없는 오류: ${e.message}")
+        }
+
+        val socialUserId = userInfo.sub
+        val name = userInfo.name
+
+        val findUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.GOOGLE, socialUserId)
+        if (findUser == null)   {
+                val newUser = upsertUser(SocialType.GOOGLE, socialUserId, name)
+                makeOnboardingFeed(newUser)
+                return registerNewUserWithToken(newUser)
+            }
+
+        // 이미 가입한 경우
+        val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
+            ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
+
+        return generateTokenDto(requestUser)
+    }
+
     private fun createClientSecret(): String {
         val header = JWSHeader.Builder(JWSAlgorithm.ES256).keyID(appleLoginKey).build()
         val now = Date()
@@ -604,6 +638,20 @@ class AuthService(
         val REFRESH_TOKEN_EXPIRATION_MS: Int = 14 * 24 * 60 * 60 * 1000
         return LocalDateTime.now().plus(REFRESH_TOKEN_EXPIRATION_MS.toLong(), ChronoUnit.MILLIS)
     }
+
+    /**
+     * 새 사용자를 등록하고 Access, Refresh 토큰을 생성합니다.
+     */
+    private fun registerNewUserWithToken(user:User): TokenResponseDto {
+        userRepository.save(user)
+
+        val accessToken = jwtTokenUtil.generateToken(TokenType.ACCESS_TOKEN, user, jwtSecret)
+        val refreshToken = jwtTokenUtil.generateToken(TokenType.REFRESH_TOKEN, user, jwtSecret)
+        userRefreshTokenRepository.save(UserRefreshToken.of(refreshToken, user, getExpirationDateTime()))
+
+        return TokenResponseDto(accessToken, refreshToken)
+    }
+
 
     companion object{
         const val onboarding_summary = "블링크를 활용하는 방법을 정리했습니다. 글 추가부터 똑똑하게 활용하는 방법을 모두 알려드릴게요!"

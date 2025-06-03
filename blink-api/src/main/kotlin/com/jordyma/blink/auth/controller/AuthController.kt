@@ -2,6 +2,7 @@ package com.jordyma.blink.auth.controller
 import com.jordyma.blink.auth.dto.State
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
+import com.jordyma.blink.auth.dto.request.GoogleLoginRequestDto
 import com.jordyma.blink.auth.dto.response.AppleUserInfo
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
@@ -50,6 +51,15 @@ class AuthController(
     ): ResponseEntity<TokenResponseDto> {
         return ResponseEntity.ok(authService.appleLogin(appleLoginRequestDto))
     }
+
+    @PostMapping("/google-login")
+    @Operation(summary = "구글 로그인 API", description = "구글 idtoken을 입력받아 소셜 로그인을 진행")
+    fun googleLogin(
+        @Validated @RequestBody googleLoginRequestDto: GoogleLoginRequestDto
+    ): ResponseEntity<TokenResponseDto> {
+        return ResponseEntity.ok(authService.googleLogin(googleLoginRequestDto))
+    }
+
 
     @PostMapping("/regenerate-token")
     @Operation(summary = "토큰 재발급 API", description = "기존 리프레시 토큰을 입력받아 새로운 토큰을 발급")
@@ -122,9 +132,6 @@ class AuthController(
         return ResponseEntity<Void>(headers, HttpStatus.FOUND)
     }
 
-    fun parseUserJson(userJson: String): AppleUserInfo {
-        return Json.decodeFromString(userJson)
-    }
 
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "refresh token으로만 요청 가능, 로그아웃 처리 시 db에 저장된 refresh token 만료 처리")
