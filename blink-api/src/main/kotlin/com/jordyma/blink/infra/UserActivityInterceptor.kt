@@ -5,6 +5,7 @@ import com.jordyma.blink.logger
 import com.jordyma.blink.stats.service.LinkStatsIncreaseService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.messaging.handler.HandlerMethod
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor
 
 @Component
 class UserActivityInterceptor (
+    @Qualifier("linkStatsIncreaseServiceImpl")
     private val linkStatsIncreaseService: LinkStatsIncreaseService,
 ) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {

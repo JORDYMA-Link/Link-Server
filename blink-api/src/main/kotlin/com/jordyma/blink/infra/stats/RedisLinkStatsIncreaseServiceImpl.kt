@@ -2,13 +2,15 @@ package com.jordyma.blink.infra.stats
 
 import com.jordyma.blink.redis.client.RedisClient
 import com.jordyma.blink.stats.service.LinkStatsIncreaseService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Service
 class RedisLinkStatsIncreaseServiceImpl(
-    private val redisClient: RedisClient,
+    @Autowired(required = false)
+    private val redisClient: RedisClient?,
 ) : LinkStatsIncreaseService {
     // INCR 한 뒤 '첫 생성'이면 TTL 부여
     private val incrExpireLua = """
@@ -35,14 +37,14 @@ class RedisLinkStatsIncreaseServiceImpl(
     override fun incrementLinkView() {
         val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
         val key = "${LINK_VIEW_COUNT_KEY_PREFIX}$today"
-        redisClient.eval(incrExpireLua, listOf(key), listOf(ttlSeconds))
+        redisClient?.eval(incrExpireLua, listOf(key), listOf(ttlSeconds))
     }
 
     // 일일 활성 사용자수 증가
     override fun recordUserActivity(userId: Long) {
         val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
         val key = "${DAILY_ACTIVE_USERS_KEY_PREFIX}$today"
-        redisClient.eval(saddExpireLua, listOf(key), listOf(userId.toString(), ttlSeconds))
+        redisClient?.eval(saddExpireLua, listOf(key), listOf(userId.toString(), ttlSeconds))
     }
 
     companion object {
