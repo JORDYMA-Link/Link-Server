@@ -36,12 +36,12 @@ class SendUserDataNotificationService(
 
         val message = """
              *${formattedDate} 사용자 보고서*
-            ㅤ- 신규 사용자 +${data.newUserCount} (누적 ${data.totalUserCount})
-            ㅤ- 신규 사용자 링크 저장 +${data.newUserFeed}
-            ㅤ- 기존 사용자 링크 저장 +${data.existingUserFeed}
+            - 신규 사용자 +${data.newUserCount} (누적 ${data.totalUserCount})
+            - 신규 사용자 링크 저장 +${data.newUserFeed}
+            - 기존 사용자 링크 저장 +${data.existingUserFeed}
             
-             - 링크 저장 클릭 횟수 : $linkViewCount
-             - 활성 사용자수 : $activeUsers
+            - 링크 저장 클릭 횟수 : $linkViewCount
+            - 활성 사용자수 : $activeUsers
         """.trimIndent()
 
         val url = UriComponentsBuilder
