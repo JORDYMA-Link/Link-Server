@@ -1,10 +1,16 @@
 package com.jordyma.blink.redis.client
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
 
 @Component
+@ConditionalOnProperty(
+    name = ["redis.enabled"],
+    havingValue = "true",
+    matchIfMissing = false
+)
 class RedisClientImpl(private val redisTemplate: RedisTemplate<String, String>) : RedisClient {
 
     override fun set(key: String, value: String) {
