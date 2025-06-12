@@ -9,6 +9,7 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.api.GoogleAuthApi
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
+import com.jordyma.blink.auth.dto.request.GoogleCallbackRequestDto
 import com.jordyma.blink.auth.dto.request.GoogleLoginRequestDto
 import com.jordyma.blink.user.SocialType
 import com.jordyma.blink.user.User
@@ -105,6 +106,9 @@ class AuthService(
     @Value("\${apple.web-client-id}") val appleWebClientId: String? = null,
     @Value("\${apple.key-path}") val keyPath: String? = null,
     @Value("\${spring.cloud.aws.s3.bucket}") private val bucket: String,
+    @Value("\${google.auth.client-id}") private val googleClientId: String,
+    @Value("\${google.auth.client-secret}") private val googleClientSecret: String,
+    @Value("\${google.auth.redirect-uri}") private val googleWebRedirectUri: String,
 ) {
 
     @Transactional
@@ -393,6 +397,38 @@ class AuthService(
 
         return generateTokenDto(requestUser)
     }
+
+
+    @Transactional
+    fun googleLoginWeb(code: String): TokenResponseDto {
+        // 1. Google 서버에서 id_token 받아오기
+        val tokenResponse = googleAuthApi.getGoogleAccessToken(GoogleCallbackRequestDto(
+            clientId = this.googleClientId,
+            clientSecret = this.googleClientSecret,
+            code = code,
+            redirectUri = this.googleWebRedirectUri
+        ))
+
+        val idToken = tokenResponse.id_token
+
+        // 2. 토큰으로 사용자 정보 요청
+        val userInfo = googleAuthApi.getGoogleUserInfo(idToken)
+
+        val socialUserId = userInfo.sub
+        val name = userInfo.name
+
+        // 3. DB에서 사용자 찾기
+        val user = userRepository.findBySocialTypeAndSocialUserId(SocialType.GOOGLE, socialUserId) ?: run {
+            // 가입 안 된 경우 회원가입 & 온보딩 피드 생성
+            val newUser = upsertUser(SocialType.GOOGLE, socialUserId, name)
+            makeOnboardingFeed(newUser)
+            return registerNewUserWithToken(newUser)
+        }
+
+        // 4. 기존 사용자라면 토큰만 발급
+        return generateTokenDto(user)
+    }
+
 
     private fun createClientSecret(): String {
         val header = JWSHeader.Builder(JWSAlgorithm.ES256).keyID(appleLoginKey).build()
