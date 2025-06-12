@@ -1,8 +1,8 @@
-package com.jordyma.blink.domain.service
+package com.jordyma.blink.domain.notification.service
 
-import com.jordyma.blink.domain.dto.UserDataNotificationDto
+import com.jordyma.blink.domain.notification.dto.UserDataNotificationDto
 import com.jordyma.blink.logger
-import com.jordyma.blink.stats.service.LinkStatisticsService
+import com.jordyma.blink.stats.service.LinkStatsProcessService
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
@@ -23,24 +23,25 @@ class SendUserDataNotificationService(
     private val botToken: String,
     @Qualifier("slackRestTemplate")
     private val restTemplate: RestTemplate,
-    private val statisticsService: LinkStatisticsService,
+    @Qualifier("linkStatsProcessServiceImpl")
+    private val linkStatsProcessService : LinkStatsProcessService,
 ) {
     fun sendUserDataNotification(data: UserDataNotificationDto) {
 
         val yesterday = LocalDate.now().minusDays(1)
         val formattedDate = yesterday.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 
-        val linkViewCount = statisticsService.getYesterdayLinkViewCount()
-        val activeUsers = statisticsService.getYesterdayDailyActiveUsers()
+        val linkViewCount = linkStatsProcessService.getYesterdayLinkViewCount()
+        val activeUsers = linkStatsProcessService.getYesterdayDailyActiveUsers()
 
         val message = """
              *${formattedDate} 사용자 보고서*
-            ㅤ- 신규 사용자 +${data.newUserCount} (누적 ${data.totalUserCount})
-            ㅤ- 신규 사용자 링크 저장 +${data.newUserFeed}
-            ㅤ- 기존 사용자 링크 저장 +${data.existingUserFeed}
+            - 신규 사용자 +${data.newUserCount} (누적 ${data.totalUserCount})
+            - 신규 사용자 링크 저장 +${data.newUserFeed}
+            - 기존 사용자 링크 저장 +${data.existingUserFeed}
             
-             - 링크 저장 클릭 횟수 : $linkViewCount
-             - 활성 사용자수 : $activeUsers
+            - 링크 저장 클릭 횟수 : $linkViewCount
+            - 활성 사용자수 : $activeUsers
         """.trimIndent()
 
         val url = UriComponentsBuilder

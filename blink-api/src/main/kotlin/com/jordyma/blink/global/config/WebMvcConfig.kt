@@ -13,7 +13,7 @@ class WebMvcConfig : WebMvcConfigurer {
     private lateinit var userActivityInterceptor: UserActivityInterceptor
 
     override fun addInterceptors(registry: InterceptorRegistry) {
-//        registry.addInterceptor(userActivityInterceptor)
-//            .addPathPatterns("/api/**", "/user/**", "/auth/**")
+        registry.addInterceptor(userActivityInterceptor)
+            .addPathPatterns("/api/**", "/user/**", "/auth/**")
     }
 }
