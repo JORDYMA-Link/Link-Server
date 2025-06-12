@@ -133,6 +133,35 @@ class AuthController(
     }
 
 
+    @GetMapping("/google-login-web/callback")
+    fun googleLoginWeb(request: HttpServletRequest): ResponseEntity<Void> {
+        logger().info("google login web callback api called : ${request.getParameter("code")}")
+
+        // 1. state 파라미터 복호화해서 redirect URI 얻기
+        val base64Decoder = Base64.getUrlDecoder()
+        val jsonFormat = Json { prettyPrint = true }
+        val jsonString = base64Decoder.decode(request.getParameter("state")).toString(Charsets.UTF_8)
+        val stateInfo: State = runCatching {
+            jsonFormat.decodeFromString<State>(jsonString)
+        }.getOrElse {
+            State(webRedirectUrl = "https://api.blink-archive.com") // fallback
+        }
+
+        // 2. code로 로그인 처리
+        val tokenInfo = authService.googleLoginWeb(request.getParameter("code"))
+
+        // 3. 토큰을 쿼리 파라미터로 리디렉션
+        val uri = stateInfo.webRedirectUrl.toHttpUrlOrNull()!!.newBuilder()
+            .addQueryParameter("accessToken", tokenInfo.accessToken)
+            .addQueryParameter("refreshToken", tokenInfo.refreshToken)
+            .build()
+
+        val headers = HttpHeaders()
+        headers.location = uri.toUri()
+        return ResponseEntity<Void>(headers, HttpStatus.FOUND)
+    }
+
+
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "refresh token으로만 요청 가능, 로그아웃 처리 시 db에 저장된 refresh token 만료 처리")
     fun logout(

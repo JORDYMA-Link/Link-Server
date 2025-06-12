@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull
 data class GoogleCallbackRequestDto (
     val clientId: String? = null,
     val clientSecret: String? = null,
+    val code: String? = null,
     val grantType: String? = "authorization_code",
-    val refreshToken: String? = null,
+    val redirectUri: String? = null,
 )
