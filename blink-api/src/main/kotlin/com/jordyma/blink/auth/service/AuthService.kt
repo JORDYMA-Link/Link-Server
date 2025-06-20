@@ -392,7 +392,7 @@ class AuthService(
             }
 
         // 이미 가입한 경우
-        val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.APPLE, socialUserId)
+        val requestUser = userRepository.findBySocialTypeAndSocialUserId(SocialType.GOOGLE, socialUserId)
             ?: throw ApplicationException(ErrorCode.USER_NOT_FOUND, "가입하지 않은 유저입니다.")
 
         return generateTokenDto(requestUser)
