@@ -9,13 +9,13 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.jordyma.blink.auth.api.GoogleAuthApi
 import com.jordyma.blink.auth.dto.request.AppleLoginRequestDto
-import com.jordyma.blink.auth.dto.request.GoogleCallbackRequestDto
 import com.jordyma.blink.auth.dto.request.GoogleLoginRequestDto
 import com.jordyma.blink.user.SocialType
 import com.jordyma.blink.user.User
 import com.jordyma.blink.user.UserRepository
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
 import com.jordyma.blink.auth.dto.response.AppleDto
+import com.jordyma.blink.auth.dto.response.GoogleCallbackResponseDto
 import com.jordyma.blink.auth.dto.response.TokenResponseDto
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
@@ -56,11 +56,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import java.security.KeyFactory
 import java.security.spec.PKCS8EncodedKeySpec
@@ -109,6 +111,7 @@ class AuthService(
     @Value("\${google.auth.client-id}") private val googleClientId: String,
     @Value("\${google.auth.client-secret}") private val googleClientSecret: String,
     @Value("\${google.auth.redirect-uri}") private val googleWebRedirectUri: String,
+    @Value("\${google.auth.token-uri}") private val googleWebTokenUrl: String,
 ) {
 
     @Transactional
@@ -402,12 +405,7 @@ class AuthService(
     @Transactional
     fun googleLoginWeb(code: String): TokenResponseDto {
         // 1. Google 서버에서 id_token 받아오기
-        val tokenResponse = googleAuthApi.getGoogleAccessToken(GoogleCallbackRequestDto(
-            clientId = this.googleClientId,
-            clientSecret = this.googleClientSecret,
-            code = code,
-            redirectUri = this.googleWebRedirectUri
-        ))
+        val tokenResponse = getGoogleAccessToken(code)
 
         val idToken = tokenResponse.id_token
 
@@ -427,6 +425,31 @@ class AuthService(
 
         // 4. 기존 사용자라면 토큰만 발급
         return generateTokenDto(user)
+    }
+
+    /**
+     * 구글 OAuth 로그인 과정에서 받은 authorization code를
+     * access token과 ID token으로 교환합니다.
+     */
+    private fun getGoogleAccessToken(code: String): GoogleCallbackResponseDto {
+        val formData = LinkedMultiValueMap<String, String>().apply {
+            add("code", code)
+            add("client_id", googleClientId)
+            add("client_secret", googleClientSecret)
+            add("redirect_uri", googleWebRedirectUri)
+            add("grant_type", "authorization_code")
+        }
+
+        return WebClient.builder()
+            .baseUrl(googleWebTokenUrl)
+            .build()
+            .post()
+            .uri("/token")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+            .bodyValue(formData)
+            .retrieve()
+            .bodyToMono(GoogleCallbackResponseDto::class.java)
+            .block()!!
     }
 
 
