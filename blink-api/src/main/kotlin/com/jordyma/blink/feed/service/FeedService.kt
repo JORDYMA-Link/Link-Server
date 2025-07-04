@@ -31,6 +31,7 @@ import com.jordyma.blink.logger
 import org.springframework.data.domain.PageRequest
 import com.jordyma.blink.user.User
 import com.jordyma.blink.user.UserRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -47,7 +48,9 @@ class FeedService(
     private val keywordRepository: KeywordRepository,
     private val userRepository: UserRepository,
     private val folderRepository: FolderRepository,
-    private val recommendRepository: RecommendRepository
+    private val recommendRepository: RecommendRepository,
+    @Value("\${promotion.start}") private val startDate: LocalDateTime,
+    @Value("\${promotion.end}") private val endDate: LocalDateTime,
 ) {
 
     @Transactional(readOnly = true)
@@ -540,6 +543,16 @@ class FeedService(
         feed.updateKeywords(createdKeywords)
     }
 
+    @Transactional
+    fun getChallengeStatus(userId: Long): ChallengeResDto {
+        // 프로모션 기간 중 저장한 피드 개수 쿼리
+        val cnt = feedRepository.getFeedCntBetween(startDate, endDate, userId)
+        return ChallengeResDto(
+            isVisible = cnt < CHALLENGE_COMPLETE_THRESHOLD,
+            count = cnt,
+        )
+    }
+
     fun checkFolder(user: User, folderName: String): Folder? {
         val actualFolderName = if (folderName.isBlank()) unClassified else folderName
         var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == actualFolderName }
@@ -613,5 +626,6 @@ class FeedService(
         const val SUMMARY_COMPLETED = "링크 요약이 완료되었어요."
         const val FAIL_MESSAGE = " 링크에 텍스트가 없어 요약할 수 없거나," + "\n접근 권한이 없어요. 확인 후 다시 실행해 주세요."
         const val UNAVAILABLE_LINK = "블링크는 현재 일부 링크만 저장 가능해요."
+        const val CHALLENGE_COMPLETE_THRESHOLD = 6
     }
 }

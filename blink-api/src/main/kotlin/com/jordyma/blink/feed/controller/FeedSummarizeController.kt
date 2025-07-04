@@ -5,6 +5,7 @@ import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedIdResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
 import com.jordyma.blink.feed.dto.request.LinkRequestDto
+import com.jordyma.blink.feed.dto.response.ChallengeResDto
 import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
@@ -88,4 +89,15 @@ class FeedSummarizeController(
         val response = feedService.update(userAccount, requestDto, feedId)
         return ResponseEntity.ok(response)
     }
+
+    @Tag(name = "link", description = "링크 API")
+    @Operation(summary = "프로모션 기간 챌린지 api", description = "모달 표시 여부, 1 ~ 5: 각각 n번 저장됨")
+    @GetMapping("/challenge")
+    fun getChallengeStatus(
+        @AuthenticationPrincipal userAccount: UserAccount
+    ): ResponseEntity<ChallengeResDto> {
+        val response = feedService.getChallengeStatus(userAccount.userId)
+        return ResponseEntity.ok(response)
+    }
+
 }
