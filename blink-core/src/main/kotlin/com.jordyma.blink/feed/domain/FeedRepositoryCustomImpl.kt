@@ -348,8 +348,8 @@ class FeedRepositoryCustomImpl(
             .from(feed)
             .innerJoin(feed.folder, folder)
             .where(
+                folder.user.id.eq(userId),
                 feed.createdAt.between(startDate, endDate)
-                    .and(folder.user.id.eq(userId))
             )
             .fetchOne() ?: 0L
     }
