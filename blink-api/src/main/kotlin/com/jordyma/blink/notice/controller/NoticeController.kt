@@ -40,6 +40,13 @@ class NoticeController (
         return ResponseEntity.ok(response)
     }
 
+    @Operation(summary = "웹뷰 조회 테스트 api", description = "flag == true일 때 link 띄우기")
+    @GetMapping("/webview/test")
+    fun getWebViewTest(): ResponseEntity<WebViewDto> {
+        val response = noticeService.getWebView()
+        return ResponseEntity.ok(response)
+    }
+
     @Operation(summary = "웹뷰 수정 api", description = "link - 웹뷰 url, startDate~endDate - 웹뷰 띄울 기간 설정")
     @PatchMapping("/webview")
     fun updateWebView(
