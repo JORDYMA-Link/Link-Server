@@ -553,6 +553,16 @@ class FeedService(
         )
     }
 
+    @Transactional
+    fun getChallengeStatusTest(userId: Long, count: Int): ChallengeResDto {
+        // 프로모션 기간 중 저장한 피드 개수 쿼리
+        // val cnt = feedRepository.getFeedCntBetween(startDate, endDate, userId)
+        return ChallengeResDto(
+            isVisible = count < CHALLENGE_COMPLETE_THRESHOLD,
+            count = count.toLong(),
+        )
+    }
+
     fun checkFolder(user: User, folderName: String): Folder? {
         val actualFolderName = if (folderName.isBlank()) unClassified else folderName
         var folder = folderRepository.findAllByUser(user).firstOrNull { it.name == actualFolderName }

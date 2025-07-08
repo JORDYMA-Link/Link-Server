@@ -100,4 +100,15 @@ class FeedSummarizeController(
         return ResponseEntity.ok(response)
     }
 
+    @Tag(name = "link", description = "링크 API")
+    @Operation(summary = "프로모션 기간 챌린지 api", description = "모달 표시 여부, 1 ~ 5: 각각 n번 저장됨")
+    @GetMapping("/challenge/test")
+    fun getChallengeStatus(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestParam("count") count: Int,
+    ): ResponseEntity<ChallengeResDto> {
+        val response = feedService.getChallengeStatusTest(userAccount.userId, count)
+        return ResponseEntity.ok(response)
+    }
+
 }
