@@ -1,4 +1,4 @@
-package com.jordyma.blink.redis.config
+package com.jordyma.blink.redis
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
