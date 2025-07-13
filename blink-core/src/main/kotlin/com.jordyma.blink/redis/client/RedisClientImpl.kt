@@ -46,4 +46,17 @@ class RedisClientImpl(private val redisTemplate: RedisTemplate<String, String>) 
         return redisTemplate.execute(RedisScript.of(script, Any::class.java), keys, *args.toTypedArray())
     }
 
+    override fun zcount(key: String, min: Long, max: Long): Int {
+        return redisTemplate.opsForZSet().count(key, min.toDouble(), max.toDouble())?.toInt() ?: 0
+    }
+
+    override fun zadd(key: String, score: Double, member: String): Long {
+        val added = redisTemplate.opsForZSet().add(key, member, score)
+        return if (added == true) 1L else 0L
+    }
+
+    override fun zremrangebyscore(key: String, min: Double, max: Double): Long {
+        return redisTemplate.opsForZSet().removeRangeByScore(key, min, max) ?: 0L
+    }
+
 }

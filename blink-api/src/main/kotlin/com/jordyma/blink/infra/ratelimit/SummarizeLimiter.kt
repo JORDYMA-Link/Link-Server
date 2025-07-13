@@ -5,9 +5,11 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.logger
 import com.jordyma.blink.redis.client.RedisClient
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
 import java.lang.Math.ceil
 import java.time.Instant
 
+@Component
 class SummarizeLimiter(
     private val redisClient: RedisClient,
     @Value("\${rate.limit.window-size}")
@@ -35,7 +37,7 @@ class SummarizeLimiter(
                 "overlapRatio=${overlapRatio}, estimated=${estimatedCount}, final=${finalCount}")
 
         if (finalCount >= maxRequests) {
-            throw ApplicationException(ErrorCode.TOO_MANY_REQUEST, "잠시 후 다시 요청해주세요.")
+            return false
         }
 
         recordCurrentRequest(key, now)
@@ -61,7 +63,7 @@ class SummarizeLimiter(
         redisClient.zadd(key, timestamp.toDouble(), timestamp.toString())
         redisClient.expire(key, (windowSizeSec * 2).toLong())
 
-        // 2 윈도우보다 오래된 데이터 정리
+        // 2 윈도우(2분)보다 오래된 데이터 정리
         val cleanupThreshold = timestamp - (windowSizeSec * 2)
         redisClient.zremrangebyscore(key, 0.0, cleanupThreshold.toDouble())
     }
