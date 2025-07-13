@@ -16,14 +16,22 @@ class CommonParameter(
     val paramValue: String,
 
     @Column(name = "valid_start_date")
-    val validStartDate: LocalDate? = null,
+    var validStartDate: LocalDate? = null,
 
     @Column(name = "valid_end_date")
-    val validEndDate: LocalDate? = null
+    var validEndDate: LocalDate? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
 
     protected constructor() : this("", "") // JPA 기본 생성자를 위해
+
+    fun updateStartDate(startDate: String) {
+        this.validStartDate = LocalDate.parse(startDate)
+    }
+
+    fun updateEndDate(endDate: String) {
+        this.validEndDate = LocalDate.parse(endDate)
+    }
 }
