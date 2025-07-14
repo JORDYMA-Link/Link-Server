@@ -5,11 +5,13 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
 import org.springframework.boot.runApplication
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication(exclude = [RedisAutoConfiguration::class])
 @EnableBatchProcessing
 @EnableScheduling
+@EnableJpaAuditing
 class BlinkBatchApplication
 inline fun <reified T> T.logger() = LoggerFactory.getLogger(T::class.java)!!
 

@@ -1,13 +1,11 @@
 package com.jordyma.blink.stats
 
-import com.jordyma.blink.common.BaseTimeEntity
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 class UserStatistic(
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     val id: Long? = null,
 
@@ -15,7 +13,9 @@ class UserStatistic(
 
     var count: Long,
 
-    ) : BaseTimeEntity() {
+    var date: LocalDateTime,
+
+    ) {
 
     fun updateCount(count: Long){
         this.count = count

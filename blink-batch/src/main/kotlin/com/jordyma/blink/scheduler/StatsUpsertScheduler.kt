@@ -18,7 +18,7 @@ class StatsUpsertScheduler(
     private val userStatisticRepository: UserStatisticRepository,
 ) {
 
-    @Scheduled(cron = "0 59 * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     fun upsertHourlyStats() {
         try {
@@ -41,7 +41,8 @@ class StatsUpsertScheduler(
         }
     }
 
-    private fun upsertUserStatistic(type: String, count: Long, dateTime: LocalDateTime) {
+    // @Transactional
+    fun upsertUserStatistic(type: String, count: Long, dateTime: LocalDateTime) {
         val existingStat = userStatisticRepository.findByTypeAndDate(type, dateTime)
 
         if (existingStat != null) {
@@ -50,9 +51,11 @@ class StatsUpsertScheduler(
         } else {
             val newStat = UserStatistic(
                 type = type,
-                count = count
+                count = count,
+                date = LocalDateTime.now()
             )
             userStatisticRepository.save(newStat)
+
         }
     }
 

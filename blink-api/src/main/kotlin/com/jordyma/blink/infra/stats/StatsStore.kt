@@ -68,7 +68,7 @@ class StatsStore (
 
     // 활성 사용자 수 조회
     fun getActiveUserCount(date: String): Long {
-        return (dailyActiveUsers[date]?.size ?: 0L) as Long
+        return (dailyActiveUsers[date]?.size ?: 0L).toLong()
     }
 
     @Scheduled(cron = "0 1 0 * * *")
