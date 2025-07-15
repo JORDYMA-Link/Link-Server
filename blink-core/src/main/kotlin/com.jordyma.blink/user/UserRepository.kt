@@ -16,6 +16,9 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query("select u from user u where u.deletedAt is null")
     fun findActiveUser(): List<User>
 
+    @Query("select u from user u where u.id =:id")
+    fun findTestUser(id: Long): List<User>
+
 //    override fun getById(id: Long): User =
 //        findById(id).orElseThrow() { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 유저가 없습니다 : $id", Throwable()) }
 }
