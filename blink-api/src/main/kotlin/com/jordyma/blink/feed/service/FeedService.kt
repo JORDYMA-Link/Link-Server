@@ -530,6 +530,26 @@ class FeedService(
     }
 
     @Transactional
+    fun getChallengeStatus(userId: Long): ChallengeResDto {
+        val feeds = feedRepository.getFeedBetween(startDate, endDate, userId)
+        val today = LocalDateTime.now().dayOfMonth
+
+        // 프로모션 기간 중 저장한 피드를 날짜별로 카운트
+        val dailyFeedCount = feeds
+            .filter { it.status == Status.SAVED }
+            .groupingBy { it.createdAt?.dayOfMonth.toString() }
+            .eachCount()
+
+        val todayFeedCount = dailyFeedCount[today.toString()] ?: 0
+        val isVisible = todayFeedCount < 2
+
+        return ChallengeResDto(
+            isVisible = isVisible,
+            count = dailyFeedCount.size
+        )
+    }
+
+    @Transactional
     fun createKeywords(feed: Feed, request: FeedUpdateReqDto) {
         val createdKeywords: MutableList<Keyword> = mutableListOf()
         for (keyword in request.keywords) {
@@ -544,22 +564,12 @@ class FeedService(
     }
 
     @Transactional
-    fun getChallengeStatus(userId: Long): ChallengeResDto {
-        // 프로모션 기간 중 저장한 피드 개수 쿼리
-        val cnt = feedRepository.getFeedCntBetween(startDate, endDate, userId)
-        return ChallengeResDto(
-            isVisible = cnt < CHALLENGE_COMPLETE_THRESHOLD,
-            count = cnt,
-        )
-    }
-
-    @Transactional
     fun getChallengeStatusTest(userId: Long, count: Int): ChallengeResDto {
         // 프로모션 기간 중 저장한 피드 개수 쿼리
         // val cnt = feedRepository.getFeedCntBetween(startDate, endDate, userId)
         return ChallengeResDto(
             isVisible = count < CHALLENGE_COMPLETE_THRESHOLD,
-            count = count.toLong(),
+            count = count,
         )
     }
 

@@ -33,5 +33,5 @@ interface FeedRepositoryCustom {
 
     fun findFeedFolderDtoByUserIdAndBetweenDate(userId: Long, startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): List<FeedFolderVo>
 
-    fun getFeedCntBetween(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): Long
+    fun getFeedBetween(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Feed>
 }
