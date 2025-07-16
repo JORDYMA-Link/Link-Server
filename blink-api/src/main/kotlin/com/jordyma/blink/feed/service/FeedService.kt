@@ -463,7 +463,8 @@ class FeedService(
                 )
             }
         }
-        return ProcessingListDto(processingFeedResDtos = result)
+        val sortedResult = result.sortedByDescending { it.feedId }
+        return ProcessingListDto(sortedResult)
     }
 
     // 요약 실패 피드 삭제
