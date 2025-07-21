@@ -4,6 +4,7 @@ import com.jordyma.blink.notice.dto.response.NoticeListDto
 import com.jordyma.blink.notice.dto.response.WebViewDto
 import com.jordyma.blink.notice.service.NoticeService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,6 +39,24 @@ class NoticeController (
     fun getWebView(): ResponseEntity<WebViewDto> {
         val response = noticeService.getWebView()
         return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "웹뷰 조회 테스트 api", description = "flag == true일 때 link 띄우기")
+    @GetMapping("/webview/test")
+    fun getWebViewTest(): ResponseEntity<WebViewDto> {
+        val response = noticeService.getWebViewTest()
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "웹뷰 조회 테스트 기간 수정 api")
+    @PatchMapping("/webview/test")
+    fun updateWebViewTest(
+        @Schema(description = "yyyy-MM-dd", example = "2024-08-08")
+        @RequestParam("startDate") startDate: String,
+        @RequestParam("endDate") endDate: String
+    ): ResponseEntity<String> {
+        val response = noticeService.updateWebViewTest(startDate, endDate)
+        return ResponseEntity.ok("수정이 완료되었습니다.")
     }
 
     @Operation(summary = "웹뷰 수정 api", description = "link - 웹뷰 url, startDate~endDate - 웹뷰 띄울 기간 설정")

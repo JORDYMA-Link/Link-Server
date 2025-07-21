@@ -32,4 +32,6 @@ interface FeedRepositoryCustom {
     fun deleteRecommend(folder: Folder): Long
 
     fun findFeedFolderDtoByUserIdAndBetweenDate(userId: Long, startOfMonth: LocalDateTime, endOfMonth: LocalDateTime): List<FeedFolderVo>
+
+    fun getFeedBetween(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Feed>
 }

@@ -342,4 +342,16 @@ class FeedRepositoryCustomImpl(
             .execute()
     }
 
+    override fun getFeedBetween(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Feed> {
+        return queryFactory
+            .select(feed)
+            .from(feed)
+            .innerJoin(feed.folder, folder)
+            .where(
+                folder.user.id.eq(userId),
+                feed.createdAt.between(startDate, endDate)
+            )
+            .fetch()
+    }
+
 }

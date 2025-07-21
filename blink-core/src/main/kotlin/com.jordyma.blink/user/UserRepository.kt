@@ -13,6 +13,9 @@ interface UserRepository : JpaRepository<User, Long> {
     @Query("select u from user u where u.socialType ='APPLE' and u.socialUserId =:socialUserId")
     fun findAppleUser(socialUserId: String): User?
 
+    @Query("select u from user u where u.deletedAt is null and (u.iosPushToken is not null or u.aosPushToken is not null)")
+    fun findActiveMobileUser(): List<User>
+
 //    override fun getById(id: Long): User =
 //        findById(id).orElseThrow() { ApplicationException(ErrorCode.NOT_FOUND, "일치하는 유저가 없습니다 : $id", Throwable()) }
 }

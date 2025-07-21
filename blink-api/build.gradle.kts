@@ -52,7 +52,6 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.7.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
-
     implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -77,6 +76,10 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // coroutine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
 
     // json
     // implementation("com.fasterxml.jackson.core:jackson-databind:2.12.4")
