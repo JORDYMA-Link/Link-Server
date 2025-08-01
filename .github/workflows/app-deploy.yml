@@ -2,7 +2,7 @@ name: Blink-App CD
 
 on:
   push:
-    branches: [ test ]
+    branches: [ feat/migration ]
 
 jobs:
   build:
@@ -33,8 +33,8 @@ jobs:
         with:
           region: ap-southeast-2
           bucket: blink-env
-          aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID_V2 }}
+          aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_V2 }}
           object-key: env/dev/application.yml
           filename: application.yml
 
@@ -76,10 +76,10 @@ jobs:
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v14
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: link-server-test
-          environment_name: Link-server-test-env
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID_V2 }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_V2 }}
+          application_name: link-server
+          environment_name: Link-server-env
           version_label: Link-${{steps.current-time.outputs.formattedTime}}
           region: ap-northeast-2
           deployment_package: deploy/deploy.zip

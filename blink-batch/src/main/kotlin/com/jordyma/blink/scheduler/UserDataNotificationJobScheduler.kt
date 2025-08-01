@@ -13,7 +13,8 @@ class UserDataNotificationJobScheduler(
     private val jobLauncher: JobLauncher,
     private val userDataNotificationJobConfig: UserDataNotificationJobConfig,
 ) {
-    @Scheduled(cron = "\${scheduler.user-notification.cron}")
+    // @Scheduled(cron = "\${scheduler.user-notification.cron}")
+    @Scheduled(cron = "0 * * * * *")
     fun doUserDataNotificationScheduler() {
         val jobParameters = JobParameters(
             mapOf("time" to JobParameter(System.currentTimeMillis(), Long::class.java))
