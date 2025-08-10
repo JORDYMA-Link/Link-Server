@@ -32,10 +32,10 @@ jobs:
         uses: jcfrane/s3-get-object-action@v1.0
         with:
           region: ap-southeast-2
-          bucket: blink-env
+          bucket: blink-env-2025
           aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID_V2 }}
           aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_V2 }}
-          object-key: env/dev/application.yml
+          object-key: env/application.yml
           filename: application.yml
 
       # move application yml for API
