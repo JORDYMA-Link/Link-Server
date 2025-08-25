@@ -1,6 +1,10 @@
 package com.jordyma.blink.user.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.folder.domain.model.FolderDto
+import com.jordyma.blink.folder.dto.request.OnboardingReqDto
+import com.jordyma.blink.folder.dto.response.OnboardingResDto
+import com.jordyma.blink.user.dto.request.OnboardingUserInfoReqDto
 import com.jordyma.blink.user.dto.request.UpdateUserProfileReqDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
 import com.jordyma.blink.user.dto.response.UserProfileResDto
@@ -18,6 +22,16 @@ import org.springframework.web.bind.annotation.*
 class UserController (
     private val userService: UserService,
 ){
+
+    @PostMapping(value = ["/onboarding"])
+    @Operation(summary = "온보딩 정보 입력 API", description = "UI 그대로 입력 (jobField: 광고/기획, birthYear: 10대, gender: 남성)")
+    fun createOnboardingUserInfo(@AuthenticationPrincipal userAccount: UserAccount,
+                         @RequestBody request: OnboardingUserInfoReqDto
+    ): ResponseEntity<String> {
+        userService.createOnboardingUserInfo(userAccount, request)
+        return ResponseEntity.ok("온보딩 정보 입력 완료되었습니다.")
+    }
+
     @Operation(summary = "유저 프로필 조회 api")
     @GetMapping("/profile")
     fun getUserProfile(
