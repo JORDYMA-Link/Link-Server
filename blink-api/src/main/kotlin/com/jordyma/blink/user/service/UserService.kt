@@ -10,6 +10,7 @@ import com.jordyma.blink.user.constants.PushTokenType
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
 import com.jordyma.blink.user.UserRepository
+import com.jordyma.blink.user.dto.request.OnboardingUserInfoReqDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,6 +18,14 @@ import org.springframework.transaction.annotation.Transactional
 class UserService (
     val userRepository: UserRepository,
 ){
+    @Transactional
+    fun createOnboardingUserInfo(userAccount: UserAccount, request: OnboardingUserInfoReqDto) {
+        val user = userRepository.findById(userAccount.userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
+        user.updateJobField(request.jobField)
+        user.updateBirthYear(request.birthYear)
+        user.updateGender(request.gender)
+    }
+
     @Transactional(readOnly = true)
     fun find(userId: Long): UserInfoDto {
         val user = userRepository.findById(userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
