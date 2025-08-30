@@ -31,7 +31,7 @@ jobs:
         id: s3
         uses: jcfrane/s3-get-object-action@v1.0
         with:
-          region: ap-southeast-2
+          region: ap-northeast-2
           bucket: blink-env-2025
           aws-access-key: ${{ secrets.AWS_ACCESS_KEY_ID_V2 }}
           aws-secret-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_V2 }}
@@ -79,7 +79,7 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID_V2 }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY_V2 }}
           application_name: link-server
-          environment_name: Link-server-env
+          environment_name: test-env
           version_label: Link-${{steps.current-time.outputs.formattedTime}}
           region: ap-northeast-2
           deployment_package: deploy/deploy.zip
