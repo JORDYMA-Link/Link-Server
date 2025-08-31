@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication(exclude = [RedisAutoConfiguration::class])
 @EnableBatchProcessing
 @EnableScheduling
-@EnableJpaAuditing
 class BlinkBatchApplication
 inline fun <reified T> T.logger() = LoggerFactory.getLogger(T::class.java)!!
 
