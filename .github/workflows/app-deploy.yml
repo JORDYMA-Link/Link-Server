@@ -44,6 +44,11 @@ jobs:
           mkdir -p blink-api/src/main/resources
           cp application.yml blink-api/src/main/resources
 
+      - name: Move application.yml for Batch
+        run: |
+          mkdir -p blink-batch/src/main/resources
+          cp application.yml blink-batch/src/main/resources
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
         shell: bash
