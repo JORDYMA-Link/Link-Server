@@ -17,6 +17,8 @@ import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 
 @Service
@@ -33,7 +35,7 @@ class FeedSummarizeService(
 ){
     private lateinit var cachedInvalidLinks: List<String>
 
-    fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
+    suspend fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
         val link = payload.link
         val feedId = payload.feedId.toLong()
@@ -42,13 +44,16 @@ class FeedSummarizeService(
             val parseContent = htmlParser.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
             val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
-            val content = geminiService.summarize(
-                link = link,
-                folders = folderNames.joinToString(separator = " "),
-                userId = userId,
-                content = parseContent.content,
-                feedId = feedId,
-            )
+
+            val content = withContext(Dispatchers.IO) {
+                geminiService.summarize(
+                    link = link,
+                    folders = folderNames.joinToString(separator = " "),
+                    userId = userId,
+                    content = parseContent.content,
+                    feedId = feedId,
+                )
+            }
 
             // 플랫폼별 이미지 추출
             val brunch = feedService.findBrunch(link)

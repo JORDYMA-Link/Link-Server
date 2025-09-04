@@ -16,6 +16,9 @@ import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -50,7 +53,9 @@ class FeedSummarizeController(
         // feedSummarizeMessageSender.send(summarizeMessage)
 
         // worker, sqs 의존성 제거
-        feedSummarizeService.summarizeFeed(summarizeMessage)
+        CoroutineScope(Dispatchers.Default).launch{
+            feedSummarizeService.summarizeFeed(summarizeMessage)
+        }
 
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feed.id
