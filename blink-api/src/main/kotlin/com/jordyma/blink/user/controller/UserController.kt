@@ -5,6 +5,7 @@ import com.jordyma.blink.folder.domain.model.FolderDto
 import com.jordyma.blink.folder.dto.request.OnboardingReqDto
 import com.jordyma.blink.folder.dto.response.OnboardingResDto
 import com.jordyma.blink.user.dto.request.OnboardingUserInfoReqDto
+import com.jordyma.blink.user.dto.request.UpdateLanguageReqDto
 import com.jordyma.blink.user.dto.request.UpdateUserProfileReqDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
 import com.jordyma.blink.user.dto.response.UserProfileResDto
@@ -49,6 +50,16 @@ class UserController (
     ): ResponseEntity<UserProfileResDto> {
         val response: UserProfileResDto = userService.updateProfile(userAccount, requestDto.nickname)
         return ResponseEntity.ok(response)
+    }
+
+    @Operation(summary = "언어 설정 수정 api")
+    @PatchMapping("/language")
+    fun updateLanguage(
+        @AuthenticationPrincipal userAccount: UserAccount,
+        @RequestBody requestDto: UpdateLanguageReqDto,
+    ): ResponseEntity<String> {
+        userService.updateLanguage(userAccount, requestDto.language)
+        return ResponseEntity.ok("수정이 완료되었습니다.")
     }
 
     @Operation(summary = "유저 푸시 토큰 갱신 api")
