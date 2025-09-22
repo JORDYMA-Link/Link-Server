@@ -6,6 +6,8 @@ import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.user.LanguageType
+import com.jordyma.blink.user.User
 import com.jordyma.blink.user.constants.PushTokenType
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
@@ -24,6 +26,7 @@ class UserService (
         user.updateJobField(request.jobField)
         user.updateBirthYear(request.birthYear)
         user.updateGender(request.gender)
+        user.updateGender(request.language)
     }
 
     @Transactional(readOnly = true)
@@ -37,7 +40,7 @@ class UserService (
 
     @Transactional(readOnly = true)
     fun getProfile(userAccount: UserAccount): UserProfileResDto {
-        val user = userRepository.getById(userAccount.userId)
+        val user = findUserOrElseThrow(userAccount.userId)
         return UserProfileResDto(
             nickName = user.nickname,
         )
@@ -45,12 +48,19 @@ class UserService (
 
     @Transactional
     fun updateProfile(userAccount: UserAccount, nickName: String): UserProfileResDto {
-        val user = userRepository.getById(userAccount.userId)
+        val user = findUserOrElseThrow(userAccount.userId)
         user.updateNickname(nickName)
         userRepository.save(user)
         return UserProfileResDto(
             nickName = user.nickname
         )
+    }
+
+    @Transactional
+    fun updateLanguage(userAccount: UserAccount, language: String) {
+        val user = findUserOrElseThrow(userAccount.userId)
+        user.updateLanguage(language)
+        userRepository.save(user)
     }
 
     @Transactional
@@ -76,5 +86,11 @@ class UserService (
         }
 
         userRepository.save(user)
+    }
+
+    fun findUserOrElseThrow(userId: Long): User {
+        return userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
     }
 }

@@ -35,6 +35,10 @@ class User(
     @Column(name = "birthYear")
     var birthYear: String? = null,
 
+    @Column(name = "language")
+    @Enumerated(EnumType.STRING)
+    var language: LanguageType? = null,
+
 ): BaseTimeEntity()  {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -62,5 +66,9 @@ class User(
 
     fun updateBirthYear(birthYear: String) {
         this.birthYear = birthYear
+    }
+
+    fun updateLanguage(language: String) {
+        this.language = LanguageType.valueOf(language);
     }
 }
