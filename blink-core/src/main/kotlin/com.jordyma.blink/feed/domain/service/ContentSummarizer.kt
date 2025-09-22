@@ -1,5 +1,6 @@
 package com.jordyma.blink.feed.domain.service
 
+import com.jordyma.blink.user.LanguageType
 import kotlinx.serialization.Serializable
 
 interface ContentSummarizer {
@@ -8,7 +9,8 @@ interface ContentSummarizer {
         link: String,
         folders: String,
         userId: Long,
-        feedId: Long
+        feedId: Long,
+        language: LanguageType? = LanguageType.KOREAN,
     ): PromptResponse
 }
 @Serializable

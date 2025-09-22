@@ -30,11 +30,12 @@ class UserService (
     }
 
     @Transactional(readOnly = true)
-    fun find(userId: Long): UserInfoDto {
-        val user = userRepository.findById(userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
+    fun find(userAccount: UserAccount): UserInfoDto {
+        val user = userRepository.findById(userAccount.userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
         return UserInfoDto(
             id = user.id ?: throw IdRequiredException(ID_NOT_FOUND),
-            name = user.nickname
+            name = user.nickname,
+            language = user.language,
         )
     }
 
@@ -93,4 +94,5 @@ class UserService (
             ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
         }
     }
+
 }

@@ -1,5 +1,7 @@
 package com.jordyma.blink.feed_summarize_requester.sender.dto
 
+import com.jordyma.blink.user.LanguageType
+
 data class FeedSummarizeMessage (
     // TODO 메세지 형식에 따라 변경가능 지금은 임시로 넣어둔 것.
     val link: String,
@@ -7,4 +9,5 @@ data class FeedSummarizeMessage (
     val userId: Long,
     val userName: String,
     val originUrl: String,
+    val language: LanguageType? = LanguageType.KOREAN,
 )
