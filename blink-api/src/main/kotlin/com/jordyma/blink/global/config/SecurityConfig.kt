@@ -36,6 +36,7 @@ class SecurityConfig(private val authenticationManager: AuthenticationManager) {
             // TODO 수정 필요
             "/api/feed/**",
             "/error",
+            "/actuator/**",
     )
 
     @Bean

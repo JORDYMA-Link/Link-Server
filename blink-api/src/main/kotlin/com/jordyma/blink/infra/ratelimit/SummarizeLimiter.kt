@@ -4,10 +4,18 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.logger
 import com.jordyma.blink.redis.client.RedisClient
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.lang.Math.ceil
 import java.time.Instant
+
+@Component
+class RateLimitMetrics(registry: MeterRegistry) {
+    val allowed = Counter.builder("blink.rate_limit.allowed").register(registry)
+    val blocked = Counter.builder("blink.rate_limit.blocked").register(registry)
+}
 
 @Component
 class SummarizeLimiter(
@@ -16,6 +24,7 @@ class SummarizeLimiter(
     private val windowSizeSec: Int,
     @Value("\${rate.limit.max-requests}")
     private val maxRequests: Int,
+    private val metrics: RateLimitMetrics,
 ) {
     // 요청을 받을 수 있는지 계산
     fun isAllowed(key: String): Boolean {
@@ -41,6 +50,16 @@ class SummarizeLimiter(
         }
 
         recordCurrentRequest(key, now)
+
+        // 모니터링용 counter
+        if (finalCount >= maxRequests) {
+            metrics.blocked.increment()
+            return false
+        }
+
+        recordCurrentRequest(key, now)
+        metrics.allowed.increment()
+        return true
 
         return true
     }
