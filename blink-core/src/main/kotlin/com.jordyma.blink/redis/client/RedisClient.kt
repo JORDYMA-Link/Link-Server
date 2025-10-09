@@ -1,6 +1,5 @@
 package com.jordyma.blink.redis.client
 
-// TODO: RedisClient의 올바른 위치는?
 interface RedisClient{
 
     fun set(key: String, value: String)

@@ -49,13 +49,7 @@ class FeedSummarizeController(
             return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
         }
 
-        // worker 요청 전송
-        // feedSummarizeMessageSender.send(summarizeMessage)
-
-        // worker, sqs 의존성 제거
-        CoroutineScope(Dispatchers.Default).launch{
-            feedSummarizeService.summarizeFeed(summarizeMessage)
-        }
+        feedSummarizeService.summarizeFeed(summarizeMessage)
 
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feed.id

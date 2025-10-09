@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConditionalOnProperty(
-    name = ["redis.enabled"],
+    name = ["spring.data.redis.enabled"],
     havingValue = "true",
     matchIfMissing = false
 )

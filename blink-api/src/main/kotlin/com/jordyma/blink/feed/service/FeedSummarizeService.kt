@@ -35,7 +35,7 @@ class FeedSummarizeService(
 ){
     private lateinit var cachedInvalidLinks: List<String>
 
-    suspend fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
+     fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
         val link = payload.link
         val feedId = payload.feedId.toLong()
@@ -45,15 +45,13 @@ class FeedSummarizeService(
             var thumbnailImage = parseContent.thumbnailImage
             val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
 
-            val content = withContext(Dispatchers.IO) {
-                geminiService.summarize(
-                    link = link,
-                    folders = folderNames.joinToString(separator = " "),
-                    userId = userId,
-                    content = parseContent.content,
-                    feedId = feedId,
-                )
-            }
+            val content = geminiService.summarize(
+                link = link,
+                folders = folderNames.joinToString(separator = " "),
+                userId = userId,
+                content = parseContent.content,
+                feedId = feedId,
+            )
 
             // 플랫폼별 이미지 추출
             val brunch = feedService.findBrunch(link)
