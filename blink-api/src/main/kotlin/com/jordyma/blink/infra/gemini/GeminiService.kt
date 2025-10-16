@@ -12,6 +12,7 @@ import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.infra.gemini.request.ChatRequest
 import com.jordyma.blink.infra.gemini.response.ChatResponse
 import com.jordyma.blink.logger
+import com.jordyma.blink.user.LanguageType
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -32,13 +33,15 @@ class GeminiService @Autowired constructor(
         link: String,
         folders: String,
         userId: Long,
-        feedId: Long
+        feedId: Long,
+        language: LanguageType?,
     ): PromptResponse {
         try {
             val requestUrl = "$apiUrl?key=$geminiApiKey"
 
             // 1. summary
-            val request = ChatRequest(makeSummarizePrompt(content))
+            val effectiveLanguage = language ?: LanguageType.KOREAN
+            val request = ChatRequest(makeSummarizePrompt(content, effectiveLanguage))
             logger().info("1단계 Summary - Sending request to Gemini server: $requestUrl with body: $request")
 
             val summaryResponse = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
@@ -53,7 +56,7 @@ class GeminiService @Autowired constructor(
 
             // 2. summary를 기반으로 keyword, category 추출
             val metadataRequest = ChatRequest(
-                makeMetadataExtractionPrompt(firstResponse.summary, folders)
+                makeMetadataExtractionPrompt(firstResponse.summary, folders, effectiveLanguage)
             )
             logger().info("2단계 Meta정보 추출 - Sending request to Gemini server: $requestUrl with body: $metadataRequest")
             val metadataResponse = restTemplate.postForObject(requestUrl, metadataRequest, ChatResponse::class.java)
@@ -82,7 +85,9 @@ class GeminiService @Autowired constructor(
         }
     }
 
-    fun makeSummarizePrompt(content: String, length: Int? = 500): String {
+    fun makeSummarizePrompt(content: String, language: LanguageType, length: Int? = 500): String {
+        val languageName = language.nativeName
+
         return """
         다음 텍스트를 읽고 다음 요구사항을 들어줘.
         텍스트 : {$content}
@@ -114,29 +119,38 @@ class GeminiService @Autowired constructor(
   """.trimIndent()
     }
 
-    fun makeMetadataExtractionPrompt(summary: String, folders: String): String {
+
+    fun makeMetadataExtractionPrompt(summary: String, folders: String, language: LanguageType): String {
+        val languageName = language.nativeName
+
         return """
-            다음 요약된 텍스트를 읽고 지침에 따라 제목, 키워드, 카테고리를 추출하세요.
-            
-            요약된 텍스트:
+            # Role
+            You are an expert AI assistant that extracts keywords and categories from a given text. Your task is to return a structured JSON object based on the rules below.
+    
+            # Instructions
+            Read the summarized text and perform the following tasks:
+            1. Extract exactly 3 noun keywords that represent the core topic of the text and put them in the "keyword" array.
+            2. From the provided list of categories, select the 3 most relevant ones for the text and put them in the "category" array.
+               - Category List: [$folders]
+               - If no suitable categories are found, you may generate new, relevant ones.
+            3. ❗ CRITICAL: All text values for "keyword" and "category" MUST be written in the following language: '$languageName'.
+    
+            # Summarized Text to Process
             $summary
-            
-            추출 지침:
-            1. 요약된 내용의 핵심을 나타내는 명사형 키워드를 3개 추출하여 "keyword" 배열에 작성합니다.
-            2. 요약된 내용에 가장 적합한 카테고리를 제공된 카테고리 목록 [$folders]에서 3개 선택하여 "category" 배열에 작성합니다.
-               - 적절한 것이 없으면 직접 적합한 카테고리를 생성해도 좋습니다.
-            
-            반드시 아래 JSON 형식으로만 응답하고, 추가 설명이나 부가 정보는 절대 쓰지 마세요.
-            
+    
+            # Response Format
+            You MUST respond ONLY with a valid JSON object in the format below. Do NOT add any extra text.
+    
             {
-              "keyword": ["키워드1", "키워드2", "키워드3"],
-              "category": ["카테고리1", "카테고리2", "카테고리3"]
+              "keyword": ["keyword1 in requested language", "keyword2 in requested language", "keyword3 in requested language"],
+              "category": ["category1 in requested language", "category2 in requested language", "category3 in requested language"]
             }
-            
-            ❗ JSON 형식 오류가 발생하지 않도록 반드시 쌍따옴표(")를 역슬래시(\)로 이스케이프 처리하세요.
+    
+            ❗ Never translate the JSON keys ("keyword", "category").
         """.trimIndent()
     }
 
+    @Deprecated("분리 이전 프롬프트")
     fun makePrompt(link: String, folders: String, content: String): String{
         return """
         다음 텍스트를 읽고 다음 요구사항을 들어줘.

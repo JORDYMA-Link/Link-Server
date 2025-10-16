@@ -6,10 +6,13 @@ import com.jordyma.blink.global.error.ID_NOT_FOUND
 import com.jordyma.blink.global.error.exception.IdRequiredException
 import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
+import com.jordyma.blink.user.LanguageType
+import com.jordyma.blink.user.User
 import com.jordyma.blink.user.constants.PushTokenType
 import com.jordyma.blink.user.dto.UserInfoDto
 import com.jordyma.blink.user.dto.request.UpdateUserPushTokenRequestDto
 import com.jordyma.blink.user.UserRepository
+import com.jordyma.blink.user.dto.request.OnboardingUserInfoReqDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,18 +20,28 @@ import org.springframework.transaction.annotation.Transactional
 class UserService (
     val userRepository: UserRepository,
 ){
+    @Transactional
+    fun createOnboardingUserInfo(userAccount: UserAccount, request: OnboardingUserInfoReqDto) {
+        val user = userRepository.findById(userAccount.userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
+        user.updateJobField(request.jobField)
+        user.updateBirthYear(request.birthYear)
+        user.updateGender(request.gender)
+        user.updateGender(request.language)
+    }
+
     @Transactional(readOnly = true)
-    fun find(userId: Long): UserInfoDto {
-        val user = userRepository.findById(userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
+    fun find(userAccount: UserAccount): UserInfoDto {
+        val user = userRepository.findById(userAccount.userId).orElseThrow { throw ApplicationException(ErrorCode.USER_NOT_FOUND, "없는 유저입니다.") }
         return UserInfoDto(
             id = user.id ?: throw IdRequiredException(ID_NOT_FOUND),
-            name = user.nickname
+            name = user.nickname,
+            language = user.language,
         )
     }
 
     @Transactional(readOnly = true)
     fun getProfile(userAccount: UserAccount): UserProfileResDto {
-        val user = userRepository.getById(userAccount.userId)
+        val user = findUserOrElseThrow(userAccount.userId)
         return UserProfileResDto(
             nickName = user.nickname,
         )
@@ -36,12 +49,19 @@ class UserService (
 
     @Transactional
     fun updateProfile(userAccount: UserAccount, nickName: String): UserProfileResDto {
-        val user = userRepository.getById(userAccount.userId)
+        val user = findUserOrElseThrow(userAccount.userId)
         user.updateNickname(nickName)
         userRepository.save(user)
         return UserProfileResDto(
             nickName = user.nickname
         )
+    }
+
+    @Transactional
+    fun updateLanguage(userAccount: UserAccount, language: String) {
+        val user = findUserOrElseThrow(userAccount.userId)
+        user.updateLanguage(language)
+        userRepository.save(user)
     }
 
     @Transactional
@@ -68,4 +88,11 @@ class UserService (
 
         userRepository.save(user)
     }
+
+    fun findUserOrElseThrow(userId: Long): User {
+        return userRepository.findById(userId).orElseThrow {
+            ApplicationException(ErrorCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다.")
+        }
+    }
+
 }

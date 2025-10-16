@@ -14,9 +14,7 @@ import com.jordyma.blink.user.SocialType
 import com.jordyma.blink.user.User
 import com.jordyma.blink.user.UserRepository
 import com.jordyma.blink.auth.dto.request.KakaoLoginRequestDto
-import com.jordyma.blink.auth.dto.response.AppleDto
-import com.jordyma.blink.auth.dto.response.GoogleCallbackResponseDto
-import com.jordyma.blink.auth.dto.response.TokenResponseDto
+import com.jordyma.blink.auth.dto.response.*
 import com.jordyma.blink.auth.jwt.enums.TokenType
 import com.jordyma.blink.auth.jwt.util.JwtTokenUtil
 import com.jordyma.blink.global.exception.ApplicationException
@@ -111,7 +109,8 @@ class AuthService(
     @Value("\${google.auth.client-id}") private val googleClientId: String,
     @Value("\${google.auth.client-secret}") private val googleClientSecret: String,
     @Value("\${google.auth.redirect-uri}") private val googleWebRedirectUri: String,
-    @Value("\${google.auth.token-uri}") private val googleWebTokenUrl: String,
+    @Value("\${open-api.google.token-oauth-url}") private val googleTokenUrl: String,
+    @Value("\${google.auth.info-uri}") private val googleInfoUrl: String,
 ) {
 
     @Transactional
@@ -404,21 +403,26 @@ class AuthService(
 
     @Transactional
     fun googleLoginWeb(code: String): TokenResponseDto {
-        // 1. Google 서버에서 id_token 받아오기
+        // 1. Google 서버에서 AccessToken 받아오기
         val tokenResponse = getGoogleAccessToken(code)
+        logger().info("Google token response: access_token=${tokenResponse.access_token.take(6)}***")
 
-        val idToken = tokenResponse.id_token
+        val accessToken = tokenResponse.access_token
+        if (accessToken.isBlank()) {
+            throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "Google access token이 비어 있습니다.")
+        }
 
-        // 2. 토큰으로 사용자 정보 요청
-        val userInfo = googleAuthApi.getGoogleUserInfo(idToken)
+        // 2. accessToken으로 사용자 정보 요청
+        val userInfo = getGoogleUserInfo(accessToken)
 
         val socialUserId = userInfo.sub
         val name = userInfo.name
+        logger().info("Google userInfo response: socialUserId=${socialUserId}")
 
         // 3. DB에서 사용자 찾기
         val user = userRepository.findBySocialTypeAndSocialUserId(SocialType.GOOGLE, socialUserId) ?: run {
             // 가입 안 된 경우 회원가입 & 온보딩 피드 생성
-            val newUser = upsertUser(SocialType.GOOGLE, socialUserId, name)
+            val newUser = upsertUser(SocialType.GOOGLE, socialUserId, name ?: "익명 사용자")
             makeOnboardingFeed(newUser)
             return registerNewUserWithToken(newUser)
         }
@@ -440,16 +444,56 @@ class AuthService(
             add("grant_type", "authorization_code")
         }
 
-        return WebClient.builder()
-            .baseUrl(googleWebTokenUrl)
+        return  try {
+            val response = WebClient.builder()
+                .baseUrl(googleTokenUrl)
+                .build()
+                .post()
+                .uri("/token")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(formData)
+                .retrieve()
+                .bodyToMono(GoogleCallbackResponseDto::class.java)
+                .block()
+            if (response == null) {
+                throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "Google 토큰 응답이 null입니다.")
+            }
+            response
+        } catch (e: WebClientResponseException) {
+            // Google 서버가 4xx 또는 5xx 반환한 경우
+            val message = buildString {
+                append("Google token 요청 실패: [${e.statusCode}] ")
+                append(e.responseBodyAsString ?: "응답 본문 없음")
+            }
+            throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "$googleTokenUrl/token 오류: ${message}")
+        } catch (e: Exception) {
+            throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "$googleTokenUrl/token 알 수 없는 오류: ${e.message}")
+        }
+    }
+
+    /**
+     * Google access token을 사용하여 사용자 정보를 가져옵니다.
+     */
+    private fun getGoogleUserInfo(accessToken: String): GoogleTokenUserResponseDto {
+        // WebClient를 통해 Google API 호출
+        val response = WebClient.builder()
+            .baseUrl(googleInfoUrl) // Google API base URL 설정
             .build()
-            .post()
-            .uri("/token")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-            .bodyValue(formData)
+            .get()
+            .uri("/oauth2/v3/userinfo") // 사용자 정보 endpoint 지정
+            .headers { headers ->
+                headers.setBearerAuth(accessToken) // Authorization: Bearer {accessToken} 헤더 추가
+            }
             .retrieve()
-            .bodyToMono(GoogleCallbackResponseDto::class.java)
-            .block()!!
+            .bodyToMono(GoogleTokenUserResponseDto::class.java)
+            .block()
+
+        // 응답이 없을 경우 예외 처리
+        if (response == null) {
+            throw ApplicationException(ErrorCode.INVALID_SOCIAL_TOKEN, "Google 사용자 정보를 불러올 수 없습니다.")
+        }
+
+        return response
     }
 
 

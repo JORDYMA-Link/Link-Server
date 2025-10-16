@@ -26,6 +26,19 @@ class User(
     @Column(name = "aosPushToken")
     var aosPushToken: String? = null,
 
+    @Column(name = "gender")
+    var gender: String? = null,
+
+    @Column(name = "jobField")
+    var jobField: String? = null,
+
+    @Column(name = "birthYear")
+    var birthYear: String? = null,
+
+    @Column(name = "language")
+    @Enumerated(EnumType.STRING)
+    var language: LanguageType? = null,
+
 ): BaseTimeEntity()  {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -41,5 +54,21 @@ class User(
 
     fun updateSocialId(){
         this.socialUserId = this.socialUserId + "deleted"
+    }
+
+    fun updateJobField(jobField: String) {
+        this.jobField = jobField
+    }
+
+    fun updateGender(gender: String) {
+        this.gender = gender
+    }
+
+    fun updateBirthYear(birthYear: String) {
+        this.birthYear = birthYear
+    }
+
+    fun updateLanguage(language: String) {
+        this.language = LanguageType.valueOf(language);
     }
 }

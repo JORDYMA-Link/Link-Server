@@ -38,9 +38,11 @@ class FeedSummarizeService(
      fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
         val link = payload.link
-        val feedId = payload.feedId.toLong()
+        val feedId = payload.feedId
+        val language = payload.language
 
         try{
+            // 파싱
             val parseContent = htmlParser.parseUrl(link)
             var thumbnailImage = parseContent.thumbnailImage
             val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
@@ -51,6 +53,7 @@ class FeedSummarizeService(
                 userId = userId,
                 content = parseContent.content,
                 feedId = feedId,
+                language = language,
             )
 
             // 플랫폼별 이미지 추출

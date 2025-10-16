@@ -6,7 +6,6 @@ import com.jordyma.blink.stats.service.LinkStatsIncreaseService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.messaging.handler.HandlerMethod
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
@@ -25,15 +24,11 @@ class UserActivityInterceptor (
             logger().info("user record increment for user: {}", userId)
         }
 
-        if (handler is HandlerMethod) {
-            val method = handler.method
-
-            // 피드 조회 api인 경우 ++
-            val requestURI = request.requestURI
-            if (requestURI.contains("/api/feeds/detail/") && request.method == "GET") {
-                logger().info("Feed view increment for URI: {}", requestURI)
-                linkStatsIncreaseService.incrementLinkView()
-            }
+        // 피드 조회 api인 경우 ++
+        val requestURI = request.requestURI
+        if (request.requestURI.contains("/api/feeds/detail/") && request.method == "GET") {
+            logger().info("Feed view increment for URI: {}", requestURI)
+            linkStatsIncreaseService.incrementLinkView()
         }
 
         return true

@@ -4,6 +4,9 @@ name: Blink-Worker CD
 #  push:
 #    branches: [ test ]
 
+on:
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest

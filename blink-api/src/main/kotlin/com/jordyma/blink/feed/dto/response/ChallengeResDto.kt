@@ -9,5 +9,5 @@ data class ChallengeResDto(
      val isVisible: Boolean,
 
     @Schema(description = "단계")
-    val count: Long,
+    val count: Int,
 )

@@ -34,13 +34,28 @@ class NoticeService (
         return WebViewDto(isWithinValidPeriod, content.paramValue)
     }
 
+    fun getWebViewTest(): WebViewDto {
+        val content = commonParameterRepository.findByParamCode(WEBVIEW_TEST_CODE)[0]
+        val today = LocalDate.now()
+        val isWithinValidPeriod = !today.isBefore(content.validStartDate) && !today.isAfter(content.validEndDate)
+        return WebViewDto(isWithinValidPeriod, content.paramValue)
+    }
+
     fun updateWebView(link: String, startDate: LocalDate, endDate: LocalDate) {
         val content = CommonParameter(WEBVIEW_CODE, link, startDate, endDate)
         commonParameterRepository.save(content)
     }
 
+    fun updateWebViewTest(startDate: String, endDate: String) {
+        val content = commonParameterRepository.findByParamCode(WEBVIEW_TEST_CODE)[0]
+        content.updateStartDate(startDate)
+        content.updateEndDate(endDate)
+        commonParameterRepository.save(content)
+    }
+
     companion object {
         const val WEBVIEW_CODE = "WEBVIEW_LINK"
+        const val WEBVIEW_TEST_CODE = "WEBVIEW_LINK_TEST"
     }
 
 }
