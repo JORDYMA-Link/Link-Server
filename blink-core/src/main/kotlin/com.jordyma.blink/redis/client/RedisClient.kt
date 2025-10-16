@@ -17,4 +17,10 @@ interface RedisClient{
     fun expire(key: String, seconds: Long): Boolean
 
     fun eval(script: String, keys: List<String>, args: List<String>): Any?
+
+    fun zcount(key: String, min: Long, max: Long): Int
+
+    fun zadd(key: String, score: Double, member: String): Long
+
+    fun zremrangebyscore(key: String, min: Double, max: Double): Long
 }

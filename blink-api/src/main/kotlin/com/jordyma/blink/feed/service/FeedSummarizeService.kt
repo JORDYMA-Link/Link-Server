@@ -17,6 +17,8 @@ import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 
 @Service
@@ -33,7 +35,7 @@ class FeedSummarizeService(
 ){
     private lateinit var cachedInvalidLinks: List<String>
 
-    fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
+     fun summarizeFeed(payload: FeedSummarizeMessage): PromptResponse? {
         val userId = payload.userId
         val link = payload.link
         val feedId = payload.feedId
@@ -45,7 +47,6 @@ class FeedSummarizeService(
             var thumbnailImage = parseContent.thumbnailImage
             val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
 
-            // 요약
             val content = geminiService.summarize(
                 link = link,
                 folders = folderNames.joinToString(separator = " "),

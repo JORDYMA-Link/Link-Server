@@ -76,6 +76,7 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j:8.1.0")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     // coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -112,6 +113,10 @@ dependencies {
 
     // Firebase
     implementation("com.google.firebase:firebase-admin:9.1.1")
+
+    // observability
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 configurations.forEach {

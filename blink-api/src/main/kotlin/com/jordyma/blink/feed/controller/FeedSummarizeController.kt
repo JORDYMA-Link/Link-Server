@@ -11,10 +11,14 @@ import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.feed.service.FeedSummarizeService
 import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
+import com.jordyma.blink.infra.ratelimit.RateLimit
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -27,6 +31,7 @@ class FeedSummarizeController(
     private val feedSummarizeService: FeedSummarizeService,
 
 ) {
+    @RateLimit
     @Tag(name = "link", description = "링크 API")
     @Operation(summary = "[링크 요약 1] 링크 요약 api", description = "링크 요약 요청 전송, ai 요약 결과 저장")
     @PostMapping("/summary")
@@ -47,7 +52,6 @@ class FeedSummarizeController(
             return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
         }
 
-        // 요약 요청
         feedSummarizeService.summarizeFeed(summarizeMessage)
 
         val feedIdResponseDto = FeedIdResponseDto(

@@ -89,30 +89,34 @@ class GeminiService @Autowired constructor(
         val languageName = language.nativeName
 
         return """
-            # Role
-            You are an expert AI assistant for text summarization. Your task is to process text and return a structured JSON object according to strict rules.
-    
-            # Instructions
-            Read the following text and generate a JSON object based on these rules:
-            1. Extract a title that best represents the text's topic for the "subject" field.
-            2. Summarize the core content for the "summary" field.
-            3. ❗ CRITICAL: All text values for "subject" and "summary" MUST be written in the following language: '$languageName'.
-            4. The summary must be within ${length} characters, including spaces.
-            5. The summary should be divided into paragraphs, with each paragraph preceded by a subheading in bold.
-    
-            # Text to Process
-            $content
-    
-            # Response Format
-            You MUST respond ONLY with a valid JSON object in the format below. Do NOT add any extra text.
-    
-            {
-                "subject": "A title in the requested language",
-                "summary": "**Subheading 1**\nA summary paragraph in the requested language."
-            }
-    
-            ❗ Never translate the JSON keys ("subject", "summary").
-        """.trimIndent()
+        다음 텍스트를 읽고 다음 요구사항을 들어줘.
+        텍스트 : {$content}
+        1. 텍스트를 summarize하여 “summary”를 생성하되, 다음 [summary 작성 규칙]을 반드시 준수합니다.
+            [summary 작성 규칙]
+            - 목적: 사용자가 10초 이내에 글의 주장·핵심 논거·주요 데이터를 파악하도록 구조화하고, 마지막에 3줄 요약으로 랩업합니다.
+            - 시점 규칙 (POV): 항상 3인칭 해요체를 사용하며, 주어를 명시합니다(예: “글쓴이는…”, “사용자는…”). 경험·감정·의견은 “…라고 말해요/설명해요”와 같이 간접 인용으로 처리합니다. 무주어 문장과 1인칭 어휘 사용을 금지하고, 관찰자 시선을 유지합니다.
+            - 요약 문단: 글 전체 요지를 3~4문장으로 압축하여 서론 없이 중요한 내용부터 시작합니다. 구체적 사건·행동·상황을 사용하고, 한 문장에 1~2개 사건만 포함합니다.
+            - 핵심 포인트: 논리 구조를 계층화하여 내용을 주제별로 분류합니다. 최상위(H2) 소제목 아래에 하위(H3/H4) 내용을 간결하게 정리합니다. 불필요한 부연·사례를 제외하고, 주어·동사를 문장 앞에 둡니다.
+            - 3줄 요약: 가장 중요한 3가지 포인트를 15~25자 내외로 요약합니다. 3인칭 해요체를 사용하고, 원인 → 결과 구조를 선호하며, 긴 문장은 나누어 리듬감을 유지합니다.
+            - 타이포그래피 규칙:
+                * H1: # 텍스트 → 글 전체 제목
+                * H2: ## 텍스트 → 핵심 포인트(대항목)
+                * H3: ### 텍스트 → 핵심 포인트(소항목)
+                * H4: #### 텍스트 → 세부 내용
+                * 목록: 불릿(• 또는 -) 사용
+                * 문단 간 1줄 띄우기
+            - 산출 직전 POV 체크리스트:
+                * 모든 문단이 명시적 3인칭 주어로 시작했는가?
+                * 경험·감정·평가가 간접 인용으로 처리되었는가?
+                * 1인칭 어휘나 무주어 문장이 없는가?
+                * 해요체이면서 관찰자 시선을 유지했는가?
+        2. 텍스트의 제목을 추출해서 “subject” 부분에 출력해줘.
+        3. 반드시 아래 JSON 형식으로만 응답하세요. 부가 설명은 절대 쓰지 마세요.
+        {
+            "subject" : "주제",
+            "summary" : "요약한 내용"
+        }
+  """.trimIndent()
     }
 
 
@@ -149,29 +153,37 @@ class GeminiService @Autowired constructor(
     @Deprecated("분리 이전 프롬프트")
     fun makePrompt(link: String, folders: String, content: String): String{
         return """
-        다음 텍스트를 읽고 아래 요구사항을 충족하는 JSON을 생성해줘.
-        
-        텍스트: 
-        $content
-        
-        요구사항:
-        1. 텍스트를 summarize해서 "summary"에 한 문장으로 작성
-        2. 텍스트의 제목을 추출해서 "subject"에 작성
-        3. 텍스트에서 명사형 키워드 3개를 추출해 "keyword" 배열에 작성
-        4. 텍스트에 어울리는 category를 [${folders}] 중에서 3개 선택해서 "category" 배열에 작성. 적절한 게 없으면 새로 생성해도 됨.
-        
-        반드시 유효한 JSON으로만 응답해. JSON 형식은 아래와 같아.
-        
+        다음 텍스트를 읽고 다음 요구사항을 들어줘.
+        텍스트 : {$content}
+        1. 텍스트를 summarize하여 “summary”를 생성하되, 다음 [summary 작성 규칙]을 반드시 준수합니다.
+            [summary 작성 규칙]
+            - 목적: 사용자가 10초 이내에 글의 주장·핵심 논거·주요 데이터를 파악하도록 구조화하고, 마지막에 3줄 요약으로 랩업합니다.
+            - 시점 규칙 (POV): 항상 3인칭 해요체를 사용하며, 주어를 명시합니다(예: “글쓴이는…”, “사용자는…”). 경험·감정·의견은 “…라고 말해요/설명해요”와 같이 간접 인용으로 처리합니다. 무주어 문장과 1인칭 어휘 사용을 금지하고, 관찰자 시선을 유지합니다.
+            - 요약 문단: 글 전체 요지를 3~4문장으로 압축하여 서론 없이 중요한 내용부터 시작합니다. 구체적 사건·행동·상황을 사용하고, 한 문장에 1~2개 사건만 포함합니다.
+            - 핵심 포인트: 논리 구조를 계층화하여 내용을 주제별로 분류합니다. 최상위(H2) 소제목 아래에 하위(H3/H4) 내용을 간결하게 정리합니다. 불필요한 부연·사례를 제외하고, 주어·동사를 문장 앞에 둡니다.
+            - 3줄 요약: 가장 중요한 3가지 포인트를 15~25자 내외로 요약합니다. 3인칭 해요체를 사용하고, 원인 → 결과 구조를 선호하며, 긴 문장은 나누어 리듬감을 유지합니다.
+            - 타이포그래피 규칙:
+                * H1: # 텍스트 → 글 전체 제목
+                * H2: ## 텍스트 → 핵심 포인트(대항목)
+                * H3: ### 텍스트 → 핵심 포인트(소항목)
+                * H4: #### 텍스트 → 세부 내용
+                * 목록: 불릿(• 또는 -) 사용
+                * 문단 간 1줄 띄우기
+            - 산출 직전 POV 체크리스트:
+                * 모든 문단이 명시적 3인칭 주어로 시작했는가?
+                * 경험·감정·평가가 간접 인용으로 처리되었는가?
+                * 1인칭 어휘나 무주어 문장이 없는가?
+                * 해요체이면서 관찰자 시선을 유지했는가?
+        2. 텍스트의 제목을 추출해서 “subject” 부분에 출력해줘.
+        3. 텍스트에 알맞는 keyword를 명사형으로 3개 추출해서 “keyword” 부분에 출력해줘.
+        4. 텍스트에 어울리는 category를 [{$folders}] 중에 3개 선택해서 “category” : 부분에 출력해줘. 어울리는 category가 없다고 판단되면 새로 생성해줘.
+        5. 출력 형식은 다음과 같이 JSON 형식으로 출력해줘. { } 안의 내용만 출력해줘. JSON 형식을 제외한 텍스트는 한 글자도 출력하지 않는다. 추가 설명, 주의사항 등은 작성하지 마.
         {
-            "subject": "텍스트 제목",
-            "summary": "텍스트 요약",
-            "keyword": ["키워드1", "키워드2", "키워드3"],
-            "category": ["카테고리1", "카테고리2", "카테고리3"]
+            "subject" : "주제",
+            "summary" : "요약한 내용",
+            "keyword" : ["키워드1", "키워드2", "키워드3"],
+            "category" : ["카테고리1", "카테고리2", "카테고리3"]
         }
-        
-        ❗ 반드시 위 JSON 구조만 출력하고, 추가 설명이나 부가 정보는 절대 쓰지 마.
-        ❗ JSON 포맷이 틀리면 시스템이 에러 처리하니 정확히 작성해줘.
-        ❗ 출력값 안에 쌍따옴표(", “, ”)가 있을 경우 반드시 역슬래시(\)를 사용해 이스케이프 처리해줘.
     """.trimIndent()
     }
 
