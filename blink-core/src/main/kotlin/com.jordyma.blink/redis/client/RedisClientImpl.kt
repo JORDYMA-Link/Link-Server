@@ -17,8 +17,16 @@ class RedisClientImpl(private val redisTemplate: RedisTemplate<String, String>) 
         redisTemplate.opsForValue().set(key, value)
     }
 
+    override fun set(key: String, value: String, ttlSeconds: Long) {
+        redisTemplate.opsForValue().set(key, value, ttlSeconds, java.util.concurrent.TimeUnit.SECONDS)
+    }
+
     override fun get(key: String): String {
         return redisTemplate.opsForValue().get(key) ?: ""
+    }
+
+    override fun del(key: String): Boolean {
+        return redisTemplate.delete(key)
     }
 
     override fun decr(key: String): Long? {

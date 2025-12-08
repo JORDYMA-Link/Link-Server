@@ -4,7 +4,11 @@ interface RedisClient{
 
     fun set(key: String, value: String)
 
+    fun set(key: String, value: String, ttlSeconds: Long)
+
     fun get(key: String): String?
+
+    fun del(key: String): Boolean
 
     fun decr(key: String): Long?
 
