@@ -17,8 +17,12 @@ import com.jordyma.blink.infra.gemini.GeminiService
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.UserRepository
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import org.springframework.stereotype.Service
 
 @Service
@@ -101,6 +105,68 @@ class FeedSummarizeService(
             }
         }
         return false
+    }
+
+    suspend fun summarizeFeedAsync(payload: FeedSummarizeMessage) {
+        val userId = payload.userId
+        val link = payload.link
+        val feedId = payload.feedId
+        val language = payload.language
+
+        try{
+            // 전체 백그라운드 요약 로직에 90초 타임아웃 적용
+            withTimeout(90_000L) {
+                // 1. HTML parser로 파싱하기 (suspend 함수)
+                val parseContent = htmlParser.parseUrlAsync(link)
+                var thumbnailImage = parseContent.thumbnailImage
+                val folderNames: List<String> = folderService.getFolders(userId=userId).map { it.name }
+
+                // 2. LLM API 요청 보내기 (suspend 함수)
+                val content = geminiService.summarizeAsync(
+                    link = link,
+                    folders = folderNames.joinToString(separator = " "),
+                    userId = userId,
+                    content = parseContent.content,
+                    feedId = feedId,
+                    language = language,
+                )
+
+                // 플랫폼별 이미지 추출
+                val brunch = feedService.findBrunch(link)
+                if (brunch == Source.BRUNCH){
+                    thumbnailImage = thumbnailImage.removePrefix("//")
+                    thumbnailImage = "https://$thumbnailImage"
+                }
+
+                // 3. 결과 불러와서 DB에 저장하기
+                val feed = feedService.updateSummarizedFeed(
+                    content,
+                    brunch,
+                    feedId,
+                    userId,
+                    thumbnailImage,
+                )
+
+                // 4. 유저에게 푸시알림 보내기
+                val user = userRepository.findById(userId).orElseThrow { BadRequestException(USER_NOT_FOUND) }
+                if (user.iosPushToken != null || user.aosPushToken != null) {
+                    fcmService.sendSummarizedAlert(userId, feed)
+                }
+            }
+        } catch (e: TimeoutCancellationException) {
+            // 타임아웃 발생 시 FAILED 처리
+            val feed = feedService.findFeedOrElseThrow(feedId)
+            feed.updateStatus(Status.FAILED)
+            feedRepository.save(feed)
+            logger().error("Timeout: failed to summarize ${payload.originUrl} within 90 seconds")
+            logger().info("gemini timeout: failed to summarize ${payload.originUrl} by userName ${payload.userName} by userId ${payload.userId}")
+        } catch (e: Exception){
+            val feed = feedService.findFeedOrElseThrow(feedId)
+            feed.updateStatus(Status.FAILED)
+            feedRepository.save(feed)
+            logger().error(e.message)
+            logger().info("gemini exception: failed to summarize ${payload.originUrl} by userName ${payload.userName} by userId ${payload.userId}")
+        }
     }
 
 }

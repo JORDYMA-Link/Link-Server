@@ -354,4 +354,18 @@ class FeedRepositoryCustomImpl(
             .fetch()
     }
 
+    override fun findPendingFeedsForRetry(beforeTime: LocalDateTime): List<Feed> {
+        return queryFactory
+            .selectFrom(feed)
+            .join(feed.folder, folder).fetchJoin()
+            .join(folder.user, user).fetchJoin()
+            .where(
+                feed.status.eq(Status.REQUESTED)
+                    .and(feed.deletedAt.isNull)
+                    .and(feed.createdAt.lt(beforeTime))
+            )
+            .limit(100)
+            .fetch()
+    }
+
 }

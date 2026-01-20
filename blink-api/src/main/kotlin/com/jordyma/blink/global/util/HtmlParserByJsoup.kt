@@ -1,6 +1,8 @@
 package com.jordyma.blink.global.util
 
 import com.jordyma.blink.logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.safety.Safelist
@@ -8,7 +10,12 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
-class HtmlParserByJsoup {
+class HtmlParserByJsoup(
+    private val seleniumPageParser: SeleniumPageParser
+) {
+
+    // Selenium 전용 제한된 Dispatcher (최대 5개 병렬 실행)
+    private val seleniumDispatcher = Dispatchers.IO.limitedParallelism(5)
 
     data class PageInfo(
         val title: String,
@@ -29,6 +36,51 @@ class HtmlParserByJsoup {
             content = extractContent(document),
             thumbnailImage = extractThumbnailImage(document)
         )
+    }
+
+    suspend fun parseUrlAsync(url: String): PageInfo = withContext(Dispatchers.IO) {
+        logger().info(">>>>> [HtmlParserByJsoup] Starting Jsoup parsing for: $url")
+
+        // 1단계: Jsoup으로 빠르게 파싱 시도
+        val document = when {
+            url.contains(NAVER_BLOG_BASE_URL) -> fetchNaverBlogContent(url)
+            url.contains("naver.me") -> fetchNaverShortUrl(url)
+            else -> fetchContent(url)
+        }
+
+        val jsoupResult = PageInfo(
+            title = document.title(),
+            content = extractContent(document),
+            thumbnailImage = extractThumbnailImage(document)
+        )
+
+        // 2단계: 빈 콘텐츠 감지
+        if (isEmptyContent(jsoupResult.content)) {
+            logger().info(">>>>> [HtmlParserByJsoup] Empty content detected, falling back to Selenium for: $url")
+
+            // 3단계: Selenium으로 fallback (제한된 스레드풀에서 실행)
+            return@withContext withContext(seleniumDispatcher) {
+                try {
+                    seleniumPageParser.parseUrl(url)
+                } catch (e: Exception) {
+                    logger().error(">>>>> [HtmlParserByJsoup] Selenium fallback failed: ${e.message}", e)
+                    // Selenium도 실패하면 Jsoup 결과 반환
+                    jsoupResult
+                }
+            }
+        }
+
+        logger().info(">>>>> [HtmlParserByJsoup] Jsoup parsing succeeded. Content length: ${jsoupResult.content.length}")
+        return@withContext jsoupResult
+    }
+
+    /**
+     * 빈 콘텐츠 감지 함수
+     * - 콘텐츠가 비어있거나 50자 미만이면 빈 것으로 간주
+     */
+    private fun isEmptyContent(content: String): Boolean {
+        val trimmedContent = content.trim()
+        return trimmedContent.isEmpty() || trimmedContent.length < 50
     }
 
 

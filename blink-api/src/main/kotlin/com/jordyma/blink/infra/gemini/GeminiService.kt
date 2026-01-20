@@ -13,6 +13,8 @@ import com.jordyma.blink.infra.gemini.request.ChatRequest
 import com.jordyma.blink.infra.gemini.response.ChatResponse
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.LanguageType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -70,6 +72,63 @@ class GeminiService @Autowired constructor(
             }
 
             return PromptResponse(
+                subject = firstResponse.subject,
+                summary = firstResponse.summary,
+                keyword = secondResponse.keyword,
+                category = secondResponse.category
+            )
+
+        } catch (e: Exception) {
+            val feed = findFeedOrElseThrow(feedId)
+            feed.updateStatus(Status.FAILED)
+            feedRepository.save(feed)
+
+            throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "gemini 요청 처리 중 오류 발생: ${e.message}")
+        }
+    }
+
+    suspend fun summarizeAsync(
+        content: String,
+        link: String,
+        folders: String,
+        userId: Long,
+        feedId: Long,
+        language: LanguageType?,
+    ): PromptResponse = withContext(Dispatchers.IO) {
+        try {
+            val requestUrl = "$apiUrl?key=$geminiApiKey"
+
+            // 1. summary
+            val effectiveLanguage = language ?: LanguageType.KOREAN
+            val request = ChatRequest(makeSummarizePrompt(content, effectiveLanguage))
+            logger().info("1단계 Summary - Sending request to Gemini server: $requestUrl with body: $request")
+
+            val summaryResponse = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
+            val summaryResponseText = summaryResponse?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
+            logger().info("1단계 Summary - Received response from Gemini server: $summaryResponseText")
+
+            val firstResponse = if (summaryResponseText.isNotEmpty()) {
+                extractJsonAndParse<PromptSummaryResponse>(summaryResponseText)
+            } else {
+                throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "summaryResponseText gemini json 파싱 오류")
+            }
+
+            // 2. summary를 기반으로 keyword, category 추출
+            val metadataRequest = ChatRequest(
+                makeMetadataExtractionPrompt(firstResponse.summary, folders, effectiveLanguage)
+            )
+            logger().info("2단계 Meta정보 추출 - Sending request to Gemini server: $requestUrl with body: $metadataRequest")
+            val metadataResponse = restTemplate.postForObject(requestUrl, metadataRequest, ChatResponse::class.java)
+            val metadataResponseText = metadataResponse?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
+            logger().info("2단계 Meta정보 추출 - Received response from Gemini server: $metadataResponseText")
+
+            val secondResponse = if (metadataResponseText.isNotEmpty()) {
+                extractJsonAndParse<PromptMetadataResponse>(metadataResponseText)
+            } else {
+                throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "metadataResponseText gemini json 파싱 오류")
+            }
+
+            return@withContext PromptResponse(
                 subject = firstResponse.subject,
                 summary = firstResponse.summary,
                 keyword = secondResponse.keyword,

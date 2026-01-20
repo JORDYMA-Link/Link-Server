@@ -39,8 +39,8 @@ class FeedSummarizeController(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: LinkRequestDto,
     ): ResponseEntity<FeedIdResponseDto> {
+        // DB 저장 + 200 return까지만 MVC 스레드에서 처리
         val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
-        // val userName = userService.getProfile(userAccount).nickName
         val userInfo = userService.find(userAccount);
 
         // TODO : message 만들기 서비스로 이동하기
@@ -52,8 +52,12 @@ class FeedSummarizeController(
             return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
         }
 
-        feedSummarizeService.summarizeFeed(summarizeMessage)
+        // 백그라운드 코루틴에서 요약 처리 (launch with Dispatchers.IO)
+        CoroutineScope(Dispatchers.IO).launch {
+            feedSummarizeService.summarizeFeedAsync(summarizeMessage)
+        }
 
+        // 즉시 200 OK 반환
         val feedIdResponseDto = FeedIdResponseDto(
             feedId = feed.id
         )
