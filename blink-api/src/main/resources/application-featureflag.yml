@@ -1,0 +1,37 @@
+# Feature Flag 설정
+feature:
+  summarization:
+    # 기본 전략: V1_WORKER_SQS 또는 V2_API_DIRECT
+    default-strategy: V1_WORKER_SQS
+    # 카나리 배포용 유저 비율 (0-100)
+    user-ratio: 0
+
+# AWS AppConfig 설정
+aws:
+  appconfig:
+    application: blink-service
+    environment: production
+    configuration: summarization-strategy
+    poll-interval-seconds: 30
+
+# Graceful Shutdown 설정
+server:
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# Actuator & Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: blink-api
+      environment: production

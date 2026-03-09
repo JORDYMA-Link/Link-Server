@@ -1,6 +1,8 @@
 package com.jordyma.blink.feed.controller
 
 import com.jordyma.blink.auth.jwt.user_account.UserAccount
+import com.jordyma.blink.featureflag.FeatureFlagService
+import com.jordyma.blink.feed.domain.model.FeedSummarizeMessage
 import com.jordyma.blink.feed.dto.AiSummaryResponseDto
 import com.jordyma.blink.feed.dto.FeedIdResponseDto
 import com.jordyma.blink.feed.dto.request.FeedUpdateReqDto
@@ -10,15 +12,14 @@ import com.jordyma.blink.feed.dto.response.FeedUpdateResDto
 import com.jordyma.blink.feed.dto.response.ProcessingListDto
 import com.jordyma.blink.feed.service.FeedService
 import com.jordyma.blink.feed.service.FeedSummarizeService
-import com.jordyma.blink.feed_summarize_requester.sender.dto.FeedSummarizeMessage
+import com.jordyma.blink.feed.strategy.SummarizationExecutorFactory
 import com.jordyma.blink.infra.ratelimit.RateLimit
 import com.jordyma.blink.logger
 import com.jordyma.blink.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.coroutineScope
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -29,35 +30,51 @@ class FeedSummarizeController(
     private val feedService: FeedService,
     private val userService: UserService,
     private val feedSummarizeService: FeedSummarizeService,
-
+    private val featureFlagService: FeatureFlagService,
+    private val executorFactory: SummarizationExecutorFactory,
 ) {
+    private val log = org.slf4j.LoggerFactory.getLogger(this::class.java)
+    
     @RateLimit
     @Tag(name = "link", description = "링크 API")
     @Operation(summary = "[링크 요약 1] 링크 요약 api", description = "링크 요약 요청 전송, ai 요약 결과 저장")
     @PostMapping("/summary")
-    fun getAiSummary(
+    suspend fun getAiSummary(
         @AuthenticationPrincipal userAccount: UserAccount,
         @RequestBody requestDto: LinkRequestDto,
-    ): ResponseEntity<FeedIdResponseDto> {
+    ): ResponseEntity<FeedIdResponseDto> = coroutineScope {
         val feed = feedService.makeFeedFirst(userAccount, requestDto.link)
-        // val userName = userService.getProfile(userAccount).nickName
-        val userInfo = userService.find(userAccount);
+        val userInfo = userService.find(userAccount)
 
-        // TODO : message 만들기 서비스로 이동하기
-        val summarizeMessage = FeedSummarizeMessage(requestDto.link, feed.id, userAccount.userId, feed.originUrl, userInfo.name, userInfo.language)
+        // FeedSummarizeMessage 생성
+        val summarizeMessage = FeedSummarizeMessage(
+            link = requestDto.link,
+            feedId = feed.id,
+            userId = userAccount.userId,
+            originUrl = feed.originUrl,
+            userName = userInfo.name
+        )
 
-        if (feedSummarizeService.isInvalidLink(requestDto.link)){
-            logger().info(">>>>> FAILED : Try to summarize invalid link: ${requestDto.link}")
+        // Invalid link 체크
+        if (feedSummarizeService.isInvalidLink(requestDto.link)) {
+            log.info("FAILED: Invalid link: ${requestDto.link}")
             feedService.createFailed(userAccount, feed.id)
-            return ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
+            return@coroutineScope ResponseEntity.ok(FeedIdResponseDto(feedId = feed.id))
         }
 
-        feedSummarizeService.summarizeFeed(summarizeMessage)
-
-        val feedIdResponseDto = FeedIdResponseDto(
-            feedId = feed.id
-        )
-        return ResponseEntity.ok(feedIdResponseDto)
+        // Feature Flag 기반 전략 선택
+        val strategy = featureFlagService.getSummarizationStrategy(userAccount.userId)
+        val executor = executorFactory.getExecutor(strategy)
+        
+        log.info("Processing with strategy: $strategy, feedId=${feed.id}, userId=${userAccount.userId}")
+        
+        // 비동기 실행 (suspend fun으로 호출, 즉시 반환)
+        val feedId = executor.execute(summarizeMessage)
+        
+        // 응답은 즉시 반환 (202 Accepted)
+        ResponseEntity
+            .status(HttpStatus.ACCEPTED)
+            .body(FeedIdResponseDto(feedId = feedId))
     }
 
     @Tag(name = "link", description = "링크 API")

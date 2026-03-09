@@ -117,6 +117,9 @@ dependencies {
     // observability
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    
+    // Redisson (분산락 - V2 Executor에서 사용)
+    implementation("org.redisson:redisson-spring-boot-starter:3.27.0")
 }
 
 configurations.forEach {
