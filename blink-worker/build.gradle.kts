@@ -56,6 +56,14 @@ dependencies {
     implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 //    implementation("org.springframework.boot:spring-boot-starter-messaging")
 
+    // Redisson 
+    implementation("org.redisson:redisson-spring-boot-starter:3.27.0")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.0")
+
     // API Documentation
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2")
 
