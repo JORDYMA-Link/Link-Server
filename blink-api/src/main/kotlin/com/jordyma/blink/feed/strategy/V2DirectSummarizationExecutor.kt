@@ -18,12 +18,7 @@ import org.slf4j.MDC
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 
-/**
- * V2 전략: API 서버에서 코루틴으로 직접 처리
- * - 진정한 비동기: launch로 백그라운드 실행, 즉시 응답 반환
- * - Redisson 분산락으로 중복 요약 방지
- * - Watchdog 자동 TTL 연장
- */
+
 @Component
 class V2DirectSummarizationExecutor(
     private val geminiService: GeminiService,
@@ -35,16 +30,10 @@ class V2DirectSummarizationExecutor(
     private val userRepository: UserRepository,
     private val redissonClient: RedissonClient,
     private val activeRequestCounter: ActiveRequestCounter,
-    private val metrics: com.jordyma.blink.global.metrics.SummarizationMetrics
 ) : SummarizationExecutor {
     
     private val log = LoggerFactory.getLogger(this::class.java)
-    
-    /**
-     * 비동기로 작업을 던지고 즉시 feedId 반환
-     * - launch로 실행하여 응답 블로킹 방지
-     * - 실제 요약 작업은 백그라운드에서 진행
-     */
+
     override suspend fun execute(message: FeedSummarizeMessage): Long = coroutineScope {
         activeRequestCounter.increment()
         
@@ -58,12 +47,7 @@ class V2DirectSummarizationExecutor(
             activeRequestCounter.decrement()
         }
     }
-    
-    /**
-     * 코루틴 기반 비동기 요약
-     * - Redisson 분산락으로 중복 방지
-     * - 2분 타임아웃으로 좀비 워커 방지
-     */
+
     private suspend fun summarizeAsync(message: FeedSummarizeMessage) = coroutineScope {
         val lockKey = "blink:processing:${message.userId}:${message.feedId}"
         val lock = redissonClient.getLock(lockKey)
@@ -93,7 +77,7 @@ class V2DirectSummarizationExecutor(
                 return@coroutineScope
             }
             
-            // 2. 타임아웃 설정 (120초)
+            // 2. 타임아웃 설정 
             withTimeout(120_000) {
                 // 3. HTML 파싱
                 MDC.put("stage", "html_parsing")
@@ -127,7 +111,7 @@ class V2DirectSummarizationExecutor(
                         folders = folderNames.joinToString(" "),
                         userId = message.userId,
                         feedId = message.feedId,
-                        language = null // TODO: language 추가 필요
+                        language = null 
                     )
                 }
                 
@@ -160,7 +144,7 @@ class V2DirectSummarizationExecutor(
                 val saveDuration = System.currentTimeMillis() - saveStart
                 MDC.put("dbSaveDuration", saveDuration.toString())
                 
-                // 7. FCM 푸시 알림 (비동기)
+                // 7. FCM 푸시 알림 
                 launch(Dispatchers.IO + withMDCContext()) {
                     MDC.put("stage", "fcm_push")
                     try {
@@ -179,11 +163,6 @@ class V2DirectSummarizationExecutor(
                 MDC.put("result", "success")
                 log.info("V2 Strategy completed: feedId=${message.feedId}, total=${totalDuration}ms, " +
                         "parse=${parseDuration}ms, gemini=${summarizeDuration}ms, save=${saveDuration}ms")
-                
-                // 메트릭 기록
-                metrics.recordStrategyUsed("V2_API_DIRECT")
-                metrics.recordDuration("V2_API_DIRECT", totalDuration)
-                metrics.recordSuccess("V2_API_DIRECT")
             }
             
         } catch (e: TimeoutCancellationException) {
@@ -191,9 +170,6 @@ class V2DirectSummarizationExecutor(
             MDC.put("totalDuration", duration.toString())
             MDC.put("result", "timeout")
             log.error("Summarization timeout (>2min): feedId=${message.feedId}, duration=${duration}ms")
-            
-            // 메트릭 기록
-            metrics.recordTimeout("V2_API_DIRECT")
             
             withContext(Dispatchers.IO + withMDCContext()) {
                 val feed = feedRepository.findById(message.feedId).orElse(null)
@@ -215,8 +191,8 @@ class V2DirectSummarizationExecutor(
             MDC.put("errorType", e.javaClass.simpleName)
             log.error("V2 Strategy failed: feedId=${message.feedId}, duration=${duration}ms, error=${e.message}", e)
             
-            // 메트릭 기록
-            metrics.recordFailure("V2_API_DIRECT", e.javaClass.simpleName)
+            // TODO: 메트릭 기록
+            // metrics.recordFailure("V2_API_DIRECT", e.javaClass.simpleName)
             
             withContext(Dispatchers.IO + withMDCContext()) {
                 val feed = feedRepository.findById(message.feedId).orElse(null)

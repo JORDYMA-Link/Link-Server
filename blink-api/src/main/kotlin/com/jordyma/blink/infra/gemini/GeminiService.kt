@@ -11,9 +11,9 @@ import com.jordyma.blink.global.exception.ApplicationException
 import com.jordyma.blink.global.exception.ErrorCode
 import com.jordyma.blink.infra.gemini.request.ChatRequest
 import com.jordyma.blink.infra.gemini.response.ChatResponse
-import com.jordyma.blink.logger
 import com.jordyma.blink.user.LanguageType
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -25,8 +25,11 @@ class GeminiService @Autowired constructor(
     @Qualifier("geminiRestTemplate") private val restTemplate: RestTemplate,
     @Value("\${gemini.api.url}") private val apiUrl: String,
     @Value("\${gemini.api.key}") private val geminiApiKey: String,
-    private val feedRepository: FeedRepository
+    private val feedRepository: FeedRepository,
+    private val circuitBreaker: GeminiCircuitBreaker
 ) : ContentSummarizer {
+
+    private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun summarize(
         content: String,
@@ -36,17 +39,30 @@ class GeminiService @Autowired constructor(
         feedId: Long,
         language: LanguageType?,
     ): PromptResponse {
+        // Circuit Breaker 체크
+        circuitBreaker.checkCircuit()
+        
         try {
             val requestUrl = "$apiUrl?key=$geminiApiKey"
 
             // 1. summary
             val effectiveLanguage = language ?: LanguageType.KOREAN
             val request = ChatRequest(makeSummarizePrompt(content, effectiveLanguage))
-            logger().info("1단계 Summary - Sending request to Gemini server: $requestUrl with body: $request")
+            log.info("1단계 Summary - Sending request to Gemini server: $requestUrl with body: $request")
 
-            val summaryResponse = restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
+            val summaryResponse = try {
+                restTemplate.postForObject(requestUrl, request, ChatResponse::class.java)
+            } catch (e: org.springframework.web.client.HttpClientErrorException) {
+                if (e.statusCode.value() == 429) {
+                    circuitBreaker.record429Failure()
+                    log.error("Gemini API rate limit exceeded (429)")
+                    throw ApplicationException(ErrorCode.EXTERNAL_API_ERROR, "AI 요약 서비스가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.")
+                }
+                throw e
+            }
+            
             val summaryResponseText = summaryResponse?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
-            logger().info("1단계 Summary - Received response from Gemini server: $summaryResponseText")
+            log.info("1단계 Summary - Received response from Gemini server: $summaryResponseText")
 
             val firstResponse = if (summaryResponseText.isNotEmpty()) {
                 extractJsonAndParse<PromptSummaryResponse>(summaryResponseText)
@@ -58,16 +74,30 @@ class GeminiService @Autowired constructor(
             val metadataRequest = ChatRequest(
                 makeMetadataExtractionPrompt(firstResponse.summary, folders, effectiveLanguage)
             )
-            logger().info("2단계 Meta정보 추출 - Sending request to Gemini server: $requestUrl with body: $metadataRequest")
-            val metadataResponse = restTemplate.postForObject(requestUrl, metadataRequest, ChatResponse::class.java)
+            log.info("2단계 Meta정보 추출 - Sending request to Gemini server: $requestUrl with body: $metadataRequest")
+            
+            val metadataResponse = try {
+                restTemplate.postForObject(requestUrl, metadataRequest, ChatResponse::class.java)
+            } catch (e: org.springframework.web.client.HttpClientErrorException) {
+                if (e.statusCode.value() == 429) {
+                    circuitBreaker.record429Failure()
+                    log.error("Gemini API rate limit exceeded (429)")
+                    throw ApplicationException(ErrorCode.EXTERNAL_API_ERROR, "AI 요약 서비스가 일시적으로 과부하 상태입니다. 잠시 후 다시 시도해주세요.")
+                }
+                throw e
+            }
+            
             val metadataResponseText = metadataResponse?.candidates?.get(0)?.content?.parts?.get(0)?.text.orEmpty()
-            logger().info("2단계 Meta정보 추출 - Received response from Gemini server: $metadataResponseText")
+            log.info("2단계 Meta정보 추출 - Received response from Gemini server: $metadataResponseText")
 
             val secondResponse = if (metadataResponseText.isNotEmpty()) {
                 extractJsonAndParse<PromptMetadataResponse>(metadataResponseText)
             } else {
                 throw ApplicationException(ErrorCode.JSON_NOT_FOUND, "metadataResponseText gemini json 파싱 오류")
             }
+
+            // 성공 기록
+            circuitBreaker.recordSuccess()
 
             return PromptResponse(
                 subject = firstResponse.subject,
@@ -76,6 +106,12 @@ class GeminiService @Autowired constructor(
                 category = secondResponse.category
             )
 
+        } catch (e: GeminiCircuitOpenException) {
+            val feed = findFeedOrElseThrow(feedId)
+            feed.updateStatus(Status.FAILED)
+            feedRepository.save(feed)
+            throw ApplicationException(ErrorCode.SERVICE_UNAVAILABLE, e.message ?: "서비스를 일시적으로 사용할 수 없습니다.")
+            
         } catch (e: Exception) {
             val feed = findFeedOrElseThrow(feedId)
             feed.updateStatus(Status.FAILED)
